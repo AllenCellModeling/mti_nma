@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 from datastep import Step, log_run_params
 from .mesh_utils import polygon_mesh, mesh_from_models, volume_trimesh, model_verts, draw_mesh
