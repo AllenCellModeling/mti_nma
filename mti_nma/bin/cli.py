@@ -1,3 +1,4 @@
+import inspect
 import fire
 
 from mti_nma import steps
