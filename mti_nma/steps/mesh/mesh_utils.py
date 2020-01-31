@@ -2,6 +2,9 @@ import numpy as np
 import math
 import itertools
 from skimage import measure
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import os
 
 
 class Mesh():
@@ -159,3 +162,32 @@ def fully_connect_mesh(verts):
     :return: faces of mesh, connecting all vertices to all others
     """
     return list(itertools.combinations(range(len(verts)), 2))
+
+
+def draw_mesh(mesh):
+    """Draws mesh if mesh is in 1D or 2D. If 3D, just plots vertices.
+    :param mesh: mesh object (see mesh.py)
+    """
+    
+    fig = plt.figure()
+    
+    if mesh.ndims == 1:
+        for pair in mesh.faces:
+            x = [mesh.verts[pair[0]][0], mesh.verts[pair[1]][0]]
+            y = np.zeros(len(x))
+            plt.plot(x, y, marker='o', color='k')
+
+    if mesh.ndims == 2:
+        for pair in mesh.faces:
+            x = [mesh.verts[pair[0]][0], mesh.verts[pair[1]][0]]
+            y = [mesh.verts[pair[0]][1], mesh.verts[pair[1]][1]]
+            plt.plot(x, y, marker='o', color='k')
+            axis = plt.gca()
+            axis.set_aspect('equal')
+
+    if mesh.ndims == 3:
+        ax = fig.add_subplot(111, projection='3d')
+        for vert in mesh.verts:
+            ax.scatter(vert[0], vert[1], vert[2], color='k')
+
+    return fig
