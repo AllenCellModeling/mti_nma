@@ -171,12 +171,14 @@ def draw_mesh(mesh):
     
     fig = plt.figure()
     
+    # if mesh is 1D, set y to zero and plot vertices and faces along x axis
     if mesh.ndims == 1:
         for pair in mesh.faces:
             x = [mesh.verts[pair[0]][0], mesh.verts[pair[1]][0]]
             y = np.zeros(len(x))
             plt.plot(x, y, marker='o', color='k')
 
+    # if mesh is 2D, plot 2D mesh vertices and faces
     if mesh.ndims == 2:
         for pair in mesh.faces:
             x = [mesh.verts[pair[0]][0], mesh.verts[pair[1]][0]]
@@ -185,6 +187,7 @@ def draw_mesh(mesh):
             axis = plt.gca()
             axis.set_aspect('equal')
 
+    # if mesh is 3D, just plot vertices in 3D projection
     if mesh.ndims == 3:
         ax = fig.add_subplot(111, projection='3d')
         for vert in mesh.verts:
