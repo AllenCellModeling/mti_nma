@@ -54,19 +54,15 @@ class Nma(Step):
         for i in range(N):
             mesh_verts = np.load(mesh_df[mesh_df['label'] == mesh_list[i]+'_verts']['filepath'].iloc[0])
             mesh_faces = np.load(mesh_df[mesh_df['label'] == mesh_list[i]+'_faces']['filepath'].iloc[0])
-            w, v = run_nma(mesh_verts, mesh_faces)
+            w, v, wfig = run_nma(mesh_verts, mesh_faces)
 
             # create new directory for each mesh containing the mesh vertices and faces
             this_nma_data_dir = nma_data_dir / Path(mesh_list[i])
             this_nma_data_dir.mkdir(parents=True, exist_ok=True)
             w_path = this_nma_data_dir / Path('eigvals.npy')
-            v_path = this_nma_data_dir / Path('eigvecs.npy')
             np.save(w_path, w)
+            v_path = this_nma_data_dir / Path('eigvecs.npy')
             np.save(v_path, v)
-
-            # draw histogram of normal mode eigenvalues
-            plt.clf()
-            w_fig = draw_whist(w)
             fig_path = this_nma_data_dir / Path('w_fig.pdf')
             plt.savefig(fig_path, format='pdf')
 
