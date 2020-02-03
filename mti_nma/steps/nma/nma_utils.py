@@ -89,6 +89,6 @@ def draw_whist(w):
         N = int(max(w)+2)
     else:
         N = 30
-    sb.distplot(w, kde=False, bins=bins)
+    sb.distplot(w, kde=False, bins=N)
     plt.xlabel('Eigenvalues (w2*m/k)')
     plt.ylabel('Counts')
