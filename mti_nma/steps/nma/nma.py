@@ -6,12 +6,13 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 from datastep import Step, log_run_params
 from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..mesh import Mesh
-from .nma_utils import run_nma
+from .nma_utils import run_nma, draw_whist
 
 ###############################################################################
 
@@ -39,7 +40,7 @@ class Nma(Step):
         # make new manifest for nma step
         N = len(mesh_list)
         col = ["label", "filepath"]
-        self.manifest = pd.DataFrame(index=range(2 * N), columns=col)
+        self.manifest = pd.DataFrame(index=range(3 * N), columns=col)
 
         # get mesh manifest
         meshes = Mesh()
@@ -63,11 +64,18 @@ class Nma(Step):
             np.save(w_path, w)
             np.save(v_path, v)
 
+            # draw histogram of normal mode eigenvalues
+            w_fig = draw_whist(w)
+            fig_path = this_nma_data_dir / Path('w_fig.pdf')
+            plt.savefig(fig_path, format='pdf')
+
             # add mesh vertices and faces to manifest
-            self.manifest.at[2 * i, "filepath"] = w_path
-            self.manifest.at[2 * i, "label"] = mesh_list[i] + '_eigvals'
-            self.manifest.at[2 * i + 1, "filepath"] = v_path
-            self.manifest.at[2 * i + 1, "label"] = mesh_list[i] + '_eigvecs'
+            self.manifest.at[3 * i, "filepath"] = w_path
+            self.manifest.at[3 * i, "label"] = mesh_list[i] + '_eigvals'
+            self.manifest.at[3 * i + 1, "filepath"] = v_path
+            self.manifest.at[3 * i + 1, "label"] = mesh_list[i] + '_eigvecs'
+            self.manifest.at[3 * i + 2, "filepath"] = fig_path
+            self.manifest.at[3 * i + 2, "label"] = mesh_list[i] + '_w_hist_fig'
 
 
         # save manifest as csv

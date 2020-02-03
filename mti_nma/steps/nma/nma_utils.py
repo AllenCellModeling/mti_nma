@@ -2,6 +2,8 @@ import numpy as np
 import itertools
 import os
 from scipy.sparse.linalg import eigsh
+import seaborn as sb
+import matplotlib.pyplot as plt
 
 
 def run_nma(mesh_verts, mesh_faces):
@@ -75,3 +77,13 @@ def get_eigs_from_mesh(hess):
     # use solver to get eigenvalues (w) and eigenvectors (v)
     w, v = np.linalg.eigh(hess)
     return w, v
+
+
+def draw_whist(w):
+    """Draw histogram of eigenvalues (w2*m/k)
+    :param w: list of eigenvalue parameter w values
+    """
+    bins = np.linspace(-0.5,max(w)+0.5, int(max(w)+2))
+    sb.distplot(w, kde=False, bins=bins)
+    plt.xlabel('Eigenvalues (w2*m/k)')
+    plt.ylabel('Counts')
