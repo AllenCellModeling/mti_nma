@@ -65,6 +65,7 @@ class Nma(Step):
             np.save(v_path, v)
 
             # draw histogram of normal mode eigenvalues
+            plt.clf()
             w_fig = draw_whist(w)
             fig_path = this_nma_data_dir / Path('w_fig.pdf')
             plt.savefig(fig_path, format='pdf')
