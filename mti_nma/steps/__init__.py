@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .raw import Raw
 from .mesh import Mesh
+from .nma import Nma
 
-__all__ = ["Raw", "Mesh"]
+__all__ = ["Mesh", "Nma"]
