@@ -83,7 +83,10 @@ def draw_whist(w):
     """Draw histogram of eigenvalues (w2*m/k)
     :param w: list of eigenvalue parameter w values
     """
-    bins = np.linspace(-0.5,max(w)+0.5, int(max(w)+2))
+    if len(w)<20:
+        bins = np.linspace(-0.5,max(w)+0.5, int(max(w)+2))
+    else:
+        bins = None
     sb.distplot(w, kde=False, bins=bins)
     plt.xlabel('Eigenvalues (w2*m/k)')
     plt.ylabel('Counts')
