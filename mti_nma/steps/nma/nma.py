@@ -37,7 +37,7 @@ class Nma(Step):
                          '2D_polygon', '2D_polygon_x', # include a cross-connected and edge-connected polygon
                          '3D_sphere', '3D_sphere_S3']   # include two resolutions of marching cube spheres
 
-        # make new manifest for nma step
+        # make new manifest for NMA step
         N = len(mesh_list)
         col = ["label", "filepath"]
         self.manifest = pd.DataFrame(index=range(3 * N), columns=col)
@@ -47,30 +47,27 @@ class Nma(Step):
         manifest_filepaths_rel2abs(meshes)
         mesh_df = meshes.manifest.copy()
 
-        # create directory to hold meshes
+        # create directory to hold NMA results
         nma_data_dir = self.step_local_staging_dir / Path("nma_data")
         nma_data_dir.mkdir(parents=True, exist_ok=True)
 
+        # cycle through meshes from previous step and find/save their normal modes
         for i in range(N):
             mesh_verts = np.load(mesh_df[mesh_df['label'] == mesh_list[i]+'_verts']['filepath'].iloc[0])
             mesh_faces = np.load(mesh_df[mesh_df['label'] == mesh_list[i]+'_faces']['filepath'].iloc[0])
-            w, v = run_nma(mesh_verts, mesh_faces)
+            w, v, wfig = run_nma(mesh_verts, mesh_faces)
 
             # create new directory for each mesh containing the mesh vertices and faces
             this_nma_data_dir = nma_data_dir / Path(mesh_list[i])
             this_nma_data_dir.mkdir(parents=True, exist_ok=True)
             w_path = this_nma_data_dir / Path('eigvals.npy')
-            v_path = this_nma_data_dir / Path('eigvecs.npy')
             np.save(w_path, w)
+            v_path = this_nma_data_dir / Path('eigvecs.npy')
             np.save(v_path, v)
-
-            # draw histogram of normal mode eigenvalues
-            plt.clf()
-            w_fig = draw_whist(w)
             fig_path = this_nma_data_dir / Path('w_fig.pdf')
             plt.savefig(fig_path, format='pdf')
 
-            # add mesh vertices and faces to manifest
+            # add eigenvectors, eigenvalues, and histogram of eigenvalues to manifest
             self.manifest.at[3 * i, "filepath"] = w_path
             self.manifest.at[3 * i, "label"] = mesh_list[i] + '_eigvals'
             self.manifest.at[3 * i + 1, "filepath"] = v_path

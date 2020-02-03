@@ -14,7 +14,8 @@ def run_nma(mesh_verts, mesh_faces):
     """
     hess = get_hessian_from_mesh(mesh_verts, mesh_faces)
     w, v = get_eigs_from_mesh(hess)
-    return w, v
+    fig = draw_hist(w)
+    return w, v, fig
 
 
 def get_hessian_from_mesh(mesh_verts, mesh_faces):
@@ -83,12 +84,19 @@ def draw_whist(w):
     """Draw histogram of eigenvalues (w2*m/k)
     :param w: list of eigenvalue parameter w values
     """
+
+    plt.clf()
+
+    # set binning
     minval = min(w)-0.5
     maxval = max(w)+0.5
     if len(w) < 20:
         N = int(max(w)+2)
     else:
         N = 30
+
     sb.distplot(w, kde=False, bins=N)
     plt.xlabel('Eigenvalues (w2*m/k)')
     plt.ylabel('Counts')
+    
+    return fig
