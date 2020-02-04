@@ -42,6 +42,7 @@ interactive_requirements = [
     "altair",
     "jupyterlab",
     "matplotlib",
+    "mpl_toolkits"
 ]
 
 requirements = [
@@ -50,6 +51,8 @@ requirements = [
     "fire",
     "numpy",
     "pandas",
+    "scikit-image",
+    "seaborn",
     "python-dateutil<=2.8.0",  # need <=2.8.0 for quilt3 in step
     "Pillow",
 ]

@@ -6,7 +6,7 @@ class All:
         """
         Set the order of your steps here.
         """
-        self.step_list = [steps.Raw()]
+        self.step_list = [steps.Mesh(), steps.Nma()]
 
     def run(self):
         """
