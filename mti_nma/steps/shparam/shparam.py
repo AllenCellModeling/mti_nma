@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 from datastep import Step, log_run_params
-from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..singlecell import Singlecell
 
@@ -33,9 +32,6 @@ class Shparam(Step):
         '''
 
         singlecells = Singlecell()
-        # print(singlecells.filepath_columns)
-        # self.filepath_columns = ['RawFilePath','SegFilePath']
-        # manifest_filepaths_rel2abs(singlecells)
         df = singlecells.manifest.copy()
         df = df.set_index('CellId')
 
@@ -63,6 +59,7 @@ class Shparam(Step):
             mesh_initial = extras[1]
 
             df_coeffs = pd.DataFrame(df_coeffs, index=[CellId])
+            df_coeffs.index = df_coeffs.index.rename('CellId')
 
             # Mesh reconstructed with the sh coefficients
 

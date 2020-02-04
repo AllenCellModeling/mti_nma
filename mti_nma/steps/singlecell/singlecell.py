@@ -49,13 +49,12 @@ class Singlecell(Step):
 
         df = pd.read_csv('/allen/aics/assay-dev/MicroscopyOtherData/Viana/forJulieTimelapseNucleus/NewColonyDataset/ColonyMovie-ASCB2019.csv',
             index_col=0)
-        df = df[['CellId','crop_raw','crop_seg']].sample(n=4) # Paths to raw and seg images
+        df = df[['CellId','crop_raw','crop_seg']].sample(n=16) # Paths to raw and seg images
         df = df.set_index('CellId')
 
         # Copy files from original location to self.step_local_staging_dir
 
         self.manifest = pd.DataFrame([])
-        # self.filepath_columns = ['RawFilePath','SegFilePath']
 
         for CellId in df.index:
             shutil.copy(
