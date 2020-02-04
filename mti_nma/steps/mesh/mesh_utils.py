@@ -4,7 +4,6 @@ import itertools
 from skimage import measure
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import os
 
 
 class Mesh():
@@ -65,7 +64,7 @@ model_verts = {
 # test model definitions: mesh connectivities
 model_faces = {
     '1D_2masses': [[0, 1]],
-    '1D_3masses': [[0, 1],[1, 2]],
+    '1D_3masses': [[0, 1], [1, 2]],
     '3D_2masses': [[0, 1]],
     '2D_square': [[0, 1], [1, 2], [2, 3], [3, 0]],
     '2D_rectangle': [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 0]],
@@ -168,9 +167,9 @@ def draw_mesh(mesh):
     """Draws mesh if mesh is in 1D or 2D. If 3D, just plots vertices.
     :param mesh: mesh object (see mesh.py)
     """
-    
+
     fig = plt.figure()
-    
+
     # if mesh is 1D, set y to zero and plot vertices and faces along x axis
     if mesh.ndims == 1:
         for pair in mesh.faces:
@@ -189,7 +188,7 @@ def draw_mesh(mesh):
 
     # if mesh is 3D, just plot vertices in 3D projection
     if mesh.ndims == 3:
-        ax = fig.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(111, projection=Axes3D.name)
         for vert in mesh.verts:
             ax.scatter(vert[0], vert[1], vert[2], color='k')
 
