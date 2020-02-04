@@ -12,11 +12,11 @@ Docs: https://docs.pytest.org/en/latest/
 """
 
 import pytest
-from mti_nma.steps import Raw
+from mti_nma.steps import Singlecell
 
 
 # This test just checks to see if the raw step instantiates and runs
-def test_raw_run():
-    raw = Raw(N=10)
-    raw.run()
-    assert len(raw.manifest == 10)
+def test_singlecell_run():
+    singlecell = Singlecell()
+    singlecell.run(nsamples=1)
+    assert len(singlecell.manifest == 1)

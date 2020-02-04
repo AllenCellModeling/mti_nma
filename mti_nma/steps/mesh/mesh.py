@@ -6,9 +6,10 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 from datastep import Step, log_run_params
-from .mesh_utils import polygon_mesh, mesh_from_models, volume_trimesh, model_verts
+from .mesh_utils import polygon_mesh, mesh_from_models, volume_trimesh, model_verts, draw_mesh
 
 ###############################################################################
 
@@ -41,7 +42,7 @@ class Mesh(Step):
         # create manifest to document generated/saved mesh vertices and faces
         N = len(mesh_list)
         col = ["label", "filepath"]
-        self.manifest = pd.DataFrame(index=range(2 * N), columns=col)
+        self.manifest = pd.DataFrame(index=range(3 * N), columns=col)
 
         # create directory to hold meshes
         mesh_data_dir = self.step_local_staging_dir / Path("mesh_data")
@@ -68,10 +69,16 @@ class Mesh(Step):
             np.save(face_path, mesh.faces)
 
             # add mesh vertices and faces to manifest
-            self.manifest.at[2 * i, "filepath"] = vert_path
-            self.manifest.at[2 * i, "label"] = mesh_label + '_verts'
-            self.manifest.at[2 * i + 1, "filepath"] = face_path
-            self.manifest.at[2 * i + 1, "label"] = mesh_label + '_faces'
+            self.manifest.at[3 * i, "filepath"] = vert_path
+            self.manifest.at[3 * i, "label"] = mesh_label + '_verts'
+            self.manifest.at[3 * i + 1, "filepath"] = face_path
+            self.manifest.at[3 * i + 1, "label"] = mesh_label + '_faces'
+
+            mesh_fig = draw_mesh(mesh)
+            fig_path = this_mesh_data_dir / Path('fig.pdf')
+            plt.savefig(fig_path, format='pdf')
+            self.manifest.at[3 * i + 2, "filepath"] = fig_path
+            self.manifest.at[3 * i + 2, "label"] = mesh_label + '_fig'
 
         # save manifest as csv
         self.manifest.to_csv(

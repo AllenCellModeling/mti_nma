@@ -2,6 +2,9 @@ import numpy as np
 import math
 import itertools
 from skimage import measure
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+import os
 
 
 class Mesh():
@@ -159,3 +162,35 @@ def fully_connect_mesh(verts):
     :return: faces of mesh, connecting all vertices to all others
     """
     return list(itertools.combinations(range(len(verts)), 2))
+
+
+def draw_mesh(mesh):
+    """Draws mesh if mesh is in 1D or 2D. If 3D, just plots vertices.
+    :param mesh: mesh object (see mesh.py)
+    """
+    
+    fig = plt.figure()
+    
+    # if mesh is 1D, set y to zero and plot vertices and faces along x axis
+    if mesh.ndims == 1:
+        for pair in mesh.faces:
+            x = [mesh.verts[pair[0]][0], mesh.verts[pair[1]][0]]
+            y = np.zeros(len(x))
+            plt.plot(x, y, marker='o', color='k')
+
+    # if mesh is 2D, plot 2D mesh vertices and faces
+    if mesh.ndims == 2:
+        for pair in mesh.faces:
+            x = [mesh.verts[pair[0]][0], mesh.verts[pair[1]][0]]
+            y = [mesh.verts[pair[0]][1], mesh.verts[pair[1]][1]]
+            plt.plot(x, y, marker='o', color='k')
+            axis = plt.gca()
+            axis.set_aspect('equal')
+
+    # if mesh is 3D, just plot vertices in 3D projection
+    if mesh.ndims == 3:
+        ax = fig.add_subplot(111, projection='3d')
+        for vert in mesh.verts:
+            ax.scatter(vert[0], vert[1], vert[2], color='k')
+
+    return fig
