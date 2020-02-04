@@ -1,6 +1,6 @@
 import inspect
 import fire
-
+import inspect
 from mti_nma import steps
 from mti_nma.bin.all import All
 from mti_nma.bin.quilt_init import QuiltInit
