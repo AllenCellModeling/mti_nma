@@ -39,40 +39,41 @@ class Singlecell(Step):
             pixel size of 0.135um.
         '''
 
-        print(self.step_local_staging_dir)
-
         import os
         import shutil
         import numpy as np
         np.random.seed(666)
         import pandas as pd
 
-        df = pd.read_csv('/allen/aics/assay-dev/MicroscopyOtherData/Viana/forJulieTimelapseNucleus/NewColonyDataset/ColonyMovie-ASCB2019.csv', index_col=0)
-        df = df[['CellId','crop_raw','crop_seg']].sample(n=nsamples) # Paths to raw and seg images
-        df = df.set_index('CellId')
+        if nsamples > 0:
 
-        # Copy files from original location to self.step_local_staging_dir
+            self.manifest = pd.DataFrame([])
 
-        self.manifest = pd.DataFrame([])
+            df = pd.read_csv('/allen/aics/assay-dev/MicroscopyOtherData/Viana/forJulieTimelapseNucleus/NewColonyDataset/ColonyMovie-ASCB2019.csv', index_col=0)
+            df = df[['CellId','crop_raw','crop_seg']].sample(n=nsamples) # Paths to raw and seg images
+            df = df.set_index('CellId')
 
-        for CellId in df.index:
-            shutil.copy(
-                src = df.crop_raw[CellId],
-                dst = self.step_local_staging_dir / Path(f'{CellId}.raw.tif')
-                )
-            shutil.copy(
-                src = df.crop_seg[CellId],
-                dst = self.step_local_staging_dir / Path(f'{CellId}.seg.tif')
-                )
-            pdSerie = pd.Series(
-                {
-                    'RawFilePath': f'{CellId}.raw.tif',
-                    'SegFilePath': f'{CellId}.seg.tif',
-                    'CellId': CellId,
-                }, name=CellId)
-            self.manifest = self.manifest.append(pdSerie)
+            # Copy files from original location to self.step_local_staging_dir
 
-        # save manifest as csv
-        self.manifest.to_csv(
-            self.step_local_staging_dir / Path("manifest.csv"), index=False
-        )
+            for CellId in df.index:
+                shutil.copy(
+                    src = df.crop_raw[CellId],
+                    dst = self.step_local_staging_dir / Path(f'{CellId}.raw.tif')
+                    )
+                shutil.copy(
+                    src = df.crop_seg[CellId],
+                    dst = self.step_local_staging_dir / Path(f'{CellId}.seg.tif')
+                    )
+                pdSerie = pd.Series(
+                    {
+                        'RawFilePath': f'{CellId}.raw.tif',
+                        'SegFilePath': f'{CellId}.seg.tif',
+                        'CellId': CellId,
+                    }, name=CellId)
+                self.manifest = self.manifest.append(pdSerie)
+
+            # save manifest as csv
+            self.manifest.to_csv(
+                self.step_local_staging_dir / Path("manifest.csv"), index=False
+            )
+
