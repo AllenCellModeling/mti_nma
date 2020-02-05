@@ -47,8 +47,7 @@ class Singlecell(Step):
         np.random.seed(666)
         import pandas as pd
 
-        df = pd.read_csv('/allen/aics/assay-dev/MicroscopyOtherData/Viana/forJulieTimelapseNucleus/NewColonyDataset/ColonyMovie-ASCB2019.csv',
-            index_col=0)
+        df = pd.read_csv('/allen/aics/assay-dev/MicroscopyOtherData/Viana/forJulieTimelapseNucleus/NewColonyDataset/ColonyMovie-ASCB2019.csv', index_col=0)
         df = df[['CellId','crop_raw','crop_seg']].sample(n=nsamples) # Paths to raw and seg images
         df = df.set_index('CellId')
 
