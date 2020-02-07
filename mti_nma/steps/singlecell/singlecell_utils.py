@@ -62,12 +62,12 @@ def query_data_from_labkey(CellLineId):
     # Merging raw and seg tables
 
     for index in df_seg.index:
-        fovid = df_seg.FOVIdList[index]
-        if len(fovid):
-            fovid = fovid[0]
+        fov_id = df_seg.FOVIdList[index]
+        if len(fov_id):
+            fov_id = fov_id[0]
         else:
-            fovid = None
-        df_seg.loc[index,'FOVId'] = fovid
+            fov_id = None
+        df_seg.loc[index,'FOVId'] = fov_id
     df_seg = df_seg.dropna()
     df_seg = df_seg.astype({'FOVId': 'int64'})
     df_seg = df_seg.drop(columns=['FOVIdList'])
@@ -102,9 +102,14 @@ def crop_object(raw, seg, obj_label, isotropic=None):
 
         (sx, sy, sz) = isotropic
 
-        scale = np.min([sx,sy,sz])
+        # We fix the target scale to 0.135um. Compatible with 40X
 
-        output_shape = np.array([sz/scale*dim[0],sy/scale*dim[1],sx/scale*dim[2]], dtype=np.int)
+        target_scale = 0.135
+
+        output_shape = np.array([
+            sz/target_scale*dim[0],
+            sy/target_scale*dim[1],
+            sx/target_scale*dim[2]], dtype=np.int)
 
         raw = sktrans.resize(
             image = raw,

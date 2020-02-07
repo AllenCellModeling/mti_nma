@@ -24,20 +24,37 @@ class Singlecell(Step):
         super().__init__(direct_upstream_tasks, config)
 
     @log_run_params
-    def run(self, nsamples=16, **kwargs):
+    def run(self, cell_line_id='AICS-13', nsamples=16, **kwargs):
 
         '''
-            This function will gather the data for which we want to
-            perform the normal mode analysis on. For now we will be
-            working on a very small dataset as a proof of concept.
-            The sample dataset is from the colony dataset that
-            Matheus used in the ASCB-2019 talk.
+            This function will collect all FOVs of a particular cell
+            line from LabKey and their corresponding nuclear segmentations.
+            Results are returned as a dataframe where each row
+            corresponds to one FOV.
 
-            Data was imaged at 20X and tranfered to 100X for
-            segmentation. The segmented images were downsampled to
-            40X for tracking. Next we proceed with the single cell
-            croping that creates single cell isotropic volumes with
-            pixel size of 0.135um.
+            The dataframe is sampled according to the input parameter
+            `nsampels`.
+
+            Next we select at random one nucleus from each of the remaining
+            FOVs to perform nma analysis on.
+
+            Raw and segmented images of selected nuclei are cropped and resized
+            to isotropic volume with pixel size 0.135um (compatitle with 40X).
+
+            :: IMPORTANT:
+            The line
+                raw = AICSImage(df.ReadPathRaw[FOVId]).get_image_data('ZYX', S=0, T=0, C=-2)
+            may not return the nuclear channel for cell lines other than Lamin.
+
+
+        Parameters
+        ----------
+        cell_line_id: str
+            Name of the cell line where nuclei are going to be sampled from
+            AICS-13 = Lamin
+
+        nsamples: int
+            Number of cells to sample randomly (but with set seed) from dataset
         '''
 
         import uuid
@@ -54,21 +71,21 @@ class Singlecell(Step):
 
             print("Loading data from LabKey...")
 
-            df = query_data_from_labkey(CellLineId='AICS-13') # 13 = Lamin
+            df = query_data_from_labkey(CellLineId=cell_line_id) # 13 = Lamin
 
             print(f"Number of FOVs available = {df.shape[0]}. Sampling {nsamples} FOVs now.")
 
             df = df.sample(n=nsamples)
 
-            for FOVId in tqdm(df.index):
+            for fov_id in tqdm(df.index[:1]):
 
-                sx = df.PixelScaleX[FOVId]
-                sy = df.PixelScaleY[FOVId]
-                sz = df.PixelScaleZ[FOVId]
+                sx = df.PixelScaleX[fov_id]
+                sy = df.PixelScaleY[fov_id]
+                sz = df.PixelScaleZ[fov_id]
 
                 # C=-2 may not return the DNA channel for other cell lines. Need validation.
-                raw = AICSImage(df.ReadPathRaw[FOVId]).get_image_data('ZYX', S=0, T=0, C=-2)
-                seg = AICSImage(df.ReadPathSeg[FOVId]).get_image_data('ZYX', S=0, T=0, C= 0)
+                raw = AICSImage(df.ReadPathRaw[fov_id]).get_image_data('ZYX', S=0, T=0, C=-2)
+                seg = AICSImage(df.ReadPathSeg[fov_id]).get_image_data('ZYX', S=0, T=0, C= 0)
 
                 # Select one label from seg image at random
                 obj_label = np.random.randint(low=1, high=1+seg.max())
@@ -80,22 +97,22 @@ class Singlecell(Step):
                     isotropic = (sx,sy,sz))
 
                 # Create an unique id for this object
-                CellId = uuid.uuid4().hex[:8]
+                cell_id = uuid.uuid4().hex[:8]
 
                 # Save images
-                writer = writers.OmeTiffWriter(self.step_local_staging_dir.as_posix() + f'/{CellId}.raw.tif')
-                writer.save(raw)
+                writer = writers.OmeTiffWriter(self.step_local_staging_dir.as_posix() + f'/{cell_id}.raw.tif')
+                writer.save(raw, dimension_order='ZYX')
 
-                writer = writers.OmeTiffWriter(self.step_local_staging_dir.as_posix() + f'/{CellId}.seg.tif')
-                writer.save(seg)
+                writer = writers.OmeTiffWriter(self.step_local_staging_dir.as_posix() + f'/{cell_id}.seg.tif')
+                writer.save(seg, dimension_order='ZYX')
 
                 pdSerie = pd.Series({
-                        'RawFilePath': f'{CellId}.raw.tif',
-                        'SegFilePath': f'{CellId}.seg.tif',
-                        'OriginalFOVPathRaw': df.ReadPathRaw[FOVId],
-                        'OriginalFOVPathSeg': df.ReadPathSeg[FOVId],
-                        'FOVId': FOVId,
-                        'CellId': CellId}, name=CellId)
+                        'RawFilePath': f'{cell_id}.raw.tif',
+                        'SegFilePath': f'{cell_id}.seg.tif',
+                        'OriginalFOVPathRaw': df.ReadPathRaw[fov_id],
+                        'OriginalFOVPathSeg': df.ReadPathSeg[fov_id],
+                        'FOVId': fov_id,
+                        'CellId': cell_id}, name=cell_id)
 
                 self.manifest = self.manifest.append(pdSerie)
 
