@@ -58,7 +58,7 @@ class Nma(Step):
         df = avgshape.manifest.copy()
         reader = vtk.vtkPolyDataReader()
         reader.SetFileName(
-            df[df['label'] == 'Average_nuclear_mesh']['AvgShapeFilePath'].iloc[0])
+            df[df['Label'] == 'Average_nuclear_mesh']['AvgShapeFilePath'].iloc[0])
         reader.Update()
         polydata = reader.GetOutput()
 
@@ -77,7 +77,7 @@ class Nma(Step):
 
         # Create manifest with eigenvectors, eigenvalues, and hist of eigenvalues
         self.manifest = pd.DataFrame({
-            'label': 'nma_avg_nuc_mesh',
+            'Label': 'nma_avg_nuc_mesh',
             'w_FilePath' : w_path,
             "v_FilePath": v_path,
             "fig_FilePath": [fig_path],
