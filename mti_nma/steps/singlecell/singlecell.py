@@ -7,12 +7,13 @@ from typing import Dict, List, Optional, Union
 
 from datastep import Step, log_run_params
 
+from .singlecell_utils import query_data_from_labkey, crop_object
+
 ###############################################################################
 
 log = logging.getLogger(__name__)
 
 ###############################################################################
-
 
 class Singlecell(Step):
     def __init__(
@@ -39,40 +40,69 @@ class Singlecell(Step):
             pixel size of 0.135um.
         '''
 
-        import os
-        import shutil
+        import uuid
         import numpy as np
         np.random.seed(666)
         import pandas as pd
+        from tqdm import tqdm
+        from pathlib import Path
+        from aicsimageio import AICSImage, writers
 
         if nsamples > 0:
 
             self.manifest = pd.DataFrame([])
 
-            df = pd.read_csv('/allen/aics/assay-dev/MicroscopyOtherData/Viana/forJulieTimelapseNucleus/NewColonyDataset/ColonyMovie-ASCB2019.csv', index_col=0)
-            df = df[['CellId','crop_raw','crop_seg']].sample(n=nsamples) # Paths to raw and seg images
-            df = df.set_index('CellId')
+            print("Loading data from LabKey...")
 
-            # Copy files from original location to self.step_local_staging_dir
+            df = query_data_from_labkey(CellLineId='AICS-13') # 13 = Lamin
 
-            for CellId in df.index:
-                shutil.copy(
-                    src = df.crop_raw[CellId],
-                    dst = self.step_local_staging_dir / Path(f'{CellId}.raw.tif')
-                    )
-                shutil.copy(
-                    src = df.crop_seg[CellId],
-                    dst = self.step_local_staging_dir / Path(f'{CellId}.seg.tif')
-                    )
-                pdSerie = pd.Series(
-                    {
+            print(f"Number of FOVs available = {df.shape[0]}. Sampling {nsamples} FOVs now.")
+
+            df = df.sample(n=nsamples)
+
+            for FOVId in tqdm(df.index):
+
+                sx = df.PixelScaleX[FOVId]
+                sy = df.PixelScaleY[FOVId]
+                sz = df.PixelScaleZ[FOVId]
+
+                # C=-2 may not return the DNA channel for other cell lines. Need validation.
+                raw = AICSImage(df.ReadPathRaw[FOVId]).get_image_data('ZYX', S=0, T=0, C=-2)
+                seg = AICSImage(df.ReadPathSeg[FOVId]).get_image_data('ZYX', S=0, T=0, C= 0)
+
+                # Select one label from seg image at random
+                obj_label = np.random.randint(low=1, high=1+seg.max())
+
+                raw, seg = crop_object(
+                    raw = raw,
+                    seg = seg,
+                    obj_label = obj_label,
+                    isotropic = (sx,sy,sz))
+
+                # Create an unique id for this object
+                CellId = uuid.uuid4().hex[:8]
+
+                # Save images
+                writer = writers.OmeTiffWriter(self.step_local_staging_dir.as_posix() + f'/{CellId}.raw.tif')
+                writer.save(raw)
+
+                writer = writers.OmeTiffWriter(self.step_local_staging_dir.as_posix() + f'/{CellId}.seg.tif')
+                writer.save(seg)
+
+                pdSerie = pd.Series({
                         'RawFilePath': f'{CellId}.raw.tif',
                         'SegFilePath': f'{CellId}.seg.tif',
-                        'CellId': CellId,
-                    }, name=CellId)
+                        'OriginalFOVPathRaw': df.ReadPathRaw[FOVId],
+                        'OriginalFOVPathSeg': df.ReadPathSeg[FOVId],
+                        'FOVId': FOVId,
+                        'CellId': CellId}, name=CellId)
+
                 self.manifest = self.manifest.append(pdSerie)
 
             # save manifest as csv
+
+            self.manifest = self.manifest.astype({'FOVId': 'int64'})
+
             self.manifest.to_csv(
                 self.step_local_staging_dir / Path("manifest.csv"), index=False
             )
