@@ -6,7 +6,11 @@ class All:
         """
         Set the order of your steps here.
         """
-        self.step_list = [steps.Mesh(), steps.Nma()]
+        self.step_list = [
+            steps.Singlecell(),
+            steps.Shparam(),
+            steps.Avgshape(),
+            steps.Nma()]
 
     def run(self):
         """
