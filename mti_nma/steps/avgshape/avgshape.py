@@ -45,13 +45,13 @@ class Avgshape(Step):
         # Get shparam manifest
         shparam = Shparam()
         manifest_filepaths_rel2abs(shparam)
-        sh_df = shparam.manifest.copy()
-        sh_df = sh_df.set_index('CellId', drop=True)
+        df_sh = shparam.manifest.copy()
+        df_sh = df_sh.set_index('CellId', drop=True)
 
         # Load sh coefficients of all samples in manifest
         df_coeffs = pd.DataFrame([])
-        for CellId in sh_df.index:
-            df_coeffs_path = sh_df['CoeffsFilePath'][CellId]
+        for CellId in df_sh.index:
+            df_coeffs_path = df_sh['CoeffsFilePath'][CellId]
             df_coeffs = df_coeffs.append(
                 pd.read_csv(df_coeffs_path, index_col=['CellId']), ignore_index=False
             )
@@ -78,7 +78,7 @@ class Avgshape(Step):
 
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
-            'label': 'Average_nuclear_mesh',
+            'Label': 'Average_nuclear_mesh',
             'AvgShapeFilePath': [str(avg_data_dir / Path('avgshape.vtk'))]
         })
 
