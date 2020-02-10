@@ -4,7 +4,24 @@ import labkey as lk
 from lkaccess import LabKey as lka
 from skimage import transform as sktrans
 
-def query_data_from_labkey(CellLineId):
+def query_data_from_labkey(cell_line_id):
+
+    '''
+        This function returns a dataframe containing all the FOVs available
+        on LabKey for a particular cell line.
+
+
+    Parameters
+    ----------
+    cell_line_id: str
+        Name of the cell line where nuclei are going to be sampled from
+        AICS-13 = Lamin
+
+    Returns
+    -------
+    df: pandas dataframe
+        Indexed by FOV id
+    '''
 
     # Query for labkey data
 
@@ -20,7 +37,7 @@ def query_data_from_labkey(CellLineId):
             # Passed QC
             lk.query.QueryFilter('QCStatusId/Name', 'Passed', 'eq'),
             # Cell line (13 = Lamin)
-            lk.query.QueryFilter('SourceImageFileId/CellLineId/Name', CellLineId, 'contains')
+            lk.query.QueryFilter('SourceImageFileId/cell_line_id/Name', cell_line_id, 'contains')
     ]
 
     query_raw = lka(host="aics").select_rows_as_list(
@@ -63,6 +80,8 @@ def query_data_from_labkey(CellLineId):
 
     for index in df_seg.index:
         fov_id = df_seg.FOVIdList[index]
+        # Some FOVs on labkey do not have segmentation available and
+        # therefore fov_id is an empty list.
         if len(fov_id):
             fov_id = fov_id[0]
         else:
@@ -80,6 +99,32 @@ def query_data_from_labkey(CellLineId):
     return df
 
 def crop_object(raw, seg, obj_label, isotropic=None):
+
+
+    '''
+        This function returns a cropped area around an object of interest
+        given the raw data and its corresponding segmentation.
+
+
+    Parameters
+    ----------
+    raw: zyx numpy.array
+        Representing the raw FOV data
+    seg: zyx numpy.array
+        Representing the corresponding segmentation of raw
+    obj_label: int
+        Label of the object of interest in the segmented image
+    isotropic: integer tuple or None
+        Original scale of x, y and z axes. Images are not scaled
+        if None is used.
+
+    Returns
+    -------
+    raw: zyx numpy.array
+        isotropic and cropped version of input raw around the obj of interest
+    seg: zyx numpy.array
+        isotropic and cropped version of input seg around the obj of interest
+    '''
 
     offset = 16
     raw = np.pad(raw, ((0,0),(offset,offset),(offset,offset)), 'constant')
@@ -124,4 +169,6 @@ def crop_object(raw, seg, obj_label, isotropic=None):
             preserve_range = True,
             anti_aliasing = False).astype(np.uint8)
 
-    return raw, (seg==obj_label).astype(np.uint8)
+    seg = (seg==obj_label).astype(np.uint8)
+
+    return raw, seg

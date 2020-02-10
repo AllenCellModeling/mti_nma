@@ -40,6 +40,7 @@ class Singlecell(Step):
 
             Raw and segmented images of selected nuclei are cropped and resized
             to isotropic volume with pixel size 0.135um (compatitle with 40X).
+            Images are also stored in the usual `ZYX` order.
 
             :: IMPORTANT:
             The line
@@ -77,7 +78,7 @@ class Singlecell(Step):
 
             df = df.sample(n=nsamples)
 
-            for fov_id in tqdm(df.index[:1]):
+            for fov_id in tqdm(df.index):
 
                 sx = df.PixelScaleX[fov_id]
                 sy = df.PixelScaleY[fov_id]
@@ -106,7 +107,7 @@ class Singlecell(Step):
                 writer = writers.OmeTiffWriter(self.step_local_staging_dir.as_posix() + f'/{cell_id}.seg.tif')
                 writer.save(seg, dimension_order='ZYX')
 
-                pdSerie = pd.Series({
+                series = pd.Series({
                         'RawFilePath': f'{cell_id}.raw.tif',
                         'SegFilePath': f'{cell_id}.seg.tif',
                         'OriginalFOVPathRaw': df.ReadPathRaw[fov_id],
@@ -114,7 +115,7 @@ class Singlecell(Step):
                         'FOVId': fov_id,
                         'CellId': cell_id}, name=cell_id)
 
-                self.manifest = self.manifest.append(pdSerie)
+                self.manifest = self.manifest.append(series)
 
             # save manifest as csv
 
