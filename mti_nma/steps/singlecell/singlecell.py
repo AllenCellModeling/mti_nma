@@ -4,6 +4,9 @@
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Union
+import shutil
+import numpy as np
+import pandas as pd
 
 from datastep import Step, log_run_params
 
@@ -16,12 +19,20 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 class Singlecell(Step):
+
     def __init__(
         self,
+        clean_before_run=False,
         direct_upstream_tasks: Optional[List["Step"]] = None,
-        config: Optional[Union[str, Path, Dict[str, str]]] = None,
+        filepath_columns=["RawFilePath", "SegFilePath"],
+        config: Optional[Union[str, Path, Dict[str, str]]] = None
     ):
-        super().__init__(direct_upstream_tasks, config)
+        super().__init__(
+            clean_before_run=clean_before_run,
+            direct_upstream_tasks=direct_upstream_tasks,
+            filepath_columns=filepath_columns,
+            config=config
+        )
 
     @log_run_params
     def run(self, cell_line_id='AICS-13', nsamples=16, **kwargs):
@@ -124,4 +135,3 @@ class Singlecell(Step):
             self.manifest.to_csv(
                 self.step_local_staging_dir / Path("manifest.csv"), index=False
             )
-

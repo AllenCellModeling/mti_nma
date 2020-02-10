@@ -4,10 +4,14 @@
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Union
+import pandas as pd
+from aicsshparam import aicsshtools
 
 from datastep import Step, log_run_params
+from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..shparam import Shparam
+from .avgshape_utils import run_shcoeffs_analysis
 
 ###############################################################################
 
@@ -15,114 +19,70 @@ log = logging.getLogger(__name__)
 
 ###############################################################################
 
-def run_shcoeffs_analysis(self, df):
-
-    import matplotlib.pyplot as plt
-
-    list_of_scatter_plots = [
-        ('shcoeffs_L0M0C','shcoeffs_L2M0C'),
-        ('shcoeffs_L0M0C','shcoeffs_L2M2C'),
-        ('shcoeffs_L0M0C','shcoeffs_L2M1S'),
-        ('shcoeffs_L0M0C','shcoeffs_L2M1C'),
-    ]
-
-    for id_plot, (varx,vary) in enumerate(list_of_scatter_plots):
-
-        fs = 18
-        fig, ax = plt.subplots(1,1,figsize=(6,4))
-        ax.plot(df[varx],df[vary],'o')
-        ax.set_xlabel(varx, fontsize=fs)
-        ax.set_ylabel(vary, fontsize=fs)
-        plt.tight_layout()
-        fig.savefig(
-            str(self.step_local_staging_dir / Path(f'scatter-{id_plot}.svg'))
-        )
-        plt.close(fig)
-
-    list_of_bar_plots = [
-        'shcoeffs_chi2',
-        'shcoeffs_L0M0C',
-    ]
-
-    for id_plot, var in enumerate(list_of_bar_plots):
-
-        fs = 18
-        fig, ax = plt.subplots(1,1,figsize=(12,8))
-        ax.bar(df.index, df[var])
-        ax.set_xlabel('CellId', fontsize=10)
-        ax.set_ylabel(var, fontsize=fs)
-        ax.tick_params('x', labelrotation=90)
-        plt.tight_layout()
-        fig.savefig(
-            str(self.step_local_staging_dir / Path(f'bar-{id_plot}.svg'))
-        )
-        plt.close(fig)
-
 
 class Avgshape(Step):
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = [Shparam],
-        config: Optional[Union[str, Path, Dict[str, str]]] = None,
+        clean_before_run=False,
+        direct_upstream_tasks: Optional[List["Step"]] = Shparam,
+        filepath_columns=["AvgShapeFilePath"],
+        config: Optional[Union[str, Path, Dict[str, str]]] = None
     ):
-        super().__init__(direct_upstream_tasks, config)
+        super().__init__(
+            clean_before_run=clean_before_run,
+            direct_upstream_tasks=direct_upstream_tasks,
+            filepath_columns=filepath_columns,
+            config=config
+        )
 
     @log_run_params
     def run(self, **kwargs):
+        """
+        This step uses the amplitudes of the spherical harmonic components
+        of the nuclear shapes in the dataset to construct an average nuclear mesh.
+        """
 
         # Get shparam manifest
-
         shparam = Shparam()
-        df = shparam.manifest.copy()
-        df = df.set_index('CellId', drop=True)
+        manifest_filepaths_rel2abs(shparam)
+        df_sh = shparam.manifest.copy()
+        df_sh = df_sh.set_index('CellId', drop=True)
 
         # Load sh coefficients of all samples in manifest
-
-        import pandas as pd
-        from aicsshparam import aicsshtools
-
         df_coeffs = pd.DataFrame([])
-
-        for CellId in df.index:
-            df_coeffs_path = str(self.step_local_staging_dir / Path(f'../shparam/{df.CoeffsFilePath[CellId]}'))
+        for CellId in df_sh.index:
+            df_coeffs_path = df_sh['CoeffsFilePath'][CellId]
             df_coeffs = df_coeffs.append(
                 pd.read_csv(df_coeffs_path, index_col=['CellId']), ignore_index=False
             )
 
-        # At this point we are able to perform some per cell analysis
+        # Create directory to hold results from this step
+        avg_data_dir = self.step_local_staging_dir / Path('avgshape_data')
+        avg_data_dir.mkdir(parents=True, exist_ok=True)
 
-        run_shcoeffs_analysis(self,df=df_coeffs)
+        # Perform some per-cell analysis
+        run_shcoeffs_analysis(df=df_coeffs, savedir=avg_data_dir)
 
-        # Avg the sh coefficients over all samples
-
+        # Avg the sh coefficients over all samples and create avg mesh
         df_coeffs_avg = df_coeffs.agg(['mean'])
-
         mesh_avg = aicsshtools.get_reconstruction_from_dataframe(df=df_coeffs_avg)
-
-        aicsshtools.save_polydata(mesh = mesh_avg,
-            filename = str(self.step_local_staging_dir / Path('avgshape.vtk')))
+        aicsshtools.save_polydata(
+            mesh=mesh_avg,
+            filename=str(avg_data_dir / Path('avgshape.vtk'))
+        )
 
         # Save avg coeffs to csv file
-
         df_coeffs_avg.to_csv(
-            str(self.step_local_staging_dir / Path('avgshape.csv'))
+            str(avg_data_dir / Path('avgshape.csv'))
         )
-           
+
         # Save path to avg shape in the manifest
+        self.manifest = pd.DataFrame({
+            'Label': 'Average_nuclear_mesh',
+            'AvgShapeFilePath': [str(avg_data_dir / Path('avgshape.vtk'))]
+        })
 
-        self.manifest = pd.DataFrame([])
-
-        pdSerie = pd.Series(
-            {
-                'AvgShapeFilePath': 'avgshape.vtk'
-            })
-            
-        self.manifest = self.manifest.append(pdSerie, ignore_index=True)
-
-        # save manifest as csv
-
+        # Save manifest as csv
         self.manifest.to_csv(
             self.step_local_staging_dir / Path("manifest.csv"), index=False
         )
-
-
