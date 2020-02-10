@@ -83,7 +83,7 @@ class Singlecell(Step):
 
             print("Loading data from LabKey...")
 
-            df = query_data_from_labkey(CellLineId=cell_line_id) # 13 = Lamin
+            df = query_data_from_labkey(cell_line_id=cell_line_id) # 13 = Lamin
 
             print(f"Number of FOVs available = {df.shape[0]}. Sampling {nsamples} FOVs now.")
 
