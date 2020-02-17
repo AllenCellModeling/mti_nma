@@ -49,6 +49,25 @@ https://www.blender.org/download/
 
 ## Running
 
+## If running locally (on MacOS)
+Create a data directory in your local repo to mount the allen data 
+```
+cd mti_nma
+mkdir data
+```
+
+**mount the remote data repository**, which can be done on macOS with 
+
+```
+mount_smbfs //<YOUR_USERNAME>@allen/programs/allencell/data ./data/
+```
+
+To unmount when you're all done:
+
+```
+umount ./data/
+```
+
 ### Individual steps
 - to run an indiviual step such as `norm`, the cmd line workflow would be
     - `mti_nma norm pull`
