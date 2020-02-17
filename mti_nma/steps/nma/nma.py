@@ -12,7 +12,8 @@ from datastep import Step, log_run_params
 from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..avgshape import Avgshape
-from .nma_utils import run_nma
+from .nma_utils import run_nma, get_eigvec_mags
+from .nma_viz import draw_whist, color_vertices_by_magnitude
 
 ###############################################################################
 
@@ -50,7 +51,7 @@ class Nma(Step):
         )
 
     @log_run_params
-    def run(self, **kwargs):
+    def run(self, mode_list=list(range(6)), **kwargs):
 
         # Load avg shape manifest and read avg mesh file out
         avgshape = Avgshape()
@@ -67,21 +68,36 @@ class Nma(Step):
         nma_data_dir.mkdir(parents=True, exist_ok=True)
 
         # run NMA on avg mesh and save results to local stagings
-        w, v, wfig = run_nma(polydata)
+        w, v = run_nma(polydata)
+        draw_whist(w)
+        vmags = get_eigvec_mags(v)
+
+        fig_path = nma_data_dir / Path('w_fig.pdf')
+        plt.savefig(fig_path, format='pdf')
         w_path = nma_data_dir / Path('eigvals.npy')
         np.save(w_path, w)
         v_path = nma_data_dir / Path('eigvecs.npy')
         np.save(v_path, v)
-        fig_path = nma_data_dir / Path('w_fig.pdf')
-        plt.savefig(fig_path, format='pdf')
+        vmags_path = nma_data_dir / Path('eigvecs_mags.npy')
+        np.save(vmags_path, vmags)
 
         # Create manifest with eigenvectors, eigenvalues, and hist of eigenvalues
         self.manifest = pd.DataFrame({
-            'Label': 'nma_avg_nuc_mesh',
+            "Label": "nma_avg_nuc_mesh",
             'w_FilePath' : w_path,
             "v_FilePath": v_path,
-            "fig_FilePath": [fig_path],
-        })
+            "vmag_FilePath" : vmags_path,
+            "fig_FilePath": fig_path,
+        }, index=[0])
+
+        heatmap_dir = nma_data_dir / Path("mode_heatmaps")
+        heatmap_dir.mkdir(parents=True, exist_ok=True)
+        path_input_mesh = df[
+            df['Label'] == 'Average_nuclear_mesh']['AvgShapeFilePathStl'].iloc[0]
+        for mode in mode_list:
+            path_output = heatmap_dir / Path('mode_' + str(mode) + '.blend')
+            color_vertices_by_magnitude(path_input_mesh, vmags_path, mode, path_output)
+            self.manifest["mode_" + str(mode) + "_FilePath"] = path_output
 
         # Save manifest as csv
         self.manifest.to_csv(

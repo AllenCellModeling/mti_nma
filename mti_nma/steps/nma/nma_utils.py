@@ -1,7 +1,5 @@
 import numpy as np
 import itertools
-import seaborn as sb
-import matplotlib.pyplot as plt
 
 
 def run_nma(polydata):
@@ -30,8 +28,7 @@ def run_nma(polydata):
     mesh_verts, mesh_faces = get_vtk_verts_faces(polydata)
     hess = get_hessian_from_mesh(mesh_verts, mesh_faces)
     w, v = get_eigs_from_mesh(hess)
-    fig = draw_whist(w)
-    return w, v, fig
+    return w, v
 
 
 def get_vtk_verts_faces(polydata):
@@ -175,34 +172,33 @@ def get_eigs_from_mesh(hess):
     return w, v
 
 
-def draw_whist(w):
+def get_eigvec_mags(v):
     """
-    Draws a histogram figure of the eigenvalues
+    Returns the magnitudes of the eigenvectors for a given mode.
+    Used for visualization.
 
     Parameters
     ----------
-    w: Numpy 1D array
-        An array of eigenvalue values
+    v: Numpy 2D array
+        Each array in this array gives the displacement vector for a vertex in the mesh
+        The array giving the eigenvectors associated with eigenvalue w[i] are in v[:. i] 
     Returns
     -------
-    fig: Matplotlib Figure object
-        Figure containg a histogram of eigenvalues
+    vmags: 2D Numpy array
+        Each array in this array gives the relative displacement magntiude for a vertex
+        in the mesh. The array giving the magnitudes associated with eigenvalue w[i] 
+        are in vmags[:. i]
     """
 
-    plt.clf()
-    fig = plt.figure()
-
-    # set binning
-    minval = min(w) - 0.5
-    maxval = max(w) + 0.5
-    if len(w) < 20:
-        N = int(max(w) + 2)
-    else:
-        N = 30
-    bins = np.linspace(minval, maxval, N)
-
-    sb.distplot(w, kde=False, bins=bins)
-    plt.xlabel('Eigenvalues (w2*m/k)')
-    plt.ylabel('Counts')
-
-    return fig
+    nmodes = v.shape[1]
+    nverts = int(v.shape[0] / 3)
+    vmags = np.empty([nverts, nmodes])
+    for j in range(nmodes):
+        vecs = [
+            [v[i, j],
+             v[i + nverts, j],
+             v[i + 2 * nverts, j]] for i in range(nverts)
+        ]
+        mags = [np.linalg.norm(vecs[i], axis=0) for i in range(nverts)]
+        vmags[:, j] = mags / max(mags)
+    return vmags
