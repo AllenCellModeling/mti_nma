@@ -51,7 +51,7 @@ https://www.blender.org/download/
 
 ### Individual steps
 - to run an indiviual step such as `norm`, the cmd line workflow would be
-    - `mti_nmat norm pull`
+    - `mti_nma norm pull`
     - `mti_nma norm run`
     - `mti_nma norm push`
 
