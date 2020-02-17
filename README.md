@@ -42,7 +42,7 @@ Some visualizations included in this    pipeline will run Blender code, requirin
 the user to have Blender downloaded on their machine. You can download Blender
 for free here:
 https://www.blender.org/download/
-In the file mti_nma/mti_nma/steps/nma/nma_viz.py you will need to update the
+In the file `mti_nma/mti_nma/steps/nma/nma_viz.py` you will need to update the
 Blender path in `color_vertices_by_magnitude` to your own local Blender path.
 
 ## Organization
