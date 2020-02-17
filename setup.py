@@ -58,7 +58,12 @@ requirements = [
     "Pillow",
     "aicsshparam",
     "pyshtools",
-    "scikit-learn"
+    "scikit-learn",
+    "aicsimageio",
+    "lkaccess",
+    "labkey",
+    "numpy-stl",
+    "bpy"
 ]
 
 extra_requirements = {
