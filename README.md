@@ -44,8 +44,10 @@ for free here:
 
 https://www.blender.org/download/
 
-In the file `mti_nma/mti_nma/steps/nma/nma_viz.py` you will need to update the
-Blender path in `color_vertices_by_magnitude` to your own local Blender path.
+The pipeline currently has the Blender path set to the default Mac OS location.
+If you are using another operating system or have downloaded Blender in another
+location, you will nedd to update the Blender path in `color_vertices_by_magnitude`
+in the file `mti_nma/mti_nma/steps/nma/nma_viz.py`.
 
 ## Organization
 - Global config settings are in `.config`
