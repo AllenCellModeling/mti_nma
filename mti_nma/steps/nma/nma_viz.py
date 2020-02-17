@@ -44,6 +44,15 @@ def color_vertices_by_magnitude(path_input_mesh, path_vmags, mode, path_output):
     The Python script to do this must be run in Blender, so we open Blender
     in bash and run the python script there.
 
+    If your local copy of Blender is in a different location than the current
+    path listed, change the filepath at the start of the `bl` string to 
+    your own Blender path.
+
+    The `-b` flag runs Blender headlessly (doesn't open the app GUI) and the
+    `-P` flag tells Blender you want to run the python script whose filepath is
+    provided after this flag. The `--` indicated to blender that the arguments
+    following it are arguments for the python script, not for Blender.
+
     Parameters
     ----------
     path_input_mesh: str
