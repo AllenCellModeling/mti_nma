@@ -11,7 +11,7 @@ from datastep import Step, log_run_params
 from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..shparam import Shparam
-from .avgshape_utils import run_shcoeffs_analysis
+from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
 
 ###############################################################################
 
@@ -25,7 +25,7 @@ class Avgshape(Step):
         self,
         clean_before_run=False,
         direct_upstream_tasks: Optional[List["Step"]] = Shparam,
-        filepath_columns=["AvgShapeFilePath"],
+        filepath_columns=["AvgShapeFilePath", "AvgShapeFilePathStl"],
         config: Optional[Union[str, Path, Dict[str, str]]] = None
     ):
         super().__init__(
@@ -71,6 +71,9 @@ class Avgshape(Step):
             filename=str(avg_data_dir / Path('avgshape.vtk'))
         )
 
+        # Save mesh as stl file for blender import
+        save_mesh_as_stl(mesh_avg, str(avg_data_dir / Path('avgshape.stl')))
+
         # Save avg coeffs to csv file
         df_coeffs_avg.to_csv(
             str(avg_data_dir / Path('avgshape.csv'))
@@ -79,8 +82,9 @@ class Avgshape(Step):
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
             'Label': 'Average_nuclear_mesh',
-            'AvgShapeFilePath': [str(avg_data_dir / Path('avgshape.vtk'))]
-        })
+            'AvgShapeFilePath': str(avg_data_dir / Path('avgshape.vtk')),
+            'AvgShapeFilePathStl': str(avg_data_dir / Path('avgshape.stl'))
+        }, index=[0])
 
         # Save manifest as csv
         self.manifest.to_csv(
