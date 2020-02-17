@@ -49,7 +49,7 @@ https://www.blender.org/download/
 
 ## Running
 
-## If running locally (on MacOS)
+### Mount data if running locally on MacOS
 Create a data directory in your local repo to mount the allen data 
 ```
 cd mti_nma
