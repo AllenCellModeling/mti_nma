@@ -24,7 +24,7 @@ class Avgshape(Step):
     def __init__(
         self,
         clean_before_run=False,
-        direct_upstream_tasks: Optional[List["Step"]] = Shparam,
+        direct_upstream_tasks: Optional[List["Step"]] = [Shparam],
         filepath_columns=["AvgShapeFilePath", "AvgShapeFilePathStl"],
         config: Optional[Union[str, Path, Dict[str, str]]] = None
     ):
