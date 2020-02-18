@@ -3,7 +3,6 @@
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 import uuid
@@ -25,22 +24,16 @@ class Singlecell(Step):
 
     def __init__(
         self,
-        clean_before_run=False,
-        direct_upstream_tasks: Optional[List["Step"]] = None,
-        filepath_columns=["RawFilePath", "SegFilePath"],
-        config: Optional[Union[str, Path, Dict[str, str]]] = None
+        filepath_columns=["RawFilePath", "SegFilePath"]
     ):
         super().__init__(
-            clean_before_run=clean_before_run,
-            direct_upstream_tasks=direct_upstream_tasks,
-            filepath_columns=filepath_columns,
-            config=config
+            filepath_columns=filepath_columns
         )
 
     @log_run_params
-    def run(self, cell_line_id='AICS-13', nsamples=16, **kwargs):
+    def run(self, cell_line_id="AICS-13", nsamples=50, **kwargs):
 
-        '''
+        """
             This function will collect all FOVs of a particular cell
             line from LabKey and their corresponding nuclear segmentations.
             Results are returned as a dataframe where each row
@@ -59,7 +52,7 @@ class Singlecell(Step):
             :: IMPORTANT:
             The line
                 raw = AICSImage(
-                    df.ReadPathRaw[FOVId]).get_image_data('ZYX', S=0, T=0, C=-2)
+                    df.ReadPathRaw[FOVId]).get_image_data("ZYX", S=0, T=0, C=-2)
             may not return the nuclear channel for cell lines other than Lamin.
 
 
@@ -71,7 +64,7 @@ class Singlecell(Step):
 
         nsamples: int
             Number of cells to sample randomly (but with set seed) from dataset
-        '''
+        """
 
         np.random.seed(666)
 
@@ -97,9 +90,9 @@ class Singlecell(Step):
                 # C=-2 may not return the DNA channel for other cell lines.
                 # Need validation.
                 raw = AICSImage(
-                    df.ReadPathRaw[fov_id]).get_image_data('ZYX', S=0, T=0, C=-2)
+                    df.ReadPathRaw[fov_id]).get_image_data("ZYX", S=0, T=0, C=-2)
                 seg = AICSImage(
-                    df.ReadPathSeg[fov_id]).get_image_data('ZYX', S=0, T=0, C=0)
+                    df.ReadPathSeg[fov_id]).get_image_data("ZYX", S=0, T=0, C=0)
 
                 # Select one label from seg image at random
                 obj_label = np.random.randint(low=1, high=1 + seg.max())
@@ -116,25 +109,25 @@ class Singlecell(Step):
 
                 # Save images and write to manifest
                 writer = writers.OmeTiffWriter(
-                    self.step_local_staging_dir.as_posix() + f'/{cell_id}.raw.tif')
-                writer.save(raw, dimension_order='ZYX')
+                    self.step_local_staging_dir.as_posix() + f"/{cell_id}.raw.tif")
+                writer.save(raw, dimension_order="ZYX")
 
                 writer = writers.OmeTiffWriter(
-                    self.step_local_staging_dir.as_posix() + f'/{cell_id}.seg.tif')
-                writer.save(seg, dimension_order='ZYX')
+                    self.step_local_staging_dir.as_posix() + f"/{cell_id}.seg.tif")
+                writer.save(seg, dimension_order="ZYX")
 
                 series = pd.Series({
-                    'RawFilePath': f'{cell_id}.raw.tif',
-                    'SegFilePath': f'{cell_id}.seg.tif',
-                    'OriginalFOVPathRaw': df.ReadPathRaw[fov_id],
-                    'OriginalFOVPathSeg': df.ReadPathSeg[fov_id],
-                    'FOVId': fov_id,
-                    'CellId': cell_id}, name=cell_id)
+                    "RawFilePath": f"{cell_id}.raw.tif",
+                    "SegFilePath": f"{cell_id}.seg.tif",
+                    "OriginalFOVPathRaw": df.ReadPathRaw[fov_id],
+                    "OriginalFOVPathSeg": df.ReadPathSeg[fov_id],
+                    "FOVId": fov_id,
+                    "CellId": cell_id}, name=cell_id)
 
                 self.manifest = self.manifest.append(series)
 
             # save manifest as csv
-            self.manifest = self.manifest.astype({'FOVId': 'int64'})
+            self.manifest = self.manifest.astype({"FOVId": "int64"})
             self.manifest.to_csv(
-                self.step_local_staging_dir / Path("manifest.csv"), index=False
+                self.step_local_staging_dir / "manifest.csv", index=False
             )

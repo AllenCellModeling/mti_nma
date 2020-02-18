@@ -31,8 +31,8 @@ def draw_whist(w):
     bins = np.linspace(minval, maxval, N)
 
     sb.distplot(w, kde=False, bins=bins)
-    plt.xlabel('Eigenvalues (w2*m/k)')
-    plt.ylabel('Counts')
+    plt.xlabel("Eigenvalues (w2*m/k)")
+    plt.ylabel("Counts")
 
     return fig
 

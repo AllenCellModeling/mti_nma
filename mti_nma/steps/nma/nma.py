@@ -38,16 +38,12 @@ class Nma(Step):
 
     def __init__(
         self,
-        clean_before_run=False,
         direct_upstream_tasks=[Avgshape],
-        filepath_columns=["w_FilePath", "v_FilePath", "fig_FilePath"],
-        config=None
+        filepath_columns=["w_FilePath", "v_FilePath", "fig_FilePath"]
     ):
         super().__init__(
-            clean_before_run=clean_before_run,
             direct_upstream_tasks=direct_upstream_tasks,
-            filepath_columns=filepath_columns,
-            config=config
+            filepath_columns=filepath_columns
         )
 
     @log_run_params
@@ -59,12 +55,12 @@ class Nma(Step):
         df = avgshape.manifest.copy()
         reader = vtk.vtkPolyDataReader()
         reader.SetFileName(
-            df[df['Label'] == 'Average_nuclear_mesh']['AvgShapeFilePath'].iloc[0])
+            df[df["Label"] == "Average_nuclear_mesh"]["AvgShapeFilePath"].iloc[0])
         reader.Update()
         polydata = reader.GetOutput()
 
         # Create directory to hold NMA results
-        nma_data_dir = self.step_local_staging_dir / Path("nma_data")
+        nma_data_dir = self.step_local_staging_dir / "nma_data"
         nma_data_dir.mkdir(parents=True, exist_ok=True)
 
         # run NMA on avg mesh and save results to local stagings
@@ -72,34 +68,34 @@ class Nma(Step):
         draw_whist(w)
         vmags = get_eigvec_mags(v)
 
-        fig_path = nma_data_dir / Path('w_fig.pdf')
-        plt.savefig(fig_path, format='pdf')
-        w_path = nma_data_dir / Path('eigvals.npy')
+        fig_path = nma_data_dir / "w_fig.pdf"
+        plt.savefig(fig_path, format="pdf")
+        w_path = nma_data_dir / "eigvals.npy"
         np.save(w_path, w)
-        v_path = nma_data_dir / Path('eigvecs.npy')
+        v_path = nma_data_dir / "eigvecs.npy"
         np.save(v_path, v)
-        vmags_path = nma_data_dir / Path('eigvecs_mags.npy')
+        vmags_path = nma_data_dir / "eigvecs_mags.npy"
         np.save(vmags_path, vmags)
 
         # Create manifest with eigenvectors, eigenvalues, and hist of eigenvalues
         self.manifest = pd.DataFrame({
             "Label": "nma_avg_nuc_mesh",
-            'w_FilePath' : w_path,
+            "w_FilePath" : w_path,
             "v_FilePath": v_path,
             "vmag_FilePath" : vmags_path,
             "fig_FilePath": fig_path,
         }, index=[0])
 
-        heatmap_dir = nma_data_dir / Path("mode_heatmaps")
+        heatmap_dir = nma_data_dir / "mode_heatmaps"
         heatmap_dir.mkdir(parents=True, exist_ok=True)
         path_input_mesh = df[
-            df['Label'] == 'Average_nuclear_mesh']['AvgShapeFilePathStl'].iloc[0]
+            df["Label"] == "Average_nuclear_mesh"]["AvgShapeFilePathStl"].iloc[0]
         for mode in mode_list:
-            path_output = heatmap_dir / Path('mode_' + str(mode) + '.blend')
+            path_output = heatmap_dir / f"mode_{mode}.blend"
             color_vertices_by_magnitude(path_input_mesh, vmags_path, mode, path_output)
-            self.manifest["mode_" + str(mode) + "_FilePath"] = path_output
+            self.manifest[f"mode_{mode}_FilePath"] = path_output
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / Path("manifest.csv"), index=False
+            self.step_local_staging_dir / "manifest.csv", index=False
         )

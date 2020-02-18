@@ -15,8 +15,8 @@ class ArgumentParserForBlender(argparse.ArgumentParser):
     # >>> blender --python my_script.py -a 1 -b 2
 
     To bypass this issue this class uses the fact that Blender will ignore all
-    arguments given after a double-dash ('--'). The approach is that all
-    arguments before '--' go to Blender, arguments after go to the script.
+    arguments given after a double-dash ("--"). The approach is that all
+    arguments before "--" go to Blender, arguments after go to the script.
     The following calls work fine:
     # >>> blender --python my_script.py -- -a 1 -b 2
     # >>> blender --python my_script.py --
@@ -25,11 +25,11 @@ class ArgumentParserForBlender(argparse.ArgumentParser):
     def _get_argv_after_doubledash(self):
         """
         Given the sys.argv as a list of strings, this method returns the
-        sublist right after the '--' element (if present, otherwise returns
+        sublist right after the "--" element (if present, otherwise returns
         an empty list).
         """
         idx = sys.argv.index("--")
-        return sys.argv[idx + 1:]  # the list after '--'
+        return sys.argv[idx + 1:]  # the list after "--"
 
     # overrides superclass
     def parse_args(self):
@@ -71,7 +71,7 @@ def main():
     """
 
     p = ArgumentParserForBlender(
-        prog='color_vertices',
+        prog="color_vertices",
         description="Color vertices by magnitude"
     )
     p.add_argument(
@@ -106,7 +106,7 @@ def main():
     path_mags = p.vmag_filepath
 
     # delete default blender cube
-    bpy.data.objects['Cube'].select_set(True)
+    bpy.data.objects["Cube"].select_set(True)
     bpy.ops.object.delete()
 
     # import STL
@@ -114,7 +114,7 @@ def main():
 
     # edit mode
     mode = bpy.context.active_object.mode
-    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.mode_set(mode="OBJECT")
 
     # get mesh and setup vertex colors
     mesh = bpy.context.active_object.data

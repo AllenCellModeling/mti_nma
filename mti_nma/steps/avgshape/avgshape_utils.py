@@ -2,33 +2,34 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from stl import mesh
 import numpy as np
+import subprocess
 
 
 def run_shcoeffs_analysis(df, savedir):
 
     list_of_scatter_plots = [
-        ('shcoeffs_L0M0C', 'shcoeffs_L2M0C'),
-        ('shcoeffs_L0M0C', 'shcoeffs_L2M2C'),
-        ('shcoeffs_L0M0C', 'shcoeffs_L2M1S'),
-        ('shcoeffs_L0M0C', 'shcoeffs_L2M1C'),
+        ("shcoeffs_L0M0C", "shcoeffs_L2M0C"),
+        ("shcoeffs_L0M0C", "shcoeffs_L2M2C"),
+        ("shcoeffs_L0M0C", "shcoeffs_L2M1S"),
+        ("shcoeffs_L0M0C", "shcoeffs_L2M1C"),
     ]
 
     for id_plot, (varx, vary) in enumerate(list_of_scatter_plots):
 
         fs = 18
         fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-        ax.plot(df[varx], df[vary], 'o')
+        ax.plot(df[varx], df[vary], "o")
         ax.set_xlabel(varx, fontsize=fs)
         ax.set_ylabel(vary, fontsize=fs)
         plt.tight_layout()
         fig.savefig(
-            str(savedir / Path(f'scatter-{id_plot}.svg'))
+            str(savedir / Path(f"scatter-{id_plot}.svg"))
         )
         plt.close(fig)
 
     list_of_bar_plots = [
-        'shcoeffs_chi2',
-        'shcoeffs_L0M0C',
+        "shcoeffs_chi2",
+        "shcoeffs_L0M0C",
     ]
 
     for id_plot, var in enumerate(list_of_bar_plots):
@@ -36,12 +37,12 @@ def run_shcoeffs_analysis(df, savedir):
         fs = 18
         fig, ax = plt.subplots(1, 1, figsize=(12, 8))
         ax.bar(str(df.index), df[var])
-        ax.set_xlabel('CellId', fontsize=10)
+        ax.set_xlabel("CellId", fontsize=10)
         ax.set_ylabel(var, fontsize=fs)
-        ax.tick_params('x', labelrotation=90)
+        ax.tick_params("x", labelrotation=90)
         plt.tight_layout()
         fig.savefig(
-            str(savedir / Path(f'bar-{id_plot}.svg'))
+            str(savedir / Path(f"bar-{id_plot}.svg"))
         )
         plt.close(fig)
 
@@ -94,6 +95,43 @@ def get_vtk_verts_faces(polydata):
             polydata.GetPoint(i)) for i in range(polydata.GetNumberOfPoints())]
     )
     return mesh_verts, mesh_faces
+
+
+def uniform_trimesh(path_input_mesh, mesh_density, path_output):
+
+    """
+    Creates blender file with mesh vertices colored by eigenvector 
+    magnitudes for a given mode and saves as .blend file
+    The Python script to do this must be run in Blender, so we open Blender
+    in bash and run the python script there.
+
+    If your local copy of Blender is in a different location than the current
+    path listed, change the filepath at the start of the `bl` string to 
+    your own Blender path.
+
+    The `-b` flag runs Blender headlessly (doesn't open the app GUI) and the
+    `-P` flag tells Blender you want to run the python script whose filepath is
+    provided after this flag. The `--` indicated to blender that the arguments
+    following it are arguments for the python script, not for Blender.
+
+    Parameters
+    ----------
+    path_input_mesh: str
+        Filepath to input mesh to be colored (.stl)
+    path_vmags: str
+        Filepath to input magnitudes of eigenvector used to color mesh (.npy)
+    mode: int
+        Index of mode whose eigenvector magnitudes will be used to color mesh
+    path_output: str
+        Filepath to output file of colored mesh object (.blend)
+    """
+
+    bl = "/Applications/Blender.app/Contents/MacOS/Blender -b -P "
+    psc = "/Users/juliec/mti/mti_nma/mti_nma/steps/avgshape/uniform_trimesh.py -- "
+    args = f"-i {path_input_mesh} -o {path_output} -d  {mesh_density}"
+    cmd = bl + psc + args
+    p = subprocess.Popen(cmd, shell=True, executable="/bin/bash")
+    p.terminate()
 
 
 def save_mesh_as_stl(polydata, fname):
