@@ -68,6 +68,6 @@ def color_vertices_by_magnitude(path_input_mesh, path_vmags, mode, path_output):
     bl = "/Applications/Blender.app/Contents/MacOS/Blender -b -P "
     psc = "/Users/juliec/mti/mti_nma/mti_nma/steps/nma/color_vertices.py -- "
     args = f"-i {path_input_mesh} -o {path_output} -m  {mode} -v {path_vmags}"
-    cmd = bl + psc + args
+    cmd = f"{bl} {psc} {args}"
     p = subprocess.Popen(cmd, shell=True, executable="/bin/bash")
     p.terminate()
