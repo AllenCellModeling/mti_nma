@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 class Avgshape(Step):
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = Shparam,
+        direct_upstream_tasks: Optional[List["Step"]] = [Shparam],
         filepath_columns=["AvgShapeFilePath", "AvgShapeFilePathStl"]
     ):
         super().__init__(
