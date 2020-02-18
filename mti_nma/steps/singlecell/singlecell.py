@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from pathlib import Path
 import numpy as np
 import pandas as pd
 import uuid
@@ -73,9 +72,9 @@ class Singlecell(Step):
             self.manifest = pd.DataFrame([])
 
             # Load data from labkey and store in local dataframe
-            print("Loading data from LabKey...")
+            log.info("Loading data from LabKey...")
             df = query_data_from_labkey(cell_line_id=cell_line_id)  # 13 = Lamin
-            print(
+            log.info(
                 f"Number of FOVs available = {df.shape[0]}."
                 f"Sampling {nsamples} FOVs now.")
             df = df.sample(n=nsamples)
