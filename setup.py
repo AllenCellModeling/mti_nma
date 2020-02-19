@@ -46,7 +46,7 @@ interactive_requirements = [
 ]
 
 requirements = [
-    "datastep",
+    "datastep<=0.1.5",
     "docutils<0.16",  # needed for botocore (quilt dependency)
     "fire",
     "numpy",
@@ -62,8 +62,7 @@ requirements = [
     "aicsimageio",
     "lkaccess",
     "labkey",
-    "numpy-stl",
-    "bpy"
+    "numpy-stl"
 ]
 
 extra_requirements = {
@@ -92,7 +91,10 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     description="Workflow for normal mode analysis",
-    entry_points={"console_scripts": ["mti_nma=mti_nma.bin.cli:cli"]},
+    entry_points={"console_scripts": [
+        "mti_nma=mti_nma.bin.cli:cli",
+        "color_vertices=mti_nma.bin.color_vertices:main"
+    ]},
     install_requires=requirements,
     license="Allen Institute Software License",
     long_description=readme,
