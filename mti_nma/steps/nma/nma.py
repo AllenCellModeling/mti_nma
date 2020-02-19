@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import vtk
+import platform
 
 from datastep import Step, log_run_params
 from datastep.file_utils import manifest_filepaths_rel2abs
@@ -47,6 +48,15 @@ class Nma(Step):
 
     @log_run_params
     def run(self, mode_list=list(range(6)), **kwargs):
+
+        if platform == "darwin":
+            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
+        # elif platform == "linux" or platform == "linux2":
+        #     pass
+        else:
+            raise NotImplementedError(
+                "OSes other than Mac are currently not supported."
+            )
 
         # Load avg shape manifest and read avg mesh file out
         avgshape = Avgshape()
@@ -91,7 +101,9 @@ class Nma(Step):
             df["Label"] == "Average_nuclear_mesh"]["AvgShapeFilePathStl"].iloc[0]
         for mode in mode_list:
             path_output = heatmap_dir / f"mode_{mode}.blend"
-            color_vertices_by_magnitude(path_input_mesh, vmags_path, mode, path_output)
+            color_vertices_by_magnitude(
+                path_blender, path_input_mesh, vmags_path, mode, path_output
+            )
             self.manifest[f"mode_{mode}_FilePath"] = path_output
 
         # Save manifest as csv
