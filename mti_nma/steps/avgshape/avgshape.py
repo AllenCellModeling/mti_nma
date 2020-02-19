@@ -78,8 +78,8 @@ class Avgshape(Step):
         remesh_dir = avg_data_dir / "remesh"
         remesh_dir.mkdir(parents=True, exist_ok=True)
         path_input_mesh = str(avg_data_dir / "avgshape.stl")
-        path_output = remesh_dir
-        uniform_trimesh(path_input_mesh, mesh_density, path_output / "uniform_mesh")
+        path_output = remesh_dir + "uniform_mesh"
+        uniform_trimesh(path_input_mesh, mesh_density, path_output)
 
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
