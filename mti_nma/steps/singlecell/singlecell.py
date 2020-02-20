@@ -106,13 +106,15 @@ class Singlecell(Step):
                 cell_id = uuid.uuid4().hex[:8]
 
                 # Save images and write to manifest
-                writer = writers.OmeTiffWriter(
-                    sc_data_dir.as_posix() + f"/{cell_id}.raw.tif")
-                writer.save(raw, dimension_order="ZYX")
+                with writers.OmeTiffWriter(
+                    self.step_local_staging_dir.as_posix() + f"/{cell_id}.raw.tif")
+                as writer:
+                    writer.save(raw, dimension_order="ZYX")
 
-                writer = writers.OmeTiffWriter(
-                    sc_data_dir.as_posix() + f"/{cell_id}.seg.tif")
-                writer.save(seg, dimension_order="ZYX")
+                with writers.OmeTiffWriter(
+                    self.step_local_staging_dir.as_posix() + f"/{cell_id}.seg.tif")
+                as writer:
+                    writer.save(seg, dimension_order="ZYX")
 
                 series = pd.Series({
                     "RawFilePath": sc_data_dir / f"{cell_id}.raw.tif",
