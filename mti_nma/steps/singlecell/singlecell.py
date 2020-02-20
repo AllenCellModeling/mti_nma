@@ -91,9 +91,10 @@ class Singlecell(Step):
                 sz = df.PixelScaleZ[fov_id]
 
                 # Use H3342_1 for nuclear channel if present, otherwise use H3342
-                ch_ind = AICSImage(
-                    df.ReadPathRaw[fov_id]).get_channel_names().index('H3342_1')
-                if ch_ind == -1:
+                if 'H3342_1' in AICSImage(df.ReadPathRaw[fov_id]).get_channel_names():
+                    ch_ind = AICSImage(
+                        df.ReadPathRaw[fov_id]).get_channel_names().index('H3342_1')
+                else :
                     ch_ind = AICSImage(
                         df.ReadPathRaw[fov_id]).get_channel_names().index('H3342')
                 raw = AICSImage(
