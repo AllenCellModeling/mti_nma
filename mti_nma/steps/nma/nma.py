@@ -39,7 +39,7 @@ class Nma(Step):
     def __init__(
         self,
         direct_upstream_tasks: Optional[List["Step"]] = [Avgshape],
-        filepath_columns=["w_FilePath", "v_FilePath", "fig_FilePath"]
+        filepath_columns=["w_FilePath", "v_FilePath", "vmag_FilePath", "fig_FilePath"]
     ):
         super().__init__(
             direct_upstream_tasks=direct_upstream_tasks,
