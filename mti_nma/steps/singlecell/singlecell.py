@@ -86,10 +86,15 @@ class Singlecell(Step):
                 sy = df.PixelScaleY[fov_id]
                 sz = df.PixelScaleZ[fov_id]
 
-                # C=-2 may not return the DNA channel for other cell lines.
-                # Need validation.
+                # Use H3342_1 for nuclear channel if present, otherwise use H3342
+                if 'H3342_1' in AICSImage(df.ReadPathRaw[fov_id]).get_channel_names():
+                    ch_ind = AICSImage(
+                        df.ReadPathRaw[fov_id]).get_channel_names().index('H3342_1')
+                else :
+                    ch_ind = AICSImage(
+                        df.ReadPathRaw[fov_id]).get_channel_names().index('H3342')
                 raw = AICSImage(
-                    df.ReadPathRaw[fov_id]).get_image_data("ZYX", S=0, T=0, C=-2)
+                    df.ReadPathRaw[fov_id]).get_image_data("ZYX", S=0, T=0, C=ch_ind)
                 seg = AICSImage(
                     df.ReadPathSeg[fov_id]).get_image_data("ZYX", S=0, T=0, C=0)
 
