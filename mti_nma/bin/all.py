@@ -98,21 +98,21 @@ class All:
                 **kwargs
             )
             sh_df = shparam(
-                sc_df,
+                sc_df=sc_df,
                 distributed_executor_address=distributed_executor_address,
                 clean=clean,
                 debug=debug,
                 **kwargs
             )
             avg_df = avgshape(
-                sh_df,
+                sh_df=sh_df,
                 distributed_executor_address=distributed_executor_address,
                 clean=clean,
                 debug=debug,
                 **kwargs
             )
             nma(
-                avg_df,
+                avg_df=avg_df,
                 distributed_executor_address=distributed_executor_address,
                 clean=clean,
                 debug=debug,
