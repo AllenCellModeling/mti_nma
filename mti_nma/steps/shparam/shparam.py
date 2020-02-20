@@ -40,7 +40,7 @@ class Shparam(Step):
         """
 
         # Fix filepaths and use cell ID as dataframe index
-        manifest_filepaths_rel2abs(sc_df)
+        # manifest_filepaths_rel2abs(sc_df)
         sc_df = sc_df.set_index("CellId")
 
         # create directory to save data for this step in local staging
