@@ -130,3 +130,4 @@ class Singlecell(Step):
             self.manifest.to_csv(
                 self.step_local_staging_dir / "manifest.csv", index=False
             )
+            return self.manifest

@@ -32,17 +32,18 @@ class Avgshape(Step):
         )
 
     @log_run_params
-    def run(self, mesh_density=5, **kwargs):
+    def run(self, mesh_density=5, sh_df=None, **kwargs):
         """
         This step uses the amplitudes of the spherical harmonic components
         of the nuclear shapes in the dataset to construct an average nuclear mesh.
         """
 
         # Get shparam manifest
-        shparam = Shparam()
-        manifest_filepaths_rel2abs(shparam)
-        df_sh = shparam.manifest.copy()
-        df_sh = df_sh.set_index("CellId", drop=True)
+        if sh_df is None:
+            shparam = Shparam()
+            manifest_filepaths_rel2abs(shparam)
+            df_sh = shparam.manifest.copy()
+            df_sh = df_sh.set_index("CellId", drop=True)
 
         # Load sh coefficients of all samples in manifest
         df_coeffs = pd.DataFrame([])
@@ -96,3 +97,4 @@ class Avgshape(Step):
         self.manifest.to_csv(
             self.step_local_staging_dir / Path("manifest.csv"), index=False
         )
+        return self.manifest

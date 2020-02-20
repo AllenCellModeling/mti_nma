@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import vtk
 import platform
+from typing import List, Optional
 
 from datastep import Step, log_run_params
 from datastep.file_utils import manifest_filepaths_rel2abs
@@ -38,7 +39,7 @@ class Nma(Step):
 
     def __init__(
         self,
-        direct_upstream_tasks=[Avgshape],
+        direct_upstream_tasks: Optional[List["Step"]] = [Avgshape],
         filepath_columns=["w_FilePath", "v_FilePath", "fig_FilePath"]
     ):
         super().__init__(
@@ -47,7 +48,7 @@ class Nma(Step):
         )
 
     @log_run_params
-    def run(self, mode_list=list(range(6)), **kwargs):
+    def run(self, mode_list=list(range(6)), avg_df=None, **kwargs):
 
         if platform == "darwin":
             path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
@@ -59,12 +60,15 @@ class Nma(Step):
             )
 
         # Load avg shape manifest and read avg mesh file out
-        avgshape = Avgshape()
-        manifest_filepaths_rel2abs(avgshape)
-        df = avgshape.manifest.copy()
+        if avg_df is None:
+            avgshape = Avgshape()
+            manifest_filepaths_rel2abs(avgshape)
+            avg_df = avgshape.manifest.copy()
         reader = vtk.vtkPolyDataReader()
         reader.SetFileName(
-            df[df["Label"] == "Average_nuclear_mesh"]["AvgShapeFilePath"].iloc[0])
+            avg_df[
+                avg_df["Label"] == "Average_nuclear_mesh"
+            ]["AvgShapeFilePath"].iloc[0])
         reader.Update()
         polydata = reader.GetOutput()
 
@@ -97,8 +101,8 @@ class Nma(Step):
 
         heatmap_dir = nma_data_dir / "mode_heatmaps"
         heatmap_dir.mkdir(parents=True, exist_ok=True)
-        path_input_mesh = df[
-            df["Label"] == "Average_nuclear_mesh"]["AvgShapeFilePathStl"].iloc[0]
+        path_input_mesh = avg_df[
+            avg_df["Label"] == "Average_nuclear_mesh"]["AvgShapeFilePathStl"].iloc[0]
         for mode in mode_list:
             path_output = heatmap_dir / f"mode_{mode}.blend"
             color_vertices_by_magnitude(

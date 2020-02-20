@@ -1,23 +1,117 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+This script will run all tasks in a prefect Flow.
+When you add steps to you step workflow be sure to add them to the step list
+and configure their IO in the `run` function.
+"""
+
+import logging
+from typing import Optional
+
+from prefect import Flow
+from prefect.engine.executors import DaskExecutor, LocalExecutor
+
 from mti_nma import steps
+
+###############################################################################
+
+log = logging.getLogger(__name__)
+
+###############################################################################
 
 
 class All:
     def __init__(self):
         """
-        Set the order of your steps here.
+        Set all of your available steps here.
+        This is only used for data logging operations, not running.
         """
         self.step_list = [
             steps.Singlecell(),
             steps.Shparam(),
             steps.Avgshape(),
-            steps.Nma()]
+            steps.Nma(),
+        ]
 
-    def run(self):
+    def run(
+        self,
+        distributed_executor_address: Optional[str] = None,
+        clean: bool = False,
+        debug: bool = False,
+        **kwargs,
+    ):
         """
-        Run all steps.
+        Run a flow with your steps.
+        Parameters
+        ----------
+        distributed_executor_address: Optional[str]
+            An optional executor address to pass to some computation engine.
+        clean: bool
+            Should the local staging directory be cleaned prior to this run.
+            Default: False (Do not clean)
+        debug: bool
+            A debug flag for the developer to use to manipulate how much data runs,
+            how it is processed, etc.
+            Default: False (Do not debug)
+        Notes
+        -----
+        Documentation on prefect:
+        https://docs.prefect.io/core/
+        Basic prefect example:
+        https://docs.prefect.io/core/
         """
-        for step in self.step_list:
-            step.run()
+        # Initalize steps
+        singlecell = steps.Singlecell()
+        shparam = steps.Shparam()
+        avgshape = steps.Avgshape()
+        nma = steps.Nma()
+
+        # Choose executor
+        if debug:
+            exe = LocalExecutor()
+        else:
+            exe = DaskExecutor()
+
+        # Configure your flow
+        with Flow("mti_nma") as flow:
+            # If your step utilizes a secondary flow with dask pass the executor address
+            # If you want to clean the local staging directories pass clean
+            # If you want to utilize some debugging functionality pass debug
+            # If you don't utilize any of these, just pass the parameters you need.
+
+            sc_df = singlecell(
+                distributed_executor_address=distributed_executor_address,
+                clean=clean,
+                debug=debug,
+                **kwargs,  # Allows us to pass `--n {some integer}` or other params
+            )
+            sh_df = shparam(
+                sc_df,
+                distributed_executor_address=distributed_executor_address,
+                clean=clean,
+                debug=debug,
+            )
+            df_avg = avgshape(
+                sh_df,
+                distributed_executor_address=distributed_executor_address,
+                clean=clean,
+                debug=debug,
+            )
+            nma(
+                df_avg,
+                distributed_executor_address=distributed_executor_address,
+                clean=clean,
+                debug=debug,
+            )
+
+        # Run flow and get ending state
+        flow.run(executor=exe)
+        # state = flow.run(executor=exe)
+
+        # Get plot location
+        # log.info(f"Plot stored to: {plot.get_result(state, flow)}")
 
     def pull(self):
         """
@@ -39,3 +133,10 @@ class All:
         """
         for step in self.step_list:
             step.push()
+
+    def clean(self):
+        """
+        Clean all steps.
+        """
+        for step in self.step_list:
+            step.clean()

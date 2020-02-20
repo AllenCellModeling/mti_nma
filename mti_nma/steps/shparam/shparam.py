@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from pathlib import Path
 from typing import List, Optional
 import pandas as pd
 from skimage import io as skio
@@ -23,7 +22,7 @@ log = logging.getLogger(__name__)
 class Shparam(Step):
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = Singlecell,
+        direct_upstream_tasks: Optional[List["Step"]] = [Singlecell],
         filepath_columns=[
             "InitialMeshFilePath", "ShparamMeshFilePath", "CoeffsFilePath"]
     ):
@@ -33,17 +32,19 @@ class Shparam(Step):
         )
 
     @log_run_params
-    def run(self, **kwargs):
+    def run(self, sc_df=None, **kwargs):
+
         """
         This function loads the seg images we want to perform sh parametrization on
         and calculate the sh coefficients. Results are saved as csv files.
         """
 
         # Get manifest from previous step
-        singlecells = Singlecell()
-        manifest_filepaths_rel2abs(singlecells)
-        sc_df = singlecells.manifest.copy()
-        sc_df = sc_df.set_index("CellId")
+        if sc_df is None:
+            singlecells = Singlecell()
+            manifest_filepaths_rel2abs(singlecells)
+            sc_df = singlecells.manifest.copy()
+            sc_df = sc_df.set_index("CellId")
 
         # create directory to save data for this step in local staging
         sh_data_dir = self.step_local_staging_dir / "shparam_data"
@@ -91,9 +92,7 @@ class Shparam(Step):
             # Build dataframe of saved files to store in manifest
             pdSerie = pd.Series(
                 {
-                    "InitialMeshFilePath": str(
-                        sh_data_dir / f"{CellId}.initial.vtk"
-                    ),
+                    "InitialMeshFilePath": sh_data_dir / f"{CellId}.initial.vtk",
                     "ShparamMeshFilePath": sh_data_dir / f"{CellId}.shparam.vtk",
                     "CoeffsFilePath": sh_data_dir / f"{CellId}.shparam.csv",
                     "CellId": CellId,
@@ -104,3 +103,4 @@ class Shparam(Step):
         self.manifest.to_csv(
             self.step_local_staging_dir / "manifest.csv", index=False
         )
+        return self.manifest
