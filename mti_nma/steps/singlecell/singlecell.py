@@ -35,7 +35,7 @@ class Singlecell(Step):
         )
 
     @log_run_params
-    def run(self, cell_line_id='AICS-13', nsamples=16, **kwargs):
+    def run(self, cell_line_id='AICS-13', nsamples=2, **kwargs):
 
         '''
             This function will collect all FOVs of a particular cell

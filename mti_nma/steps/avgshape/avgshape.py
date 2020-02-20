@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 import pandas as pd
@@ -65,7 +66,14 @@ class Avgshape(Step):
 
         # Avg the sh coefficients over all samples and create avg mesh
         df_coeffs_avg = df_coeffs.agg(['mean'])
-        mesh_avg = aicsshtools.get_reconstruction_from_dataframe(df=df_coeffs_avg)
+        coeffs_avg = df_coeffs_avg.values
+
+        # Number of columns = 2*lmax*lmax
+        lmax = int(np.sqrt(0.5*coeffs_avg.size))
+
+        coeffs_avg = coeffs_avg.reshape(-2,lmax,lmax)
+
+        mesh_avg, _ = aicsshtools.get_reconstruction_from_coeffs(coeffs=coeffs_avg)
         aicsshtools.save_polydata(
             mesh=mesh_avg,
             filename=str(avg_data_dir / Path('avgshape.vtk'))

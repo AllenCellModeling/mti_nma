@@ -25,7 +25,6 @@ def run_shcoeffs_analysis(df, savedir):
         plt.close(fig)
 
     list_of_bar_plots = [
-        'shcoeffs_chi2',
         'shcoeffs_L0M0C',
     ]
 
