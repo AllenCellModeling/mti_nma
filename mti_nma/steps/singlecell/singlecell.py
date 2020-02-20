@@ -48,12 +48,6 @@ class Singlecell(Step):
             to isotropic volume with pixel size 0.135um (compatitle with 40X).
             Images are also stored in the usual `ZYX` order.
 
-            :: IMPORTANT:
-            The line
-                raw = AICSImage(
-                    df.ReadPathRaw[FOVId]).get_image_data("ZYX", S=0, T=0, C=-2)
-            may not return the nuclear channel for cell lines other than Lamin.
-
 
         Parameters
         ----------
