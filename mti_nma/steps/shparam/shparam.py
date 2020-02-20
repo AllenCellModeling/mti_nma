@@ -7,7 +7,8 @@ import pandas as pd
 from skimage import io as skio
 from aicsshparam import aicsshparam, aicsshtools
 
-from datastep import Step, log_run_params, manifest_filepaths_rel2abs
+from datastep import Step, log_run_params
+from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..singlecell import Singlecell
 

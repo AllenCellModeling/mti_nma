@@ -8,7 +8,8 @@ import pandas as pd
 from aicsshparam import aicsshtools
 import platform
 
-from datastep import Step, log_run_params, manifest_rel_to_abs
+from datastep import Step, log_run_params
+from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..shparam import Shparam
 from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, uniform_trimesh
@@ -52,7 +53,7 @@ class Avgshape(Step):
         """
 
         # fix filepaths and use cell id as dataframe index
-        manifest_rel_to_abs(sh_df)
+        manifest_filepaths_rel2abs(sh_df)
         sh_df = sh_df.set_index("CellId", drop=True)
 
         # Load sh coefficients of all samples in manifest

@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import platform
 from typing import List, Optional
 
-from datastep import Step, log_run_params, manifest_rel_to_abs
+from datastep import Step, log_run_params
+from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..avgshape import Avgshape
 from .nma_utils import run_nma, get_eigvec_mags
@@ -49,7 +50,7 @@ class Nma(Step):
     def run(self, mode_list=list(range(6)), avg_df=None, path_blender=None, **kwargs):
 
         # fix filepaths
-        manifest_rel_to_abs(avg_df)
+        manifest_filepaths_rel2abs(avg_df)
 
         # Create directory to hold NMA results
         nma_data_dir = self.step_local_staging_dir / "nma_data"
