@@ -8,7 +8,6 @@ import pandas as pd
 from aicsshparam import aicsshtools
 
 from datastep import Step, log_run_params
-from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..shparam import Shparam
 from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, uniform_trimesh
@@ -51,17 +50,12 @@ class Avgshape(Step):
             Mesh density parameter used in Blender 
         """
 
-        # Get shparam manifest
-        if sh_df is None:
-            shparam = Shparam()
-            manifest_filepaths_rel2abs(shparam)
-            df_sh = shparam.manifest.copy()
-            df_sh = df_sh.set_index("CellId", drop=True)
+        sh_df = sh_df.set_index("CellId", drop=True)
 
         # Load sh coefficients of all samples in manifest
         df_coeffs = pd.DataFrame([])
-        for CellId in df_sh.index:
-            df_coeffs_path = df_sh["CoeffsFilePath"][CellId]
+        for CellId in sh_df.index:
+            df_coeffs_path = sh_df["CoeffsFilePath"][CellId]
             df_coeffs = df_coeffs.append(
                 pd.read_csv(df_coeffs_path, index_col=["CellId"]), ignore_index=False
             )

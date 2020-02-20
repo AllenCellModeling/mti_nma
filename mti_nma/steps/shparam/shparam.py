@@ -8,7 +8,6 @@ from skimage import io as skio
 from aicsshparam import aicsshparam, aicsshtools
 
 from datastep import Step, log_run_params
-from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..singlecell import Singlecell
 
@@ -32,7 +31,7 @@ class Shparam(Step):
         )
 
     @log_run_params
-    def run(self, sc_df=None, **kwargs):
+    def run(self, sc_df, **kwargs):
 
         """
         This function loads the seg images we want to perform sh parametrization on
@@ -40,10 +39,6 @@ class Shparam(Step):
         """
 
         # Get manifest from previous step
-        if sc_df is None:
-            singlecells = Singlecell()
-            manifest_filepaths_rel2abs(singlecells)
-            sc_df = singlecells.manifest.copy()
         sc_df = sc_df.set_index("CellId")
 
         # create directory to save data for this step in local staging

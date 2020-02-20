@@ -9,7 +9,6 @@ import platform
 from typing import List, Optional
 
 from datastep import Step, log_run_params
-from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..avgshape import Avgshape
 from .nma_utils import run_nma, get_eigvec_mags
@@ -57,12 +56,6 @@ class Nma(Step):
             raise NotImplementedError(
                 "OSes other than Mac are currently not supported."
             )
-
-        # Load avg shape manifest and read avg mesh file out
-        if avg_df is None:
-            avgshape = Avgshape()
-            manifest_filepaths_rel2abs(avgshape)
-            avg_df = avgshape.manifest.copy()
 
         # Create directory to hold NMA results
         nma_data_dir = self.step_local_staging_dir / "nma_data"
