@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List, Optional
 import pandas as pd
 from aicsshparam import aicsshtools
+import platform
 
 from datastep import Step, log_run_params, manifest_rel_to_abs
 
@@ -39,7 +40,7 @@ class Avgshape(Step):
         )
 
     @log_run_params
-    def run(self, mesh_density=5, sh_df=None, **kwargs):
+    def run(self, mesh_density=5, sh_df=None, path_blender=None, **kwargs):
         """
         This step uses the amplitudes of the spherical harmonic components
         of the nuclear shapes in the dataset to construct an average nuclear mesh.
@@ -52,6 +53,15 @@ class Avgshape(Step):
 
         manifest_rel_to_abs(sh_df)
         sh_df = sh_df.set_index("CellId", drop=True)
+
+        if path_blender is None and platform == "darwin":
+            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
+        # elif platform == "linux" or platform == "linux2":
+        #     pass
+        else:
+            raise NotImplementedError(
+                "If using Linux you must pass in the path to your Blender download."
+            )
 
         # Load sh coefficients of all samples in manifest
         df_coeffs = pd.DataFrame([])
@@ -88,7 +98,7 @@ class Avgshape(Step):
         remesh_dir.mkdir(parents=True, exist_ok=True)
         path_input_mesh = str(avg_data_dir / "avgshape.stl")
         path_output = remesh_dir + "uniform_mesh"
-        uniform_trimesh(path_input_mesh, mesh_density, path_output)
+        uniform_trimesh(path_input_mesh, mesh_density, path_output, path_blender)
 
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
