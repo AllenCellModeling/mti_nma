@@ -8,7 +8,7 @@ from skimage import io as skio
 from aicsshparam import aicsshparam, aicsshtools
 
 from datastep import Step, log_run_params
-from datastep.file_utils import manifest_filepaths_rel2abs
+# from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..singlecell import Singlecell
 
@@ -59,6 +59,7 @@ class Shparam(Step):
             # Here is the place where I need someone taking a look at the
             # aicsshparam package to see what is the best way to return
             # the outputs
+
             (coeffs, grid), (_, mesh_init, _, grid_init) = aicsshparam.get_shcoeffs(
                 image=seg,
                 lmax=8,
@@ -85,7 +86,7 @@ class Shparam(Step):
             aicsshtools.save_polydata(
                 mesh=mesh_shparam, 
                 filename=str(
-                    sh_data_dir / f"{CellId}.shparam.vtk")
+                    sh_data_dir / f'{CellId}.shparam.vtk')
             )
 
             # Save coeffs into a csv file in local staging
@@ -101,6 +102,7 @@ class Shparam(Step):
                     "CoeffsFilePath": sh_data_dir / f"{CellId}.shparam.csv",
                     "MeanSqError": mean_sq_error,
                     "CellId": CellId,
+
                 }, name=CellId)
             self.manifest = self.manifest.append(pdSerie)
 

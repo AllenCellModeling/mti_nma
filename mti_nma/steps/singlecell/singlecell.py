@@ -106,6 +106,7 @@ class Singlecell(Step):
                 cell_id = uuid.uuid4().hex[:8]
 
                 # Save images and write to manifest
+
                 rawpath = sc_data_dir.as_posix() + f"/{cell_id}.raw.tif"
                 with writers.OmeTiffWriter(rawpath) as writer:
                     writer.save(raw, dimension_order="ZYX")
