@@ -93,7 +93,8 @@ setup(
     description="Workflow for normal mode analysis",
     entry_points={"console_scripts": [
         "mti_nma=mti_nma.bin.cli:cli",
-        "color_vertices=mti_nma.bin.color_vertices:main"
+        "color_vertices=mti_nma.bin.color_vertices:main",
+        "uniform_trimesh=mti_nma.bin.uniform_trimesh:main"
     ]},
     install_requires=requirements,
     license="Allen Institute Software License",
