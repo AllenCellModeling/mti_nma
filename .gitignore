@@ -1,5 +1,7 @@
 # default local data staging directory
 /local_staging
+/data
+/dask-worker-space
 
 # notebooks bcz eww (force add them if you must?)
 *.ipynb
