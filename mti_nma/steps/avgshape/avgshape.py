@@ -10,7 +10,6 @@ from aicsshparam import aicsshtools
 import platform
 
 from datastep import Step, log_run_params
-from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..shparam import Shparam
 from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, uniform_trimesh
@@ -54,7 +53,6 @@ class Avgshape(Step):
         """
 
         # fix filepaths and use cell id as dataframe index
-        manifest_filepaths_rel2abs(sh_df)
         sh_df = sh_df.set_index("CellId", drop=True)
 
         # Load sh coefficients of all samples in manifest
@@ -77,9 +75,9 @@ class Avgshape(Step):
         coeffs_avg = df_coeffs_avg.values
 
         # Number of columns = 2*lmax*lmax
-        lmax = int(np.sqrt(0.5*coeffs_avg.size))
+        lmax = int(np.sqrt(0.5 * coeffs_avg.size))
 
-        coeffs_avg = coeffs_avg.reshape(-2,lmax,lmax)
+        coeffs_avg = coeffs_avg.reshape(-2, lmax, lmax)
 
         mesh_avg, _ = aicsshtools.get_reconstruction_from_coeffs(coeffs=coeffs_avg)
 
@@ -97,8 +95,9 @@ class Avgshape(Step):
         )
 
         # Set the blender application download filepath
-        if path_blender is None and platform == "darwin":
+        if platform == "darwin":
             path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
+            print("TEST: " + str(platform))
         else:
             raise NotImplementedError(
                 "If using Linux you must pass in the path to your Blender download."
