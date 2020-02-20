@@ -113,7 +113,7 @@ class Singlecell(Step):
 
                 segpath = sc_data_dir.as_posix() + f"/{cell_id}.seg.tif"
                 with writers.OmeTiffWriter(segpath) as writer:
-                    writer.save(raw, dimension_order="ZYX")
+                    writer.save(seg, dimension_order="ZYX")
 
                 series = pd.Series({
                     "RawFilePath": sc_data_dir / f"{cell_id}.raw.tif",
