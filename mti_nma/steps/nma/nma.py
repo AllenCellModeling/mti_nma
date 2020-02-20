@@ -5,11 +5,10 @@ import logging
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import platform
+from sys import platform
 from typing import List, Optional
 
 from datastep import Step, log_run_params
-from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..avgshape import Avgshape
 from .nma_utils import run_nma, get_eigvec_mags
@@ -49,9 +48,6 @@ class Nma(Step):
     @log_run_params
     def run(self, mode_list=list(range(6)), avg_df=None, path_blender=None, **kwargs):
 
-        # fix filepaths
-        manifest_filepaths_rel2abs(avg_df)
-
         # Create directory to hold NMA results
         nma_data_dir = self.step_local_staging_dir / "nma_data"
         nma_data_dir.mkdir(parents=True, exist_ok=True)
@@ -82,7 +78,7 @@ class Nma(Step):
         }, index=[0])
 
         # Get Blender app download filepath
-        if path_blender is None and platform == "darwin":
+        if platform == "darwin":
             path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
         else:
             raise NotImplementedError(

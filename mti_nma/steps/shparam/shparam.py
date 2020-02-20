@@ -4,7 +4,8 @@
 import logging
 from typing import List, Optional
 import pandas as pd
-from skimage import io as skio
+
+from aicsimageio import AICSImage
 from aicsshparam import aicsshparam, aicsshtools
 
 from datastep import Step, log_run_params
@@ -32,7 +33,7 @@ class Shparam(Step):
         )
 
     @log_run_params
-    def run(self, sc_df, **kwargs):
+    def run(self, sc_df=None, **kwargs):
 
         """
         This function loads the seg images we want to perform sh parametrization on
@@ -53,7 +54,7 @@ class Shparam(Step):
 
             # Read segmentation image
             impath = sc_df["SegFilePath"][CellId]
-            seg = skio.imread(impath)
+            seg = AICSImage(impath).get_image_data("ZYX", S=0, T=0, C=0)
 
             # Get spherical harmonic decomposition of segmentation
             # Here is the place where I need someone taking a look at the

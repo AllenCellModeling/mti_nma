@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Optional
 import pandas as pd
 from aicsshparam import aicsshtools
-import platform
+from sys import platform
 
 from datastep import Step, log_run_params
 
@@ -97,7 +97,6 @@ class Avgshape(Step):
         # Set the blender application download filepath
         if platform == "darwin":
             path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
-            print("TEST: " + str(platform))
         else:
             raise NotImplementedError(
                 "If using Linux you must pass in the path to your Blender download."
