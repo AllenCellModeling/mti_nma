@@ -48,16 +48,8 @@ class Nma(Step):
     @log_run_params
     def run(self, mode_list=list(range(6)), avg_df=None, path_blender=None, **kwargs):
 
+        # fix filepaths
         manifest_rel_to_abs(avg_df)
-
-        if path_blender is None and platform == "darwin":
-            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
-        # elif platform == "linux" or platform == "linux2":
-        #     pass
-        else:
-            raise NotImplementedError(
-                "If using Linux you must pass in the path to your Blender download."
-            )
 
         # Create directory to hold NMA results
         nma_data_dir = self.step_local_staging_dir / "nma_data"
@@ -88,6 +80,15 @@ class Nma(Step):
             "fig_FilePath": fig_path,
         }, index=[0])
 
+        # Get Blender app download filepath
+        if path_blender is None and platform == "darwin":
+            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
+        else:
+            raise NotImplementedError(
+                "If using Linux you must pass in the path to your Blender download."
+            )
+
+        # Generate heatmap colored mesh
         heatmap_dir = nma_data_dir / "mode_heatmaps"
         heatmap_dir.mkdir(parents=True, exist_ok=True)
         path_input_mesh = avg_df["UniformMeshFilePathStl"].iloc[0]

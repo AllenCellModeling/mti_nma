@@ -51,17 +51,9 @@ class Avgshape(Step):
             Mesh density parameter used in Blender 
         """
 
+        # fix filepaths and use cell id as dataframe index
         manifest_rel_to_abs(sh_df)
         sh_df = sh_df.set_index("CellId", drop=True)
-
-        if path_blender is None and platform == "darwin":
-            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
-        # elif platform == "linux" or platform == "linux2":
-        #     pass
-        else:
-            raise NotImplementedError(
-                "If using Linux you must pass in the path to your Blender download."
-            )
 
         # Load sh coefficients of all samples in manifest
         df_coeffs = pd.DataFrame([])
@@ -94,6 +86,15 @@ class Avgshape(Step):
             str(avg_data_dir / "avgshape.csv")
         )
 
+        # Set the blender application download filepath
+        if path_blender is None and platform == "darwin":
+            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
+        else:
+            raise NotImplementedError(
+                "If using Linux you must pass in the path to your Blender download."
+            )
+
+        # Make new version of the mesh which is more uniform using Blender
         remesh_dir = avg_data_dir / "remesh"
         remesh_dir.mkdir(parents=True, exist_ok=True)
         path_input_mesh = str(avg_data_dir / "avgshape.stl")

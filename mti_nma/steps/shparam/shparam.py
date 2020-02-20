@@ -38,7 +38,7 @@ class Shparam(Step):
         and calculate the sh coefficients. Results are saved as csv files.
         """
 
-        # Get manifest from previous step
+        # Fix filepaths and use cell ID as dataframe index
         manifest_filepaths_rel2abs(sc_df)
         sc_df = sc_df.set_index("CellId")
 
