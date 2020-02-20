@@ -46,17 +46,17 @@ class Nma(Step):
         )
 
     @log_run_params
-    def run(self, mode_list=list(range(6)), avg_df=None, **kwargs):
+    def run(self, mode_list=list(range(6)), avg_df=None, path_blender=None, **kwargs):
 
         manifest_rel_to_abs(avg_df)
 
-        if platform == "darwin":
+        if path_blender is None and platform == "darwin":
             path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
         # elif platform == "linux" or platform == "linux2":
         #     pass
         else:
             raise NotImplementedError(
-                "OSes other than Mac are currently not supported."
+                "If using Linux you must pass in the path to your Blender download."
             )
 
         # Create directory to hold NMA results
