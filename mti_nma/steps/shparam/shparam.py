@@ -59,7 +59,6 @@ class Shparam(Step):
             # Here is the place where I need someone taking a look at the
             # aicsshparam package to see what is the best way to return
             # the outputs
-
             (coeffs, grid), (_, mesh_init, _, grid_init) = aicsshparam.get_shcoeffs(
                 image=seg,
                 lmax=8,
