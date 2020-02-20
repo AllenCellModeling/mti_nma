@@ -104,7 +104,7 @@ class All:
                 debug=debug,
                 **kwargs
             )
-            df_avg = avgshape(
+            avg_df = avgshape(
                 sh_df,
                 distributed_executor_address=distributed_executor_address,
                 clean=clean,
@@ -112,7 +112,7 @@ class All:
                 **kwargs
             )
             nma(
-                df_avg,
+                avg_df,
                 distributed_executor_address=distributed_executor_address,
                 clean=clean,
                 debug=debug,
