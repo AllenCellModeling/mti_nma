@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import platform
 from typing import List, Optional
 
-from datastep import Step, log_run_params
+from datastep import Step, log_run_params, manifest_rel_to_abs
 
 from ..avgshape import Avgshape
 from .nma_utils import run_nma, get_eigvec_mags
@@ -47,6 +47,8 @@ class Nma(Step):
 
     @log_run_params
     def run(self, mode_list=list(range(6)), avg_df=None, **kwargs):
+
+        manifest_rel_to_abs(avg_df)
 
         if platform == "darwin":
             path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"

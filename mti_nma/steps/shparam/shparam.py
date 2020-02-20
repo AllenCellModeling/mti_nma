@@ -7,7 +7,7 @@ import pandas as pd
 from skimage import io as skio
 from aicsshparam import aicsshparam, aicsshtools
 
-from datastep import Step, log_run_params
+from datastep import Step, log_run_params, manifest_filepaths_rel2abs
 
 from ..singlecell import Singlecell
 
@@ -39,6 +39,7 @@ class Shparam(Step):
         """
 
         # Get manifest from previous step
+        manifest_filepaths_rel2abs(sc_df)
         sc_df = sc_df.set_index("CellId")
 
         # create directory to save data for this step in local staging

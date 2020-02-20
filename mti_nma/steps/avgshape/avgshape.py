@@ -7,7 +7,7 @@ from typing import List, Optional
 import pandas as pd
 from aicsshparam import aicsshtools
 
-from datastep import Step, log_run_params
+from datastep import Step, log_run_params, manifest_rel_to_abs
 
 from ..shparam import Shparam
 from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, uniform_trimesh
@@ -50,6 +50,7 @@ class Avgshape(Step):
             Mesh density parameter used in Blender 
         """
 
+        manifest_rel_to_abs(sh_df)
         sh_df = sh_df.set_index("CellId", drop=True)
 
         # Load sh coefficients of all samples in manifest
