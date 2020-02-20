@@ -87,10 +87,10 @@ class Avgshape(Step):
             "Label": "Average_nuclear_mesh",
             "AvgShapeFilePath": avg_data_dir / "avgshape.vtk",
             "AvgShapeFilePathStl": avg_data_dir / "avgshape.stl",
-            "UniformMeshFilePathStl" : path_output + ".stl",
-            "UniformMeshFilePathBlend" : path_output + ".blend",
-            "UniformMeshVertices" : path_output + "_verts.npy",
-            "UniformMeshFaces" : path_output + "_faces.npy"
+            "UniformMeshFilePathStl" : f"{path_output}.stl",
+            "UniformMeshFilePathBlend" : f"{path_output}.blend",
+            "UniformMeshVertices" : f"{path_output}_verts.npy",
+            "UniformMeshFaces" : f"{path_output}_faces.npy"
         }, index=[0])
 
         # Save manifest as csv
