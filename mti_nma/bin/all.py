@@ -9,6 +9,7 @@ and configure their IO in the `run` function.
 
 import logging
 from typing import Optional
+import os
 
 from prefect import Flow
 from prefect.engine.executors import DaskExecutor, LocalExecutor
@@ -72,7 +73,16 @@ class All:
         if debug:
             exe = LocalExecutor()
         else:
-            exe = DaskExecutor()
+            if distributed_executor_address is not None:
+                exe = DaskExecutor(distributed_executor_address)
+            else:
+                # Stop conflicts between Dask and OpenBLAS
+                # Info here:
+                # https://stackoverflow.com/questions/45086246/too-many-memory-regions-error-with-dask
+                os.environ["OMP_NUM_THREADS"] = "1"
+
+                # Start local dask cluster
+                exe = DaskExecutor()
 
         # Configure your flow
         with Flow("mti_nma") as flow:
@@ -85,25 +95,28 @@ class All:
                 distributed_executor_address=distributed_executor_address,
                 clean=clean,
                 debug=debug,
-                **kwargs,  # Allows us to pass `--n {some integer}` or other params
+                **kwargs
             )
             sh_df = shparam(
                 sc_df,
                 distributed_executor_address=distributed_executor_address,
                 clean=clean,
                 debug=debug,
+                **kwargs
             )
             df_avg = avgshape(
                 sh_df,
                 distributed_executor_address=distributed_executor_address,
                 clean=clean,
                 debug=debug,
+                **kwargs
             )
             nma(
                 df_avg,
                 distributed_executor_address=distributed_executor_address,
                 clean=clean,
                 debug=debug,
+                **kwargs
             )
 
         # Run flow and get ending state
