@@ -58,29 +58,36 @@ class Shparam(Step):
             seg = skio.imread(impath)
 
             # Get spherical harmonic decomposition of segmentation
-            df_coeffs, extras = aicsshparam.get_shcoeffs(
-                seg=seg,
-                params={"sigma": 1, "lmax": 8})
+            # Here is the place where I need someone taking a look at the
+            # aicsshparam package to see what is the best way to return
+            # the outputs
+            (coeffs, grid), (_, mesh_initial, _, grid_initial) = aicsshparam.get_shcoeffs(
+                image = seg,
+                lmax = 8,
+                sigma = 1)
 
-            mesh_initial = extras[1]
+            # Compute reconstruction error
+            mean_sq_error = aicsshtools.get_reconstruction_error(
+                grid_input = grid_initial,
+                grid_rec = grid)
 
             # Store spherical harmonic coefficients in dataframe by cell id
-            df_coeffs = pd.DataFrame(df_coeffs, index=[CellId])
-            df_coeffs.index = df_coeffs.index.rename("CellId")
+            df_coeffs = pd.DataFrame(coeffs, index=[CellId])
+            df_coeffs.index = df_coeffs.index.rename('CellId')
 
             # Mesh reconstructed with the sh coefficients
-            mesh_shparam = aicsshtools.get_reconstruction_from_dataframe(df=df_coeffs)
+            mesh_shparam = aicsshtools.get_reconstruction_from_grid(grid=grid)
 
             # Save meshes as VTK file
             aicsshtools.save_polydata(
-                mesh=mesh_initial, 
-                filename=str(
-                    sh_data_dir / f"{CellId}.initial.vtk")
+                mesh = mesh_initial, 
+                filename = str(
+                    sh_data_dir / Path(f'{CellId}.initial.vtk'))
             )
             aicsshtools.save_polydata(
-                mesh=mesh_shparam, 
-                filename=str(
-                    sh_data_dir / f"{CellId}.shparam.vtk")
+                mesh = mesh_shparam, 
+                filename = str(
+                    sh_data_dir / Path(f'{CellId}.shparam.vtk'))
             )
 
             # Save coeffs into a csv file in local staging
@@ -91,12 +98,12 @@ class Shparam(Step):
             # Build dataframe of saved files to store in manifest
             pdSerie = pd.Series(
                 {
-                    "InitialMeshFilePath": str(
-                        sh_data_dir / f"{CellId}.initial.vtk"
-                    ),
+                    "InitialMeshFilePath": sh_data_dir / f"{CellId}.initial.vtk"),
                     "ShparamMeshFilePath": sh_data_dir / f"{CellId}.shparam.vtk",
                     "CoeffsFilePath": sh_data_dir / f"{CellId}.shparam.csv",
+                    "MeanSqError": mean_sq_error,
                     "CellId": CellId,
+
                 }, name=CellId)
             self.manifest = self.manifest.append(pdSerie)
 
