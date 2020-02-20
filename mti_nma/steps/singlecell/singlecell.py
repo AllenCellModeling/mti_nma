@@ -39,7 +39,7 @@ class Singlecell(Step):
             corresponds to one FOV.
 
             The dataframe is sampled according to the input parameter
-            `nsampels`.
+            `nsamples`.
 
             Next we select at random one nucleus from each of the remaining
             FOVs to perform nma analysis on.
