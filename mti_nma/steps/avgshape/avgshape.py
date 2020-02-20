@@ -24,7 +24,15 @@ class Avgshape(Step):
     def __init__(
         self,
         direct_upstream_tasks: Optional[List["Step"]] = [Shparam],
-        filepath_columns=["AvgShapeFilePath", "AvgShapeFilePathStl"]
+        filepath_columns=[
+            "AvgShapeFilePath",
+            "AvgShapeFilePathStl",
+            "UniformMeshFilePathStl",
+            "UniformMeshFilePathBlend",
+            "UniformMeshVertices",
+            "UniformMeshFaces"
+        ]
+
     ):
         super().__init__(
             direct_upstream_tasks=direct_upstream_tasks,
@@ -36,6 +44,11 @@ class Avgshape(Step):
         """
         This step uses the amplitudes of the spherical harmonic components
         of the nuclear shapes in the dataset to construct an average nuclear mesh.
+
+        Parameters
+        ----------
+        mesh_density: int (1-10)
+            Mesh density parameter used in Blender 
         """
 
         # Get shparam manifest
