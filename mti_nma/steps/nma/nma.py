@@ -5,7 +5,6 @@ import logging
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import vtk
 import platform
 from typing import List, Optional
 
@@ -64,20 +63,15 @@ class Nma(Step):
             avgshape = Avgshape()
             manifest_filepaths_rel2abs(avgshape)
             avg_df = avgshape.manifest.copy()
-        reader = vtk.vtkPolyDataReader()
-        reader.SetFileName(
-            avg_df[
-                avg_df["Label"] == "Average_nuclear_mesh"
-            ]["AvgShapeFilePath"].iloc[0])
-        reader.Update()
-        polydata = reader.GetOutput()
 
         # Create directory to hold NMA results
         nma_data_dir = self.step_local_staging_dir / "nma_data"
         nma_data_dir.mkdir(parents=True, exist_ok=True)
 
         # run NMA on avg mesh and save results to local stagings
-        w, v = run_nma(polydata)
+        verts = np.load(avg_df["UniformMeshVertices"].iloc[0])
+        faces = np.load(avg_df["UniformMeshFaces"].iloc[0])
+        w, v = run_nma(verts, faces)
         draw_whist(w)
         vmags = get_eigvec_mags(v)
 
@@ -101,8 +95,7 @@ class Nma(Step):
 
         heatmap_dir = nma_data_dir / "mode_heatmaps"
         heatmap_dir.mkdir(parents=True, exist_ok=True)
-        path_input_mesh = avg_df[
-            avg_df["Label"] == "Average_nuclear_mesh"]["AvgShapeFilePathStl"].iloc[0]
+        path_input_mesh = avg_df["UniformMeshFilePathStl"].iloc[0]
         for mode in mode_list:
             path_output = heatmap_dir / f"mode_{mode}.blend"
             color_vertices_by_magnitude(
