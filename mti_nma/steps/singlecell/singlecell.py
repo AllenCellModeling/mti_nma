@@ -30,7 +30,7 @@ class Singlecell(Step):
         )
 
     @log_run_params
-    def run(self, cell_line_id="AICS-13", nsamples=3, **kwargs):
+    def run(self, cell_line_id="AICS-13", nsamples=2, **kwargs):
 
         """
             This function will collect all FOVs of a particular cell
@@ -79,6 +79,10 @@ class Singlecell(Step):
                 f"Sampling {nsamples} FOVs now.")
             df = df.sample(n=nsamples)
 
+            # create directory to save data for this step in local staging
+            sc_data_dir = self.step_local_staging_dir / "singlecell_data"
+            sc_data_dir.mkdir(parents=True, exist_ok=True)
+
             # Process each FOV in dataframe
             for fov_id in tqdm(df.index):
 
@@ -108,16 +112,16 @@ class Singlecell(Step):
 
                 # Save images and write to manifest
                 writer = writers.OmeTiffWriter(
-                    self.step_local_staging_dir.as_posix() + f"/{cell_id}.raw.tif")
+                    sc_data_dir.as_posix() + f"/{cell_id}.raw.tif")
                 writer.save(raw, dimension_order="ZYX")
 
                 writer = writers.OmeTiffWriter(
-                    self.step_local_staging_dir.as_posix() + f"/{cell_id}.seg.tif")
+                    sc_data_dir.as_posix() + f"/{cell_id}.seg.tif")
                 writer.save(seg, dimension_order="ZYX")
 
                 series = pd.Series({
-                    "RawFilePath": f"{cell_id}.raw.tif",
-                    "SegFilePath": f"{cell_id}.seg.tif",
+                    "RawFilePath": sc_data_dir / f"{cell_id}.raw.tif",
+                    "SegFilePath": sc_data_dir / f"{cell_id}.seg.tif",
                     "OriginalFOVPathRaw": df.ReadPathRaw[fov_id],
                     "OriginalFOVPathSeg": df.ReadPathSeg[fov_id],
                     "FOVId": fov_id,
