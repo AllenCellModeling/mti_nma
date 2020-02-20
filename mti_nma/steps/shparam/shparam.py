@@ -44,7 +44,7 @@ class Shparam(Step):
             singlecells = Singlecell()
             manifest_filepaths_rel2abs(singlecells)
             sc_df = singlecells.manifest.copy()
-            sc_df = sc_df.set_index("CellId")
+        sc_df = sc_df.set_index("CellId")
 
         # create directory to save data for this step in local staging
         sh_data_dir = self.step_local_staging_dir / "shparam_data"
