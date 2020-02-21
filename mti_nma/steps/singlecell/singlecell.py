@@ -102,31 +102,36 @@ class Singlecell(Step):
                     obj_label=obj_label,
                     isotropic=(sx, sy, sz))
 
-                # Create an unique id for this object
-                cell_id = uuid.uuid4().hex[:8]
+                # Only proceed with this cell if image isn't empty
+                if raw is not None:
 
-                # Save images and write to manifest
-                rawpath = sc_data_dir.as_posix() + f"/{cell_id}.raw.tif"
-                with writers.OmeTiffWriter(rawpath) as writer:
-                    writer.save(raw, dimension_order="ZYX")
+                    # Create an unique id for this object
+                    cell_id = uuid.uuid4().hex[:8]
 
-                segpath = sc_data_dir.as_posix() + f"/{cell_id}.seg.tif"
-                with writers.OmeTiffWriter(segpath) as writer:
-                    writer.save(seg, dimension_order="ZYX")
+                    # Save images and write to manifest
+                    rawpath = sc_data_dir.as_posix() + f"/{cell_id}.raw.tif"
+                    with writers.OmeTiffWriter(rawpath) as writer:
+                        writer.save(raw, dimension_order="ZYX")
 
-                series = pd.Series({
-                    "RawFilePath": sc_data_dir / f"{cell_id}.raw.tif",
-                    "SegFilePath": sc_data_dir / f"{cell_id}.seg.tif",
-                    "OriginalFOVPathRaw": df.ReadPathRaw[fov_id],
-                    "OriginalFOVPathSeg": df.ReadPathSeg[fov_id],
-                    "FOVId": fov_id,
-                    "CellId": cell_id}, name=cell_id)
+                    segpath = sc_data_dir.as_posix() + f"/{cell_id}.seg.tif"
+                    with writers.OmeTiffWriter(segpath) as writer:
+                        writer.save(seg, dimension_order="ZYX")
 
-                self.manifest = self.manifest.append(series)
+                    series = pd.Series({
+                        "RawFilePath": sc_data_dir / f"{cell_id}.raw.tif",
+                        "SegFilePath": sc_data_dir / f"{cell_id}.seg.tif",
+                        "OriginalFOVPathRaw": df.ReadPathRaw[fov_id],
+                        "OriginalFOVPathSeg": df.ReadPathSeg[fov_id],
+                        "FOVId": fov_id,
+                        "CellId": cell_id}, name=cell_id)
 
-            # save manifest as csv
-            self.manifest = self.manifest.astype({"FOVId": "int64"})
-            self.manifest.to_csv(
-                self.step_local_staging_dir / "manifest.csv", index=False
-            )
+                    self.manifest = self.manifest.append(series)
+                else:
+                    log.info("Rejected FOV: {fov_id} for empty images.")
+
+                # save manifest as csv
+                self.manifest = self.manifest.astype({"FOVId": "int64"})
+                self.manifest.to_csv(
+                    self.step_local_staging_dir / "manifest.csv", index=False
+                )
             return self.manifest
