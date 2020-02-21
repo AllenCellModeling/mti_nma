@@ -101,7 +101,10 @@ def main():
 
     #  Object name must be file name with underscores changed to spaces
     #  and first letter of each word capitalized
-    object_name = path_input_mesh.replace("_", " ").title()
+    object_name = path_input_mesh[
+        path_input_mesh.rfind("/") + 1:path_input_mesh.find(".")
+    ]
+    object_name = object_name.replace("_", " ").title()
 
     # delete default blender cube
     bpy.data.objects["Cube"].select_set(True)
@@ -155,7 +158,7 @@ def main():
     )
 
     # export vertices
-    vertices_output_path = "{}_vertices.npy".format(path_output)
+    vertices_output_path = "{}_verts.npy".format(path_output)
     vertices = []
     for vertex in bpy.data.meshes["Icosphere"].vertices:
         vertices.append([vertex.co[0], vertex.co[1], vertex.co[2]])
