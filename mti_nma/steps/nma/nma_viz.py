@@ -63,7 +63,7 @@ def color_vertices_by_magnitude(
         Filepath to output file of colored mesh object (.blend)
     """
 
-    args = f"-i {path_input_mesh} -o {path_output} -m  {mode} -v {path_vmags}"
+    args = f"-i {path_input_mesh} -o {path_output} -m {mode} -v {path_vmags}"
     cmd = f"{path_blender} -b -P color_vertices -- {args}"
     p = subprocess.Popen(cmd, shell=True, executable="/bin/bash")
     p.terminate()

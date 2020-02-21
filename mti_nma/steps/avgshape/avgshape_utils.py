@@ -94,7 +94,7 @@ def get_vtk_verts_faces(polydata):
     return mesh_verts, mesh_faces
 
 
-def uniform_trimesh(path_input_mesh, mesh_density, path_output, path_blender):
+def gen_uniform_trimesh(path_input_mesh, mesh_density, path_output, path_blender):
 
     """
     Creates blender file with mesh vertices colored by eigenvector 
@@ -123,7 +123,7 @@ def uniform_trimesh(path_input_mesh, mesh_density, path_output, path_blender):
         Filepath to output file of colored mesh object (.blend)
     """
 
-    args = f"-i {path_input_mesh} -o {path_output} -d  {mesh_density}"
+    args = f"-i {path_input_mesh} -o {path_output} -d {mesh_density}"
     cmd = f"{path_blender} -b -P uniform_trimesh -- {args}"
     p = subprocess.Popen(cmd, shell=True, executable="/bin/bash")
     p.terminate()
