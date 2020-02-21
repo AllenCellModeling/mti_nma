@@ -103,7 +103,7 @@ class Nma(Step):
             raise NotImplementedError(
                 "If using Linux you must pass in the path to your Blender download."
                 "Ex: "
-                "mti_nma all run --path_blender=<path_to_blender_application_download>"
+                "mti_nma all run --path_blender <path_to_blender_application_download>"
             )
 
         # Generate heatmap colored mesh
