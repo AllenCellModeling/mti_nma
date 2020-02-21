@@ -48,6 +48,21 @@ class Nma(Step):
 
     @log_run_params
     def run(self, mode_list=list(range(6)), avg_df=None, path_blender=None, **kwargs):
+        """
+        This function will run normal mode analysis on an average mesh.
+        It will then create heatmaps of the average mesh for the desired set of modes,
+        where the coloring shows the relative amplitudes of vertex oscillation in 
+        the mode.
+
+        Parameters
+        ----------
+        mode_list: list
+            List of indices of modes to create heatmap files for
+
+        path_blender: str
+            Path to your local download of the Blender Application.
+            If on Mac, the default Blender Mac download location is used.
+        """
 
         # Create directory to hold NMA results
         nma_data_dir = self.step_local_staging_dir / "nma_data"
