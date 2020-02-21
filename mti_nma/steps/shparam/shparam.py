@@ -4,6 +4,7 @@
 import logging
 from typing import List, Optional
 import pandas as pd
+from tqdm import tqdm
 
 from aicsimageio import AICSImage
 from aicsshparam import aicsshparam, aicsshtools
@@ -50,7 +51,7 @@ class Shparam(Step):
 
         # Get spherical harmonic set for segmentation, save and record in manifest
         self.manifest = pd.DataFrame([])
-        for CellId in sc_df.index:
+        for CellId in tqdm(sc_df.index):
 
             # Read segmentation image
             impath = sc_df["SegFilePath"][CellId]
