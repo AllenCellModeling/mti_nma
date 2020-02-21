@@ -4,6 +4,7 @@
 import logging
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from sys import platform
 from typing import List, Optional
@@ -14,6 +15,9 @@ from datastep import Step, log_run_params
 from ..avgshape import Avgshape
 from .nma_utils import run_nma, get_eigvec_mags, get_vtk_verts_faces
 from .nma_viz import draw_whist, color_vertices_by_magnitude
+
+# Run matplotlib in the background
+matplotlib.use('Agg')
 
 ###############################################################################
 

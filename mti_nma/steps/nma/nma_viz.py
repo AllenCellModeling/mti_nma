@@ -1,7 +1,11 @@
 import numpy as np
 import seaborn as sb
 import matplotlib.pyplot as plt
+import matplotlib
 import subprocess
+
+# Run matplotlib in the background
+matplotlib.use('Agg')
 
 
 def draw_whist(w):
