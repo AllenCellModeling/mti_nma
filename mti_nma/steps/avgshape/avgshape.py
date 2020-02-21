@@ -33,7 +33,7 @@ class Avgshape(Step):
         )
 
     @log_run_params
-    def run(self, mesh_density=5, sh_df=None, path_blender=None, **kwargs):
+    def run(self, mesh_density=5, sh_df=None, **kwargs):
         """
         This step uses the amplitudes of the spherical harmonic components
         of the nuclear shapes in the dataset to construct an average nuclear mesh.
