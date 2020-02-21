@@ -34,7 +34,6 @@ pip install -e .
 After following the "Normal users" installation instructions,
 ```
 pip install -e .[all]
-pre-commit install
 ```
 
 ### Blender Visualization
