@@ -7,12 +7,11 @@ from pathlib import Path
 from typing import List, Optional
 import pandas as pd
 from aicsshparam import aicsshtools
-from sys import platform
 
 from datastep import Step, log_run_params
 
 from ..shparam import Shparam
-from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, gen_uniform_trimesh
+from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
 
 ###############################################################################
 
@@ -25,14 +24,7 @@ class Avgshape(Step):
     def __init__(
         self,
         direct_upstream_tasks: Optional[List["Step"]] = [Shparam],
-        filepath_columns=[
-            "AvgShapeFilePath",
-            "AvgShapeFilePathStl",
-            "UniformMeshFilePathStl",
-            "UniformMeshFilePathBlend",
-            "UniformMeshVertices",
-            "UniformMeshFaces"
-        ]
+        filepath_columns=["AvgShapeFilePath", "AvgShapeFilePathStl"]
 
     ):
         super().__init__(
@@ -94,30 +86,11 @@ class Avgshape(Step):
             str(avg_data_dir / "avgshape.csv")
         )
 
-        # Set the blender application download filepath
-        if platform == "darwin":
-            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
-        else:
-            raise NotImplementedError(
-                "If using Linux you must pass in the path to your Blender download."
-            )
-
-        # Make new version of the mesh which is more uniform using Blender
-        remesh_dir = avg_data_dir / "remesh"
-        remesh_dir.mkdir(parents=True, exist_ok=True)
-        path_input_mesh = avg_data_dir / "avgshape.stl"
-        path_output = str(remesh_dir) + "/uniform_mesh"
-        gen_uniform_trimesh(path_input_mesh, mesh_density, path_output, path_blender)
-
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
             "Label": "Average_nuclear_mesh",
             "AvgShapeFilePath": avg_data_dir / "avgshape.vtk",
-            "AvgShapeFilePathStl": avg_data_dir / "avgshape.stl",
-            "UniformMeshFilePathStl" : f"{path_output}.stl",
-            "UniformMeshFilePathBlend" : f"{path_output}.blend",
-            "UniformMeshVertices" : f"{path_output}_verts.npy",
-            "UniformMeshFaces" : f"{path_output}_faces.npy"
+            "AvgShapeFilePathStl": avg_data_dir / "avgshape.stl"
         }, index=[0])
 
         # Save manifest as csv

@@ -110,14 +110,11 @@ def main():
     bpy.data.objects["Cube"].select_set(True)
     bpy.ops.object.delete()
 
-    # import input mesh STL and center it 
-    # (centering should probably be done earlier in pipeline, but doing it here for now)
-
     bpy.ops.import_mesh.stl(filepath=path_input_mesh)
     input_mesh = bpy.data.objects[object_name]
-    input_mesh.location.x = -100.
-    input_mesh.location.y = -100.
-    input_mesh.location.z = -100.
+    input_mesh.location.x = 0.
+    input_mesh.location.y = 0.
+    input_mesh.location.z = 0.
     input_mesh.name = "Input Mesh"
 
     # create a sphere with icosahedral triangle mesh
