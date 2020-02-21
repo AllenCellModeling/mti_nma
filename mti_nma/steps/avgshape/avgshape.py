@@ -12,7 +12,7 @@ from sys import platform
 from datastep import Step, log_run_params
 
 from ..shparam import Shparam
-from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, uniform_trimesh
+from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, gen_uniform_trimesh
 
 ###############################################################################
 
@@ -105,9 +105,9 @@ class Avgshape(Step):
         # Make new version of the mesh which is more uniform using Blender
         remesh_dir = avg_data_dir / "remesh"
         remesh_dir.mkdir(parents=True, exist_ok=True)
-        path_input_mesh = str(avg_data_dir / "avgshape.stl")
-        path_output = remesh_dir + "uniform_mesh"
-        uniform_trimesh(path_input_mesh, mesh_density, path_output, path_blender)
+        path_input_mesh = avg_data_dir / "avgshape.stl"
+        path_output = str(remesh_dir) + "/uniform_mesh"
+        gen_uniform_trimesh(path_input_mesh, mesh_density, path_output, path_blender)
 
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
