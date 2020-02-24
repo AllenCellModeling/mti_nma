@@ -41,8 +41,18 @@ class Avgshape(Step):
         Parameters
         ----------
         mesh_density: int (1-10)
-            Mesh density parameter used in Blender 
+            Mesh density parameter used in Blender
+
+        sh_df: dataframe
+            dataframe containing results from running Shparam step
+            See the construction of the manifest in shparam.py for details
         """
+
+        # if no dataframe is passed in, load manifest from previous step
+        if sh_df is None:
+            sh_df = pd.read_csv(
+                self.step_local_staging_dir.parent / "shparam" / "manifest.csv"
+            )
 
         # fix filepaths and use cell id as dataframe index
         sh_df = sh_df.set_index("CellId", drop=True)
