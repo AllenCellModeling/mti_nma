@@ -63,10 +63,20 @@ class Nma(Step):
         mode_list: list
             List of indices of modes to create heatmap files for
 
+        avg_df: dataframe
+            dataframe containing results from running Avgshape step
+            See the construction of the manifest in avgshape.py for details
+
         path_blender: str
             Path to your local download of the Blender Application.
             If on Mac, the default Blender Mac download location is used.
         """
+
+        # if no dataframe is passed in, load manifest from previous step
+        if avg_df is None:
+            avg_df = pd.read_csv(
+                self.step_local_staging_dir.parent / "avgshape" / "manifest.csv"
+            )
 
         # Create directory to hold NMA results
         nma_data_dir = self.step_local_staging_dir / "nma_data"
@@ -105,8 +115,8 @@ class Nma(Step):
             path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
         else:
             raise NotImplementedError(
-                "If using Linux you must pass in the path to your Blender download."
-                "Ex: "
+                "If using any OS except Mac you must pass in the path to your"
+                "Blender download. For example: "
                 "mti_nma all run --path_blender <path_to_blender_application_download>"
             )
 
