@@ -10,7 +10,6 @@ from aicsimageio import AICSImage
 from aicsshparam import aicsshparam, aicsshtools
 
 from datastep import Step, log_run_params
-# from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..singlecell import Singlecell
 
@@ -39,10 +38,21 @@ class Shparam(Step):
         """
         This function loads the seg images we want to perform sh parametrization on
         and calculate the sh coefficients. Results are saved as csv files.
+
+        Parameters
+        ----------
+        sc_df: dataframe
+            dataframe containing results from running Singlecell step
+            See the construction of the manifest in singlecell.py for details
         """
 
-        # Fix filepaths and use cell ID as dataframe index
-        # manifest_filepaths_rel2abs(sc_df)
+        # if no dataframe is passed in, load manifest from previous step
+        if sc_df is None:
+            sc_df = pd.read_csv(
+                self.step_local_staging_dir.parent / "singlecell" / "manifest.csv"
+            )
+
+        # Use cell ID as dataframe index
         sc_df = sc_df.set_index("CellId")
 
         # create directory to save data for this step in local staging
