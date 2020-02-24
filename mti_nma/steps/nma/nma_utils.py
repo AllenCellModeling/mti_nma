@@ -1,5 +1,12 @@
 import numpy as np
 import itertools
+import logging
+
+###############################################################################
+
+log = logging.getLogger(__name__)
+
+###############################################################################
 
 
 def run_nma(mesh_verts, mesh_faces):
@@ -76,7 +83,7 @@ def get_hessian_from_mesh(mesh_verts, mesh_faces):
                 xyz2 = mesh_verts[j]
                 R = np.linalg.norm(xyz1 - xyz2)
                 if R == 0:
-                    print('*********Identical vertices found')
+                    log.info('*********Identical vertices found')
                 else:
                     val = -(xyz2[ind2] - xyz1[ind2]) * (xyz2[ind1] - xyz1[ind1]) / R**2
 
