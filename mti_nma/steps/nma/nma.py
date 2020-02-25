@@ -110,7 +110,7 @@ class Nma(Step):
             "fig_FilePath": fig_path,
         }, index=[0])
 
-        # Get Blender app download filepath
+        # If no blender path passed: use default for mac and throw error otherwise
         if path_blender is None:
             if platform == "darwin":
                 log.info(
