@@ -85,12 +85,15 @@ umount ./data/
     - `mti_nma all run`
     - `mti_nma all push`
     
-### Inlcuding your Blender path
-There are several parameters you may want to pass, and one which you
-MUST pass - the path to your blender application - if you are not running
-on a Mac with Blender downloaded in the default location.
+### Passing parameters, inlcuding required Blender path
+There are several parameters you may want to pass (number of samples),
+and one which you MUST pass - the path to your blender application 
+(if you are not running on a Mac with Blender downloaded in the
+default location).
 To pass this (or other parameters) you would run a line like the following"
 - Generic parameter pass
     - `mti_nma all run --<parameter_name> <parameter_value>`
-- Blener pass path
+- Blender path pass
     - `mti_nma all run --path_blender <your_blender_app_path>`
+- Blender path and number of samples pass
+    - `mti_nma all run --nsamples <int> --path_blender <your_blender_app_path>`
