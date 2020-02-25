@@ -45,8 +45,8 @@ https://www.blender.org/download/
 
 The pipeline currently has the Blender path set to the default Mac OS location.
 If you are using another operating system or have downloaded Blender in another
-location, you will nedd to update the Blender path in `color_vertices_by_magnitude`
-in the file `mti_nma/mti_nma/steps/nma/nma_viz.py`.
+location, you will nedd to pass the path to where you have downloaded Blender.
+An exmaple is provided below with the example run line in the "Running" section.
 
 ## Organization
 - Global config settings are in `.config`
@@ -84,3 +84,13 @@ umount ./data/
     - `mti_nma all pull`
     - `mti_nma all run`
     - `mti_nma all push`
+    
+### Inlcuding your Blender path
+There are several parameters you may want to pass, and one which you
+MUST pass - the path to your blender application - if you are not running
+on a Mac with Blender downloaded in the default location.
+To pass this (or other parameters) you would run a line like the following"
+- Generic parameter pass
+    - `mti_nma all run --<parameter_name> <parameter_value>`
+- Blener pass path
+    - `mti_nma all run --path_blender <your_blender_app_path>`
