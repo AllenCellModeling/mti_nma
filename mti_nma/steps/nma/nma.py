@@ -120,8 +120,7 @@ class Nma(Step):
                 raise NotImplementedError(
                     "If using any OS except Mac you must pass in the path to your"
                     "Blender download. For example: "
-                    "mti_nma all run --path_blender <path_to_blender_application>"
-                )
+                    "mti_nma all run --path_blender <path_to_blender_application>")
 
         # Generate heatmap colored mesh
         heatmap_dir = nma_data_dir / "mode_heatmaps"
