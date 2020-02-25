@@ -46,7 +46,7 @@ https://www.blender.org/download/
 The pipeline currently has the Blender path set to the default Mac OS location.
 If you are using another operating system or have downloaded Blender in another
 location, you will nedd to pass the path to where you have downloaded Blender.
-An exmaple is provided below with the example run line in the "Running" section.
+An example is provided below with the example run line in the "Running" section.
 
 ## Organization
 - Global config settings are in `.config`
