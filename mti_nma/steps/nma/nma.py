@@ -111,14 +111,17 @@ class Nma(Step):
         }, index=[0])
 
         # Get Blender app download filepath
-        if platform == "darwin":
-            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
-        else:
-            raise NotImplementedError(
-                "If using any OS except Mac you must pass in the path to your"
-                "Blender download. For example: "
-                "mti_nma all run --path_blender <path_to_blender_application_download>"
-            )
+        if path_blender is None:
+            if platform == "darwin":
+                log.info(
+                    "Run on Mac with no Blender path provided. Using default path.")
+                path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
+            else:
+                raise NotImplementedError(
+                    "If using any OS except Mac you must pass in the path to your"
+                    "Blender download. For example: "
+                    "mti_nma all run --path_blender <path_to_blender_application>"
+                )
 
         # Generate heatmap colored mesh
         heatmap_dir = nma_data_dir / "mode_heatmaps"
