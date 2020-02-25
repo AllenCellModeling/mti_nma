@@ -61,7 +61,8 @@ class Nma(Step):
         Parameters
         ----------
         mode_list: list
-            List of indices of modes to create heatmap files for
+            List of indices of modes to create heatmap files for.
+            Defaults the six lowest energy modes (i.e. 0-5).
 
         avg_df: dataframe
             dataframe containing results from running Avgshape step
