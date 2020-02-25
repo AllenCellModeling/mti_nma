@@ -58,11 +58,11 @@ class Avgshape(Step):
         sh_df = sh_df.set_index("CellId", drop=True)
 
         # Load sh coefficients of all samples in manifest
-        df_coeffs = pd.DataFrame([])
+        coeffs_df = pd.DataFrame([])
         for CellId in sh_df.index:
-            df_coeffs_path = sh_df["CoeffsFilePath"][CellId]
-            df_coeffs = df_coeffs.append(
-                pd.read_csv(df_coeffs_path, index_col=["CellId"]), ignore_index=False
+            coeffs_df_path = sh_df["CoeffsFilePath"][CellId]
+            coeffs_df = coeffs_df.append(
+                pd.read_csv(coeffs_df_path, index_col=["CellId"]), ignore_index=False
             )
 
         # Create directory to hold results from this step
@@ -70,11 +70,11 @@ class Avgshape(Step):
         avg_data_dir.mkdir(parents=True, exist_ok=True)
 
         # Perform some per-cell analysis
-        run_shcoeffs_analysis(df=df_coeffs, savedir=avg_data_dir)
+        run_shcoeffs_analysis(df=coeffs_df, savedir=avg_data_dir)
 
         # Avg the sh coefficients over all samples and create avg mesh
-        df_coeffs_avg = df_coeffs.agg(['mean'])
-        coeffs_avg = df_coeffs_avg.values
+        coeffs_df_avg = coeffs_df.agg(['mean'])
+        coeffs_avg = coeffs_df_avg.values
 
         # Number of columns = 2*lmax*lmax
         lmax = int(np.sqrt(0.5 * coeffs_avg.size))
@@ -92,7 +92,7 @@ class Avgshape(Step):
         save_mesh_as_stl(mesh_avg, str(avg_data_dir / "avgshape.stl"))
 
         # Save avg coeffs to csv file
-        df_coeffs_avg.to_csv(
+        coeffs_df_avg.to_csv(
             str(avg_data_dir / "avgshape.csv")
         )
 
