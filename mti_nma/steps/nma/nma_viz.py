@@ -85,3 +85,6 @@ def color_vertices_by_magnitude(
     # If an error occurs, log it as output to the terminal
     if p.stderr is not None:
         log.info(p.stderr)
+
+    # Closes subprocess but not until Blender has finished
+    p.wait()
