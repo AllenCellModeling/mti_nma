@@ -94,43 +94,6 @@ def get_vtk_verts_faces(polydata):
     return mesh_verts, mesh_faces
 
 
-def uniform_trimesh(path_input_mesh, mesh_density, path_output):
-
-    """
-    Creates blender file with mesh vertices colored by eigenvector 
-    magnitudes for a given mode and saves as .blend file
-    The Python script to do this must be run in Blender, so we open Blender
-    in bash and run the python script there.
-
-    If your local copy of Blender is in a different location than the current
-    path listed, change the filepath at the start of the `bl` string to 
-    your own Blender path.
-
-    The `-b` flag runs Blender headlessly (doesn't open the app GUI) and the
-    `-P` flag tells Blender you want to run the python script whose filepath is
-    provided after this flag. The `--` indicated to blender that the arguments
-    following it are arguments for the python script, not for Blender.
-
-    Parameters
-    ----------
-    path_input_mesh: str
-        Filepath to input mesh to be colored (.stl)
-    path_vmags: str
-        Filepath to input magnitudes of eigenvector used to color mesh (.npy)
-    mode: int
-        Index of mode whose eigenvector magnitudes will be used to color mesh
-    path_output: str
-        Filepath to output file of colored mesh object (.blend)
-    """
-
-    bl = "/Applications/Blender.app/Contents/MacOS/Blender -b -P "
-    psc = "/Users/juliec/mti/mti_nma/mti_nma/steps/avgshape/uniform_trimesh.py -- "
-    args = f"-i {path_input_mesh} -o {path_output} -d  {mesh_density}"
-    cmd = bl + psc + args
-    p = subprocess.Popen(cmd, shell=True, executable="/bin/bash")
-    p.terminate()
-
-
 def save_mesh_as_stl(polydata, fname):
 
     # get mesh vertices and faces from polydata object

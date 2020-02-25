@@ -172,43 +172,47 @@ def crop_object(raw, seg, obj_label, isotropic=None):
 
     _, y, x = np.where(seg == obj_label)
 
-    xmin = x.min() - offset
-    xmax = x.max() + offset
-    ymin = y.min() - offset
-    ymax = y.max() + offset
+    if x.shape[0] > 0:
 
-    seg = seg[:, ymin:ymax, xmin:xmax]
-    raw = raw[:, ymin:ymax, xmin:xmax]
+        xmin = x.min() - offset
+        xmax = x.max() + offset
+        ymin = y.min() - offset
+        ymax = y.max() + offset
 
-    # Resize to isotropic volume
-    if isotropic is not None:
+        seg = seg[:, ymin:ymax, xmin:xmax]
+        raw = raw[:, ymin:ymax, xmin:xmax]
 
-        dim = raw.shape
+        # Resize to isotropic volume
+        if isotropic is not None:
 
-        (sx, sy, sz) = isotropic
+            dim = raw.shape
 
-        # We fix the target scale to 0.135um. Compatible with 40X
+            (sx, sy, sz) = isotropic
 
-        target_scale = 0.135
+            # We fix the target scale to 0.135um. Compatible with 40X
 
-        output_shape = np.array([
-            sz / target_scale * dim[0],
-            sy / target_scale * dim[1],
-            sx / target_scale * dim[2]], dtype=np.int)
+            target_scale = 0.135
 
-        raw = sktrans.resize(
-            image=raw,
-            output_shape=output_shape,
-            preserve_range=True,
-            anti_aliasing=True).astype(np.uint16)
+            output_shape = np.array([
+                sz / target_scale * dim[0],
+                sy / target_scale * dim[1],
+                sx / target_scale * dim[2]], dtype=np.int)
 
-        seg = sktrans.resize(
-            image=seg,
-            output_shape=output_shape,
-            order=0,
-            preserve_range=True,
-            anti_aliasing=False).astype(np.uint8)
+            raw = sktrans.resize(
+                image=raw,
+                output_shape=output_shape,
+                preserve_range=True,
+                anti_aliasing=True).astype(np.uint16)
 
-    seg = (seg == obj_label).astype(np.uint8)
+            seg = sktrans.resize(
+                image=seg,
+                output_shape=output_shape,
+                order=0,
+                preserve_range=True,
+                anti_aliasing=False).astype(np.uint8)
 
-    return raw, seg
+        seg = (seg == obj_label).astype(np.uint8)
+
+        return raw, seg
+    else:
+        return None, None

@@ -30,7 +30,7 @@ class Singlecell(Step):
         )
 
     @log_run_params
-    def run(self, cell_line_id='AICS-13', nsamples=2, **kwargs):
+    def run(self, cell_line_id="AICS-13", nsamples=50, **kwargs):
 
         """
             This function will collect all FOVs of a particular cell
@@ -39,7 +39,7 @@ class Singlecell(Step):
             corresponds to one FOV.
 
             The dataframe is sampled according to the input parameter
-            `nsampels`.
+            `nsamples`.
 
             Next we select at random one nucleus from each of the remaining
             FOVs to perform nma analysis on.
@@ -47,12 +47,6 @@ class Singlecell(Step):
             Raw and segmented images of selected nuclei are cropped and resized
             to isotropic volume with pixel size 0.135um (compatitle with 40X).
             Images are also stored in the usual `ZYX` order.
-
-            :: IMPORTANT:
-            The line
-                raw = AICSImage(
-                    df.ReadPathRaw[FOVId]).get_image_data("ZYX", S=0, T=0, C=-2)
-            may not return the nuclear channel for cell lines other than Lamin.
 
 
         Parameters
@@ -79,6 +73,10 @@ class Singlecell(Step):
                 f"Sampling {nsamples} FOVs now.")
             df = df.sample(n=nsamples)
 
+            # create directory to save data for this step in local staging
+            sc_data_dir = self.step_local_staging_dir / "singlecell_data"
+            sc_data_dir.mkdir(parents=True, exist_ok=True)
+
             # Process each FOV in dataframe
             for fov_id in tqdm(df.index):
 
@@ -104,32 +102,36 @@ class Singlecell(Step):
                     obj_label=obj_label,
                     isotropic=(sx, sy, sz))
 
-                # Create an unique id for this object
-                cell_id = uuid.uuid4().hex[:8]
+                # Only proceed with this cell if image isn't empty
+                if raw is not None:
 
-                # Save images and write to manifest
-                with writers.OmeTiffWriter(
-                    self.step_local_staging_dir.as_posix() + f"/{cell_id}.raw.tif")
-                as writer:
-                    writer.save(raw, dimension_order="ZYX")
+                    # Create an unique id for this object
+                    cell_id = uuid.uuid4().hex[:8]
 
-                with writers.OmeTiffWriter(
-                    self.step_local_staging_dir.as_posix() + f"/{cell_id}.seg.tif")
-                as writer:
-                    writer.save(seg, dimension_order="ZYX")
+                    # Save images and write to manifest
+                    rawpath = sc_data_dir.as_posix() + f"/{cell_id}.raw.tif"
+                    with writers.OmeTiffWriter(rawpath) as writer:
+                        writer.save(raw, dimension_order="ZYX")
 
-                series = pd.Series({
-                    "RawFilePath": f"{cell_id}.raw.tif",
-                    "SegFilePath": f"{cell_id}.seg.tif",
-                    "OriginalFOVPathRaw": df.ReadPathRaw[fov_id],
-                    "OriginalFOVPathSeg": df.ReadPathSeg[fov_id],
-                    "FOVId": fov_id,
-                    "CellId": cell_id}, name=cell_id)
+                    segpath = sc_data_dir.as_posix() + f"/{cell_id}.seg.tif"
+                    with writers.OmeTiffWriter(segpath) as writer:
+                        writer.save(seg, dimension_order="ZYX")
 
-                self.manifest = self.manifest.append(series)
+                    series = pd.Series({
+                        "RawFilePath": sc_data_dir / f"{cell_id}.raw.tif",
+                        "SegFilePath": sc_data_dir / f"{cell_id}.seg.tif",
+                        "OriginalFOVPathRaw": df.ReadPathRaw[fov_id],
+                        "OriginalFOVPathSeg": df.ReadPathSeg[fov_id],
+                        "FOVId": fov_id,
+                        "CellId": cell_id}, name=cell_id)
 
-            # save manifest as csv
-            self.manifest = self.manifest.astype({"FOVId": "int64"})
-            self.manifest.to_csv(
-                self.step_local_staging_dir / "manifest.csv", index=False
-            )
+                    self.manifest = self.manifest.append(series)
+                else:
+                    log.info("Rejected FOV: {fov_id} for empty images.")
+
+                # save manifest as csv
+                self.manifest = self.manifest.astype({"FOVId": "int64"})
+                self.manifest.to_csv(
+                    self.step_local_staging_dir / "manifest.csv", index=False
+                )
+            return self.manifest

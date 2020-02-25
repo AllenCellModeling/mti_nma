@@ -1,7 +1,19 @@
 import numpy as np
 import seaborn as sb
 import matplotlib.pyplot as plt
+import matplotlib
 import subprocess
+from pathlib import Path
+import logging
+
+# Run matplotlib in the background
+matplotlib.use('Agg')
+
+###############################################################################
+
+log = logging.getLogger(__name__)
+
+###############################################################################
 
 
 def draw_whist(w):
@@ -63,7 +75,16 @@ def color_vertices_by_magnitude(
         Filepath to output file of colored mesh object (.blend)
     """
 
-    args = f"-i {path_input_mesh} -o {path_output} -m  {mode} -v {path_vmags}"
-    cmd = f"{path_blender} -b -P color_vertices -- {args}"
+    args = f"-i {path_input_mesh} -o {path_output} -m {mode} -v {path_vmags}"
+    python_callable = str(
+        Path(__file__).parent.parent.parent / "bin" / "color_vertices.py"
+    )
+    cmd = f"{path_blender} -b -P {python_callable} -- {args}"
     p = subprocess.Popen(cmd, shell=True, executable="/bin/bash")
-    p.terminate()
+
+    # If an error occurs, log it as output to the terminal
+    if p.stderr is not None:
+        log.info(p.stderr)
+
+    # Closes subprocess but not until Blender has finished
+    p.wait()

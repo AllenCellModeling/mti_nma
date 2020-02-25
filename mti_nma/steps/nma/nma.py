@@ -4,16 +4,20 @@
 import logging
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
+from sys import platform
+from typing import List, Optional
 import vtk
-import platform
 
 from datastep import Step, log_run_params
-from datastep.file_utils import manifest_filepaths_rel2abs
 
 from ..avgshape import Avgshape
-from .nma_utils import run_nma, get_eigvec_mags
+from .nma_utils import run_nma, get_eigvec_mags, get_vtk_verts_faces
 from .nma_viz import draw_whist, color_vertices_by_magnitude
+
+# Run matplotlib in the background
+matplotlib.use('Agg')
 
 ###############################################################################
 
@@ -38,8 +42,8 @@ class Nma(Step):
 
     def __init__(
         self,
-        direct_upstream_tasks=[Avgshape],
-        filepath_columns=["w_FilePath", "v_FilePath", "fig_FilePath"]
+        direct_upstream_tasks: Optional[List["Step"]] = [Avgshape],
+        filepath_columns=["w_FilePath", "v_FilePath", "vmag_FilePath", "fig_FilePath"]
     ):
         super().__init__(
             direct_upstream_tasks=direct_upstream_tasks,
@@ -47,33 +51,44 @@ class Nma(Step):
         )
 
     @log_run_params
-    def run(self, mode_list=list(range(6)), **kwargs):
+    def run(self, mode_list=list(range(6)), avg_df=None, path_blender=None, **kwargs):
+        """
+        This function will run normal mode analysis on an average mesh.
+        It will then create heatmaps of the average mesh for the desired set of modes,
+        where the coloring shows the relative amplitudes of vertex oscillation in 
+        the mode.
 
-        if platform == "darwin":
-            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
-        # elif platform == "linux" or platform == "linux2":
-        #     pass
-        else:
-            raise NotImplementedError(
-                "OSes other than Mac are currently not supported."
+        Parameters
+        ----------
+        mode_list: list
+            List of indices of modes to create heatmap files for
+
+        avg_df: dataframe
+            dataframe containing results from running Avgshape step
+            See the construction of the manifest in avgshape.py for details
+
+        path_blender: str
+            Path to your local download of the Blender Application.
+            If on Mac, the default Blender Mac download location is used.
+        """
+
+        # if no dataframe is passed in, load manifest from previous step
+        if avg_df is None:
+            avg_df = pd.read_csv(
+                self.step_local_staging_dir.parent / "avgshape" / "manifest.csv"
             )
-
-        # Load avg shape manifest and read avg mesh file out
-        avgshape = Avgshape()
-        manifest_filepaths_rel2abs(avgshape)
-        df = avgshape.manifest.copy()
-        reader = vtk.vtkPolyDataReader()
-        reader.SetFileName(
-            df[df["Label"] == "Average_nuclear_mesh"]["AvgShapeFilePath"].iloc[0])
-        reader.Update()
-        polydata = reader.GetOutput()
 
         # Create directory to hold NMA results
         nma_data_dir = self.step_local_staging_dir / "nma_data"
         nma_data_dir.mkdir(parents=True, exist_ok=True)
 
-        # run NMA on avg mesh and save results to local stagings
-        w, v = run_nma(polydata)
+        reader = vtk.vtkPolyDataReader()
+        reader.SetFileName(str(avg_df["AvgShapeFilePath"].iloc[0]))
+        reader.Update()
+        polydata = reader.GetOutput()
+
+        verts, faces = get_vtk_verts_faces(polydata)
+        w, v = run_nma(verts, faces)
         draw_whist(w)
         vmags = get_eigvec_mags(v)
 
@@ -95,10 +110,20 @@ class Nma(Step):
             "fig_FilePath": fig_path,
         }, index=[0])
 
+        # Get Blender app download filepath
+        if platform == "darwin":
+            path_blender = "/Applications/Blender.app/Contents/MacOS/Blender"
+        else:
+            raise NotImplementedError(
+                "If using any OS except Mac you must pass in the path to your"
+                "Blender download. For example: "
+                "mti_nma all run --path_blender <path_to_blender_application_download>"
+            )
+
+        # Generate heatmap colored mesh
         heatmap_dir = nma_data_dir / "mode_heatmaps"
         heatmap_dir.mkdir(parents=True, exist_ok=True)
-        path_input_mesh = df[
-            df["Label"] == "Average_nuclear_mesh"]["AvgShapeFilePathStl"].iloc[0]
+        path_input_mesh = avg_df["AvgShapeFilePathStl"].iloc[0]
         for mode in mode_list:
             path_output = heatmap_dir / f"mode_{mode}.blend"
             color_vertices_by_magnitude(

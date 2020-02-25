@@ -1,8 +1,15 @@
 import numpy as np
 import itertools
+import logging
+
+###############################################################################
+
+log = logging.getLogger(__name__)
+
+###############################################################################
 
 
-def run_nma(polydata):
+def run_nma(mesh_verts, mesh_faces):
     """
     Runs normal mode analysis on a given mesh by:
     1) Extracting vertices and faces from vtk polydata mesh
@@ -25,60 +32,9 @@ def run_nma(polydata):
         Figure containg a histogram of eigenvalues
     """
 
-    mesh_verts, mesh_faces = get_vtk_verts_faces(polydata)
     hess = get_hessian_from_mesh(mesh_verts, mesh_faces)
     w, v = get_eigs_from_mesh(hess)
     return w, v
-
-
-def get_vtk_verts_faces(polydata):
-    """
-    Extracts the mesh vertices and faces encoded in the VTK polydata object
-
-    Parameters
-    ----------
-    polydata: VTK polydata object
-        Mesh extracted from .vtk file 
-    Returns
-    -------
-    mesh_verts: Numpy 2D array
-        An array of arrays giving the positions of all mesh vertices
-        mesh_verts[i][j] gives position of the ith vertex, in the jth spatial dimension
-    vmesh_faces: Numpy 2D array
-        An array of arrays listing which vertices are connected to form each mesh faces
-        mesh_faces[i] gives an array of 3 ints, indicating the indices of the
-        mesh_verts indices of vertices connected to form this trimesh faces
-    """
-
-    def get_faces(i, polydata):
-        """
-        Extracts vertices making up the ith face of the polydata mesh
-
-         Parameters
-        ----------
-        i : int
-            Index of the face for which we want to get the vertex points
-        polydata: VTK polydata object
-            Mesh extracted from .vtk file 
-        Returns
-        -------
-        mesh_verts: Numpy 1D array
-            An array of indices of vertices making up the three vertices of this face
-        """
-
-        cell = polydata.GetCell(i)
-        ids = cell.GetPointIds()
-        return np.array([ids.GetId(j) for j in range(ids.GetNumberOfIds())])
-
-    # Collect all faces and vertices into arrays
-    mesh_faces = np.array(
-        [get_faces(i, polydata) for i in range(polydata.GetNumberOfCells())]
-    )
-    mesh_verts = np.array(
-        [np.array(
-            polydata.GetPoint(i)) for i in range(polydata.GetNumberOfPoints())]
-    )
-    return mesh_verts, mesh_faces
 
 
 def get_hessian_from_mesh(mesh_verts, mesh_faces):
@@ -126,7 +82,10 @@ def get_hessian_from_mesh(mesh_verts, mesh_faces):
                 xyz1 = mesh_verts[i]
                 xyz2 = mesh_verts[j]
                 R = np.linalg.norm(xyz1 - xyz2)
-                val = -(xyz2[ind2] - xyz1[ind2]) * (xyz2[ind1] - xyz1[ind1]) / (R**2)
+                if R == 0:
+                    log.info('*********Identical vertices found')
+                else:
+                    val = -(xyz2[ind2] - xyz1[ind2]) * (xyz2[ind1] - xyz1[ind1]) / R**2
 
                 hess[npts * ind1 + i, npts * ind2 + j] = val
                 hess[npts * ind2 + j, npts * ind1 + i] = val
@@ -202,3 +161,53 @@ def get_eigvec_mags(v):
         mags = [np.linalg.norm(vecs[i], axis=0) for i in range(nverts)]
         vmags[:, j] = mags / max(mags)
     return vmags
+
+
+def get_vtk_verts_faces(polydata):
+    """
+    Extracts the mesh vertices and faces encoded in the VTK polydata object
+
+    Parameters
+    ----------
+    polydata: VTK polydata object
+        Mesh extracted from .vtk file 
+    Returns
+    -------
+    mesh_verts: Numpy 2D array
+        An array of arrays giving the positions of all mesh vertices
+        mesh_verts[i][j] gives position of the ith vertex, in the jth spatial dimension
+    vmesh_faces: Numpy 2D array
+        An array of arrays listing which vertices are connected to form each mesh faces
+        mesh_faces[i] gives an array of 3 ints, indicating the indices of the
+        mesh_verts indices of vertices connected to form this trimesh faces
+    """
+
+    def get_faces(i, polydata):
+        """
+        Extracts vertices making up the ith face of the polydata mesh
+
+         Parameters
+        ----------
+        i : int
+            Index of the face for which we want to get the vertex points
+        polydata: VTK polydata object
+            Mesh extracted from .vtk file 
+        Returns
+        -------
+        mesh_verts: Numpy 1D array
+            An array of indices of vertices making up the three vertices of this face
+        """
+
+        cell = polydata.GetCell(i)
+        ids = cell.GetPointIds()
+        return np.array([ids.GetId(j) for j in range(ids.GetNumberOfIds())])
+
+    # Collect all faces and vertices into arrays
+    mesh_faces = np.array(
+        [get_faces(i, polydata) for i in range(polydata.GetNumberOfCells())]
+    )
+    mesh_verts = np.array(
+        [np.array(
+            polydata.GetPoint(i)) for i in range(polydata.GetNumberOfPoints())]
+    )
+    return mesh_verts, mesh_faces
