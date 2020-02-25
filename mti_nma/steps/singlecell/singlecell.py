@@ -30,7 +30,7 @@ class Singlecell(Step):
         )
 
     @log_run_params
-    def run(self, cell_line_id="AICS-13", nsamples=50, **kwargs):
+    def run(self, cell_line_id="AICS-13", nsamples=3, **kwargs):
 
         """
             This function will collect all FOVs of a particular cell
@@ -84,21 +84,27 @@ class Singlecell(Step):
                 sy = df.PixelScaleY[fov_id]
                 sz = df.PixelScaleZ[fov_id]
 
+                import pdb
+                pdb.set_trace()
+
                 # Use H3342 for nuclear channel
                 ch_ind = AICSImage(
                     df.ReadPathRaw[fov_id]).get_channel_names().index('H3342')
                 raw = AICSImage(
                     df.ReadPathRaw[fov_id]).get_image_data("ZYX", S=0, T=0, C=ch_ind)
-                seg = AICSImage(
-                    df.ReadPathSeg[fov_id]).get_image_data("ZYX", S=0, T=0, C=0)
+                seg_nuc = AICSImage(
+                    df.ReadPathSegNuc[fov_id]).get_image_data("ZYX", S=0, T=0, C=0)
+                seg_cell = AICSImage(
+                    df.ReadPathSegCell[fov_id]).get_image_data("ZYX", S=0, T=0, C=0)
 
                 # Select one label from seg image at random
-                obj_label = np.random.randint(low=1, high=1 + seg.max())
+                obj_label = np.random.randint(low=1, high=1 + raw.max())
 
                 # Center and crop raw and images to set size
-                raw, seg = crop_object(
+                raw, seg_nuc, seg_cell = crop_object(
                     raw=raw,
-                    seg=seg,
+                    seg_nuc=seg_nuc,
+                    seg_cell=seg_cell,
                     obj_label=obj_label,
                     isotropic=(sx, sy, sz))
 
@@ -113,15 +119,21 @@ class Singlecell(Step):
                     with writers.OmeTiffWriter(rawpath) as writer:
                         writer.save(raw, dimension_order="ZYX")
 
-                    segpath = sc_data_dir.as_posix() + f"/{cell_id}.seg.tif"
-                    with writers.OmeTiffWriter(segpath) as writer:
-                        writer.save(seg, dimension_order="ZYX")
+                    segpath_nuc = sc_data_dir.as_posix() + f"/{cell_id}.seg_nuc.tif"
+                    with writers.OmeTiffWriter(segpath_nuc) as writer:
+                        writer.save(seg_nuc, dimension_order="ZYX")
+
+                    segpath_cell = sc_data_dir.as_posix() + f"/{cell_id}.seg_cell.tif"
+                    with writers.OmeTiffWriter(segpath_cell) as writer:
+                        writer.save(seg_cell, dimension_order="ZYX")
 
                     series = pd.Series({
                         "RawFilePath": sc_data_dir / f"{cell_id}.raw.tif",
-                        "SegFilePath": sc_data_dir / f"{cell_id}.seg.tif",
+                        "SegNucFilePath": sc_data_dir / f"{cell_id}.seg_nuc.tif",
+                        "SegCellFilePath": sc_data_dir / f"{cell_id}.seg_cell.tif",
                         "OriginalFOVPathRaw": df.ReadPathRaw[fov_id],
-                        "OriginalFOVPathSeg": df.ReadPathSeg[fov_id],
+                        "OriginalFOVPathSegNuc": df.ReadPathSegNuc[fov_id],
+                        "OriginalFOVPathSegCell": df.ReadPathSegCell[fov_id],
                         "FOVId": fov_id,
                         "CellId": cell_id}, name=cell_id)
 
@@ -129,9 +141,12 @@ class Singlecell(Step):
                 else:
                     log.info("Rejected FOV: {fov_id} for empty images.")
 
-                # save manifest as csv
-                self.manifest = self.manifest.astype({"FOVId": "int64"})
-                self.manifest.to_csv(
-                    self.step_local_staging_dir / "manifest.csv", index=False
-                )
+            import pdb
+            pdb.set_trace()
+
+            # save manifest as csv
+            self.manifest = self.manifest.astype({"FOVId": "int64"})
+            self.manifest.to_csv(
+                self.step_local_staging_dir / "manifest.csv", index=False
+            )
             return self.manifest

@@ -59,12 +59,12 @@ def query_data_from_labkey(cell_line_id):
 
     )
 
-    query_seg = lka(host="aics").select_rows_as_list(               
+    query_seg_nuc = lka(host="aics").select_rows_as_list(               
 
         schema_name="fms",
         query_name="FileUI",
         filter_array=filters + [
-            # Nuclei segmentation only
+            # Nuclear segmentations
             lk.query.QueryFilter("ReadPath", "nucWholeIndexImageScale", "contains")
         ],
         columns=[
@@ -74,31 +74,57 @@ def query_data_from_labkey(cell_line_id):
 
     )
 
-    df_seg = fix_filepaths(pd.DataFrame(query_seg))  # FOVIds are returned as list
-    df_seg = df_seg.rename(columns={"FOVId": "FOVIdList", "ReadPath": "ReadPathSeg"})
+    query_seg_cell = lka(host="aics").select_rows_as_list(               
+
+        schema_name="fms",
+        query_name="FileUI",
+        filter_array=filters + [
+            # Cell segmentations
+            lk.query.QueryFilter("ReadPath", "cellWholeIndexImageScale", "contains")
+        ],
+        columns=[
+            "FOVId",
+            "ReadPath",
+        ]
+
+    )
+
+    df_seg_nuc = fix_filepaths(pd.DataFrame(query_seg_nuc))
+    df_seg_nuc = df_seg_nuc.rename(
+        columns={"FOVId": "FOVIdList", "ReadPath": "ReadPathSegNuc"})
+
+    df_seg_cell = fix_filepaths(pd.DataFrame(query_seg_cell))
+    df_seg_cell = df_seg_cell.rename(
+        columns={"FOVId": "FOVIdList", "ReadPath": "ReadPathSegCell"})
 
     df_raw = fix_filepaths(pd.DataFrame(query_raw))
     df_raw = df_raw.rename(columns={"SourceImageFileId/LocalFilePath": "ReadPathRaw"})
 
     # Merging raw and seg tables
-    for index in df_seg.index:
-        fov_id = df_seg.FOVIdList[index]
+    df_seg_nuc = process_seg_df(df_seg_nuc).set_index("FOVId")
+    df_seg_cell = process_seg_df(df_seg_cell).set_index("FOVId")
+    df_raw = df_raw.set_index("FOVId")
+
+    df_tmp = df_raw.merge(df_seg_nuc, how="inner", left_index=True, right_index=True)
+    df = df_tmp.merge(df_seg_cell, how="inner", left_index=True, right_index=True)
+
+    return df
+
+
+def process_seg_df(df): 
+    for index in df.index:
+        fov_id = df.FOVIdList[index]
         # Some FOVs on labkey do not have segmentation available and
         # therefore fov_id is an empty list.
         if len(fov_id):
             fov_id = fov_id[0]
         else:
             fov_id = None
-        df_seg.loc[index, "FOVId"] = fov_id
-    df_seg = df_seg.dropna()
-    df_seg = df_seg.astype({"FOVId": "int64"})
-    df_seg = df_seg.drop(columns=["FOVIdList"])
+        df.loc[index, "FOVId"] = fov_id
 
-    df_seg = df_seg.set_index("FOVId")
-    df_raw = df_raw.set_index("FOVId")
-
-    df = df_raw.merge(df_seg, how="inner", left_index=True, right_index=True)
-
+    df = df.dropna()
+    df = df.astype({"FOVId": "int64"})
+    df = df.drop(columns=["FOVIdList"])
     return df
 
 
@@ -139,7 +165,7 @@ def fix_filepaths(df):
     return df
 
 
-def crop_object(raw, seg, obj_label, isotropic=None):
+def crop_object(raw, seg_nuc, seg_cell, obj_label, isotropic=None):
 
     """
         This function returns a cropped area around an object of interest
@@ -168,9 +194,10 @@ def crop_object(raw, seg, obj_label, isotropic=None):
 
     offset = 16
     raw = np.pad(raw, ((0, 0), (offset, offset), (offset, offset)), "constant")
-    seg = np.pad(seg, ((0, 0), (offset, offset), (offset, offset)), "constant")
+    seg_nuc = np.pad(seg_nuc, ((0, 0), (offset, offset), (offset, offset)), "constant")
+    seg_cell = np.pad(seg_cell, ((0, 0), (offset, offset), (offset, offset)), "constant")
 
-    _, y, x = np.where(seg == obj_label)
+    _, y, x = np.where(seg_cell == obj_label)
 
     if x.shape[0] > 0:
 
@@ -179,7 +206,9 @@ def crop_object(raw, seg, obj_label, isotropic=None):
         ymin = y.min() - offset
         ymax = y.max() + offset
 
-        seg = seg[:, ymin:ymax, xmin:xmax]
+        raw = raw[:, ymin:ymax, xmin:xmax]
+        seg_nuc = seg_nuc[:, ymin:ymax, xmin:xmax]
+        seg_cell = seg_cell[:, ymin:ymax, xmin:xmax]
         raw = raw[:, ymin:ymax, xmin:xmax]
 
         # Resize to isotropic volume
@@ -204,15 +233,23 @@ def crop_object(raw, seg, obj_label, isotropic=None):
                 preserve_range=True,
                 anti_aliasing=True).astype(np.uint16)
 
-            seg = sktrans.resize(
-                image=seg,
+            seg_nuc = sktrans.resize(
+                image=seg_nuc,
                 output_shape=output_shape,
                 order=0,
                 preserve_range=True,
                 anti_aliasing=False).astype(np.uint8)
 
-        seg = (seg == obj_label).astype(np.uint8)
+            seg_cell = sktrans.resize(
+                image=seg_cell,
+                output_shape=output_shape,
+                order=0,
+                preserve_range=True,
+                anti_aliasing=False).astype(np.uint8)
 
-        return raw, seg
+        seg_nuc = (seg_nuc == obj_label).astype(np.uint8)
+        seg_cell = (seg_cell == obj_label).astype(np.uint8)
+
+        return raw, seg_nuc, seg_cell
     else:
-        return None, None
+        return None, None, None
