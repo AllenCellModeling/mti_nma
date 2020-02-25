@@ -98,7 +98,7 @@ class Singlecell(Step):
                     df.ReadPathSegCell[fov_id]).get_image_data("ZYX", S=0, T=0, C=0)
 
                 # Select one label from seg image at random
-                obj_label = np.random.randint(low=1, high=1 + raw.max())
+                obj_label = np.random.randint(low=1, high=1 + seg_nuc.max())
 
                 # Center and crop raw and images to set size
                 raw, seg_nuc, seg_cell = crop_object(
