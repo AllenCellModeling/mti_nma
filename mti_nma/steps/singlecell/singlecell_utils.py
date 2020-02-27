@@ -1,13 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from sys import platform
+
 import numpy as np
 import pandas as pd
-import labkey as lk
-from lkaccess import LabKey as lka
+from lkaccess import LabKey, contexts
 from skimage import transform as sktrans
-from sys import platform
 
 
 def query_data_from_labkey(cell_line_id):
-
     """
         This function returns a dataframe containing all the FOVs available
         on LabKey for a particular cell line.
@@ -26,109 +28,42 @@ def query_data_from_labkey(cell_line_id):
     """
 
     # Query for labkey data
+    db = LabKey(contexts.PROD)
 
-    filters = [
-        # 100X FOVs
-        lk.query.QueryFilter("Objective", "100.0", "eq"),
-        # Production data
-        lk.query.QueryFilter(
-            "WellId/PlateId/PlateTypeId/Name", "Production", "contains"),
-        # Pipeline 4
-        lk.query.QueryFilter("WellId/PlateId/Workflow/Name", "4", "contains"),
-        # Not celigo images
-        lk.query.QueryFilter("InstrumentId/Name", "Celigo", "neqornull"),
-        # Passed QC
-        lk.query.QueryFilter("QCStatusId/Name", "Passed", "eq"),
-        # Cell line (13 = Lamin)
-        lk.query.QueryFilter(
-            "SourceImageFileId/cell_line_id/Name", cell_line_id, "contains")
-    ]
+    # Get production data for cell line
+    data = db.dataset.get_pipeline_4_production_cells([("CellLine", cell_line_id)])
+    data = pd.DataFrame(data)
 
-    query_raw = lka(host="aics").select_rows_as_list(
+    # Because we are querying the `cells` dataset and not the `fovs` dataset
+    # We need to clean up just a tiny bit
 
-        schema_name="microscopy",
-        query_name="FOV",
-        filter_array=filters,
-        columns=[
-            "FOVId",
-            "PixelScaleX",
-            "PixelScaleY",
-            "PixelScaleZ",
-            "SourceImageFileId/LocalFilePath"
-        ]
+    # NOTE: Tyler is looking into this
+    # The only reason we query the `cells` dataset is for the `PixelScale` numbers
+    # But those _should_ be exposed on the `fovs` dataset so he is looking into
+    # why they aren't. In the future this query should be much simpler.
 
-    )
+    # Select down to just the columns we want
+    data = data[[
+        "FOVId", "CellLine", "Gene", "Protein",
+        "PixelScaleX", "PixelScaleY", "PixelScaleZ",
+        "SourceReadPath", "ChannelNumber405",
+        "ChannelNumber638", "ChannelNumberBrightfield",
+        "NucleusSegmentationReadPath",
+        "MembraneSegmentationReadPath",
+        "StructureSegmentationReadPath"
+    ]]
 
-    query_seg_nuc = lka(host="aics").select_rows_as_list(               
+    # Drop duplicates because this dataset will have a row for every cell
+    # instead of per-FOV
+    data = data.drop_duplicates("FOVId")
 
-        schema_name="fms",
-        query_name="FileUI",
-        filter_array=filters + [
-            # Nuclear segmentations
-            lk.query.QueryFilter("ReadPath", "nucWholeIndexImageScale", "contains")
-        ],
-        columns=[
-            "FOVId",
-            "ReadPath",
-        ]
+    # Fix all filepaths
+    data = fix_filepaths(data)
 
-    )
-
-    query_seg_cell = lka(host="aics").select_rows_as_list(               
-
-        schema_name="fms",
-        query_name="FileUI",
-        filter_array=filters + [
-            # Cell segmentations
-            lk.query.QueryFilter("ReadPath", "cellWholeIndexImageScale", "contains")
-        ],
-        columns=[
-            "FOVId",
-            "ReadPath",
-        ]
-
-    )
-
-    df_seg_nuc = fix_filepaths(pd.DataFrame(query_seg_nuc))
-    df_seg_nuc = df_seg_nuc.rename(
-        columns={"FOVId": "FOVIdList", "ReadPath": "ReadPathSegNuc"})
-
-    df_seg_cell = fix_filepaths(pd.DataFrame(query_seg_cell))
-    df_seg_cell = df_seg_cell.rename(
-        columns={"FOVId": "FOVIdList", "ReadPath": "ReadPathSegCell"})
-
-    df_raw = fix_filepaths(pd.DataFrame(query_raw))
-    df_raw = df_raw.rename(columns={"SourceImageFileId/LocalFilePath": "ReadPathRaw"})
-
-    # Merging raw and seg tables
-    df_seg_nuc = process_seg_df(df_seg_nuc).set_index("FOVId")
-    df_seg_cell = process_seg_df(df_seg_cell).set_index("FOVId")
-    df_raw = df_raw.set_index("FOVId")
-
-    df_tmp = df_raw.merge(df_seg_nuc, how="inner", left_index=True, right_index=True)
-    df = df_tmp.merge(df_seg_cell, how="inner", left_index=True, right_index=True)
-
-    # debugging
-    from aicsimageio import AICSImage
-    count = 0
-    for fov_id in df.index:
-        # if fov_id isn't an int, get the first element
-        if not isinstance(fov_id, int):
-            fov_id.to_list()
-            print(f"FovID: {fov_id}")
-            n_id = len(fov_id)
-            print(f"Length: {n_id}")
-            fov_id = fov_id.iloc[0]
-        # check whether it contains the known nuclear channel
-        if AICSImage(df.ReadPathRaw[fov_id]).get_channel_names().index('H3342') is None:
-            count += 1
-    print(count)
-    print(df.index.shape[0])
-
-    return df
+    return data
 
 
-def process_seg_df(df): 
+def process_seg_df(df):
     for index in df.index:
         fov_id = df.FOVIdList[index]
         # Some FOVs on labkey do not have segmentation available and
