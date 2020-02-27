@@ -84,9 +84,6 @@ class Singlecell(Step):
                 sy = df.PixelScaleY[fov_id]
                 sz = df.PixelScaleZ[fov_id]
 
-                import pdb
-                pdb.set_trace()
-
                 # Use H3342 for nuclear channel
                 ch_ind = AICSImage(
                     df.ReadPathRaw[fov_id]).get_channel_names().index('H3342')

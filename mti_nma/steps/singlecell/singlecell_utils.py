@@ -108,6 +108,23 @@ def query_data_from_labkey(cell_line_id):
     df_tmp = df_raw.merge(df_seg_nuc, how="inner", left_index=True, right_index=True)
     df = df_tmp.merge(df_seg_cell, how="inner", left_index=True, right_index=True)
 
+    # debugging
+    from aicsimageio import AICSImage
+    count = 0
+    for fov_id in df.index:
+        # if fov_id isn't an int, get the first element
+        if not isinstance(fov_id, int):
+            fov_id.to_list()
+            print(f"FovID: {fov_id}")
+            n_id = len(fov_id)
+            print(f"Length: {n_id}")
+            fov_id = fov_id.iloc[0]
+        # check whether it contains the known nuclear channel
+        if AICSImage(df.ReadPathRaw[fov_id]).get_channel_names().index('H3342') is None:
+            count += 1
+    print(count)
+    print(df.index.shape[0])
+
     return df
 
 
