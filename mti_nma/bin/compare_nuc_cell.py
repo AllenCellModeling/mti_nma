@@ -42,8 +42,8 @@ def draw_whist():
         N = 30
     bins = np.linspace(minval, maxval, N)
 
-    sb.distplot(w_nuc, kde=False, bins=bins, label="Nuc")
-    sb.distplot(w_cell, kde=False, bins=bins, label="Cell")
+    sb.distplot(w_nuc, kde=False, bins=bins, label="Nuc", norm_hist=True)
+    sb.distplot(w_cell, kde=False, bins=bins, label="Cell", norm_hist=True)
     plt.xlabel("Eigenvalues (w2*m/k)")
     plt.ylabel("Counts")
     plt.legend()
