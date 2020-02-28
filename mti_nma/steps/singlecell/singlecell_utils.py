@@ -56,28 +56,12 @@ def query_data_from_labkey(cell_line_id):
     # Drop duplicates because this dataset will have a row for every cell
     # instead of per-FOV
     data = data.drop_duplicates("FOVId")
+    data = data.set_index("FOVId")
 
     # Fix all filepaths
     data = fix_filepaths(data)
 
     return data
-
-
-def process_seg_df(df):
-    for index in df.index:
-        fov_id = df.FOVIdList[index]
-        # Some FOVs on labkey do not have segmentation available and
-        # therefore fov_id is an empty list.
-        if len(fov_id):
-            fov_id = fov_id[0]
-        else:
-            fov_id = None
-        df.loc[index, "FOVId"] = fov_id
-
-    df = df.dropna()
-    df = df.astype({"FOVId": "int64"})
-    df = df.drop(columns=["FOVIdList"])
-    return df
 
 
 def fix_filepaths(df):
@@ -117,7 +101,7 @@ def fix_filepaths(df):
     return df
 
 
-def crop_object(raw, seg_nuc, seg_cell, obj_label, isotropic=None):
+def crop_object(raw, seg, obj_label, isotropic=None):
 
     """
         This function returns a cropped area around an object of interest
@@ -146,10 +130,9 @@ def crop_object(raw, seg_nuc, seg_cell, obj_label, isotropic=None):
 
     offset = 16
     raw = np.pad(raw, ((0, 0), (offset, offset), (offset, offset)), "constant")
-    seg_nuc = np.pad(seg_nuc, ((0, 0), (offset, offset), (offset, offset)), "constant")
-    seg_cell = np.pad(seg_cell, ((0, 0), (offset, offset), (offset, offset)), "constant")
+    seg = np.pad(seg, ((0, 0), (offset, offset), (offset, offset)), "constant")
 
-    _, y, x = np.where(seg_cell == obj_label)
+    _, y, x = np.where(seg == obj_label)
 
     if x.shape[0] > 0:
 
@@ -159,9 +142,7 @@ def crop_object(raw, seg_nuc, seg_cell, obj_label, isotropic=None):
         ymax = y.max() + offset
 
         raw = raw[:, ymin:ymax, xmin:xmax]
-        seg_nuc = seg_nuc[:, ymin:ymax, xmin:xmax]
-        seg_cell = seg_cell[:, ymin:ymax, xmin:xmax]
-        raw = raw[:, ymin:ymax, xmin:xmax]
+        seg = seg[:, ymin:ymax, xmin:xmax]
 
         # Resize to isotropic volume
         if isotropic is not None:
@@ -185,23 +166,15 @@ def crop_object(raw, seg_nuc, seg_cell, obj_label, isotropic=None):
                 preserve_range=True,
                 anti_aliasing=True).astype(np.uint16)
 
-            seg_nuc = sktrans.resize(
-                image=seg_nuc,
+            seg = sktrans.resize(
+                image=seg,
                 output_shape=output_shape,
                 order=0,
                 preserve_range=True,
                 anti_aliasing=False).astype(np.uint8)
 
-            seg_cell = sktrans.resize(
-                image=seg_cell,
-                output_shape=output_shape,
-                order=0,
-                preserve_range=True,
-                anti_aliasing=False).astype(np.uint8)
+        seg = (seg == obj_label).astype(np.uint8)
 
-        seg_nuc = (seg_nuc == obj_label).astype(np.uint8)
-        seg_cell = (seg_cell == obj_label).astype(np.uint8)
-
-        return raw, seg_nuc, seg_cell
+        return raw, seg
     else:
-        return None, None, None
+        return None, None

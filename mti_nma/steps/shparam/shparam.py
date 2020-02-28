@@ -33,7 +33,7 @@ class Shparam(Step):
         )
 
     @log_run_params
-    def run(self, sc_df=None, **kwargs):
+    def run(self, sc_df=None, struct="Nuc", lmax=8, **kwargs):
 
         """
         This function loads the seg images we want to perform sh parametrization on
@@ -49,7 +49,8 @@ class Shparam(Step):
         # if no dataframe is passed in, load manifest from previous step
         if sc_df is None:
             sc_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "singlecell" / "manifest.csv"
+                self.step_local_staging_dir.parent / "singlecell" / f"manifest_"
+                f"{struct}.csv"
             )
 
         # Use cell ID as dataframe index
@@ -61,10 +62,11 @@ class Shparam(Step):
 
         # Get spherical harmonic set for segmentation, save and record in manifest
         self.manifest = pd.DataFrame([])
+
         for CellId in tqdm(sc_df.index):
 
             # Read segmentation image
-            impath = sc_df["SegFilePath"][CellId]
+            impath = sc_df[f"SegFilePath"][CellId]
             seg = AICSImage(impath).get_image_data("ZYX", S=0, T=0, C=0)
 
             # Get spherical harmonic decomposition of segmentation
@@ -73,7 +75,7 @@ class Shparam(Step):
             # the outputs
             (coeffs, grid), (_, mesh_init, _, grid_init) = aicsshparam.get_shcoeffs(
                 image=seg,
-                lmax=8,
+                lmax=lmax,
                 sigma=1)
 
             # Compute reconstruction error
@@ -92,25 +94,28 @@ class Shparam(Step):
             aicsshtools.save_polydata(
                 mesh=mesh_init, 
                 filename=str(
-                    sh_data_dir / f"{CellId}.initial.vtk")
+                    sh_data_dir / f"{CellId}.initial_{struct}.vtk")
             )
             aicsshtools.save_polydata(
                 mesh=mesh_shparam, 
                 filename=str(
-                    sh_data_dir / f'{CellId}.shparam.vtk')
+                    sh_data_dir / f"{CellId}.shparam_{struct}.vtk")
             )
 
             # Save coeffs into a csv file in local staging
             df_coeffs.to_csv(
-                str(sh_data_dir / f"{CellId}.shparam.csv")
+                str(sh_data_dir / f"{CellId}.shparam_{struct}.csv")
             )
 
             # Build dataframe of saved files to store in manifest
             pdSerie = pd.Series(
                 {
-                    "InitialMeshFilePath": sh_data_dir / f"{CellId}.initial.vtk",
-                    "ShparamMeshFilePath": sh_data_dir / f"{CellId}.shparam.vtk",
-                    "CoeffsFilePath": sh_data_dir / f"{CellId}.shparam.csv",
+                    "InitialMeshFilePath": 
+                        sh_data_dir / f"{CellId}.initial_{struct}.vtk",
+                    "ShparamMeshFilePath":
+                        sh_data_dir / f"{CellId}.shparam_{struct}.vtk",
+                    "CoeffsFilePath":
+                        sh_data_dir / f"{CellId}.shparam_{struct}.csv",
                     "MeanSqError": mean_sq_error,
                     "CellId": CellId,
 
@@ -119,6 +124,6 @@ class Shparam(Step):
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / "manifest.csv", index=False
+            self.step_local_staging_dir / f"manifest_struct.csv", index=False
         )
         return self.manifest

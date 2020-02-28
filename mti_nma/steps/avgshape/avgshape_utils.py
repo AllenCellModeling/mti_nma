@@ -2,10 +2,9 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from stl import mesh
 import numpy as np
-import subprocess
 
 
-def run_shcoeffs_analysis(df, savedir):
+def run_shcoeffs_analysis(df, savedir, struct):
 
     list_of_scatter_plots = [
         ("shcoeffs_L0M0C", "shcoeffs_L2M0C"),
@@ -23,7 +22,7 @@ def run_shcoeffs_analysis(df, savedir):
         ax.set_ylabel(vary, fontsize=fs)
         plt.tight_layout()
         fig.savefig(
-            str(savedir / Path(f"scatter-{id_plot}.svg"))
+            str(savedir / Path(f"scatter-{id_plot}_{struct}.svg"))
         )
         plt.close(fig)
 
@@ -39,7 +38,7 @@ def run_shcoeffs_analysis(df, savedir):
         ax.tick_params("x", labelrotation=90)
         plt.tight_layout()
         fig.savefig(
-            str(savedir / Path(f"bar-{id_plot}.svg"))
+            str(savedir / Path(f"bar-{id_plot}_{struct}.svg"))
         )
         plt.close(fig)
 

@@ -51,7 +51,8 @@ class Nma(Step):
         )
 
     @log_run_params
-    def run(self, mode_list=list(range(6)), avg_df=None, path_blender=None, **kwargs):
+    def run(self, mode_list=list(range(6)), avg_df=None,
+            struct="Nuc", path_blender=None, **kwargs):
         """
         This function will run normal mode analysis on an average mesh.
         It will then create heatmaps of the average mesh for the desired set of modes,
@@ -76,7 +77,8 @@ class Nma(Step):
         # if no dataframe is passed in, load manifest from previous step
         if avg_df is None:
             avg_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "avgshape" / "manifest.csv"
+                self.step_local_staging_dir.parent / "avgshape" / "manifest_"
+                f"{struct}.csv"
             )
 
         # Create directory to hold NMA results
@@ -93,13 +95,13 @@ class Nma(Step):
         draw_whist(w)
         vmags = get_eigvec_mags(v)
 
-        fig_path = nma_data_dir / "w_fig.pdf"
+        fig_path = nma_data_dir / f"w_fig_{struct}.pdf"
         plt.savefig(fig_path, format="pdf")
-        w_path = nma_data_dir / "eigvals.npy"
+        w_path = nma_data_dir / f"eigvals_{struct}.npy"
         np.save(w_path, w)
-        v_path = nma_data_dir / "eigvecs.npy"
+        v_path = nma_data_dir / f"eigvecs_{struct}.npy"
         np.save(v_path, v)
-        vmags_path = nma_data_dir / "eigvecs_mags.npy"
+        vmags_path = nma_data_dir / f"eigvecs_mags_{struct}.npy"
         np.save(vmags_path, vmags)
 
         # Create manifest with eigenvectors, eigenvalues, and hist of eigenvalues
@@ -128,7 +130,7 @@ class Nma(Step):
         heatmap_dir.mkdir(parents=True, exist_ok=True)
         path_input_mesh = avg_df["AvgShapeFilePathStl"].iloc[0]
         for mode in mode_list:
-            path_output = heatmap_dir / f"mode_{mode}.blend"
+            path_output = heatmap_dir / f"mode_{mode}_{struct}.blend"
             color_vertices_by_magnitude(
                 path_blender, path_input_mesh, vmags_path, mode, path_output
             )
@@ -136,5 +138,5 @@ class Nma(Step):
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / "manifest.csv", index=False
+            self.step_local_staging_dir / f"manifest_{struct}.csv", index=False
         )

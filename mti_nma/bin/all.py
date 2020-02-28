@@ -41,6 +41,7 @@ class All:
         distributed_executor_address: Optional[str] = None,
         clean: bool = False,
         debug: bool = False,
+        cell_flag: bool = False,
         **kwargs,
     ):
         """
@@ -91,33 +92,44 @@ class All:
             # If you want to utilize some debugging functionality pass debug
             # If you don't utilize any of these, just pass the parameters you need.
 
-            sc_df = singlecell(
-                distributed_executor_address=distributed_executor_address,
-                clean=clean,
-                debug=debug,
-                **kwargs
-            )
-            sh_df = shparam(
-                sc_df=sc_df,
-                distributed_executor_address=distributed_executor_address,
-                clean=clean,
-                debug=debug,
-                **kwargs
-            )
-            avg_df = avgshape(
-                sh_df=sh_df,
-                distributed_executor_address=distributed_executor_address,
-                clean=clean,
-                debug=debug,
-                **kwargs
-            )
-            nma(
-                avg_df=avg_df,
-                distributed_executor_address=distributed_executor_address,
-                clean=clean,
-                debug=debug,
-                **kwargs
-            )
+            if cell_flag:
+                structs = ["Nuc", "Cell"]
+            else:
+                structs = ["Nuc"]
+
+            for struct in structs:
+
+                sc_df = singlecell(
+                    distributed_executor_address=distributed_executor_address,
+                    clean=clean,
+                    debug=debug,
+                    struct=struct,
+                    **kwargs
+                )
+                sh_df = shparam(
+                    sc_df=sc_df,
+                    distributed_executor_address=distributed_executor_address,
+                    clean=clean,
+                    debug=debug,
+                    struct=struct,
+                    **kwargs
+                )
+                avg_df = avgshape(
+                    sh_df=sh_df,
+                    distributed_executor_address=distributed_executor_address,
+                    clean=clean,
+                    debug=debug,
+                    struct=struct,
+                    **kwargs
+                )
+                nma(
+                    avg_df=avg_df,
+                    distributed_executor_address=distributed_executor_address,
+                    clean=clean,
+                    debug=debug,
+                    struct=struct,
+                    **kwargs
+                )
 
         # Run flow and get ending state
         flow.run(executor=exe)
