@@ -71,7 +71,7 @@ class Singlecell(Step):
 
         if nsamples > 0:
 
-            # create manifest and directory to save data for this step in local staging
+            # Create manifest and directory to save data for this step in local staging
             self.manifest = pd.DataFrame([])
             sc_data_dir = self.step_local_staging_dir / "singlecell_data"
             sc_data_dir.mkdir(parents=True, exist_ok=True)
@@ -91,6 +91,7 @@ class Singlecell(Step):
                 sy = df.PixelScaleY[fov_id]
                 sz = df.PixelScaleZ[fov_id]
 
+                # Set channel numbers for this structure
                 if struct == "Nuc":
                     ch = 405
                     full = "Nucleus"
@@ -101,7 +102,7 @@ class Singlecell(Step):
                     raise(f"Analysis of structure {struct} is not currently supported."
                           "Please pass Nuc or Cell for the struct paramter.")
 
-                # Use H3342 for nuclear channel
+                # Get structure raw and seg images
                 raw = AICSImage(
                     df.SourceReadPath[fov_id]).get_image_data(
                         "ZYX", S=0, T=0, C=df[f"ChannelNumber{ch}"][fov_id])

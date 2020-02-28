@@ -78,7 +78,7 @@ class Nma(Step):
             Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
 
-        # if no dataframe is passed in, load manifest from previous step
+        # If no dataframe is passed in, load manifest from previous step
         if avg_df is None:
             avg_df = pd.read_csv(
                 self.step_local_staging_dir.parent / "avgshape" / "manifest_"

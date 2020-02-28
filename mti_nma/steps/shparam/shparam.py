@@ -50,7 +50,7 @@ class Shparam(Step):
             Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
 
-        # if no dataframe is passed in, load manifest from previous step
+        # If no dataframe is passed in, load manifest from previous step
         if sc_df is None:
             sc_df = pd.read_csv(
                 self.step_local_staging_dir.parent / "singlecell" / f"manifest_"
@@ -60,7 +60,7 @@ class Shparam(Step):
         # Use cell ID as dataframe index
         sc_df = sc_df.set_index("CellId")
 
-        # create directory to save data for this step in local staging
+        # Create directory to save data for this step in local staging
         sh_data_dir = self.step_local_staging_dir / "shparam_data"
         sh_data_dir.mkdir(parents=True, exist_ok=True)
 

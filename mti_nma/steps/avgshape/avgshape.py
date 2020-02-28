@@ -52,14 +52,14 @@ class Avgshape(Step):
             Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
 
-        # if no dataframe is passed in, load manifest from previous step
+        # If no dataframe is passed in, load manifest from previous step
         if sh_df is None:
             sh_df = pd.read_csv(
                 self.step_local_staging_dir.parent / "shparam" / "manifest_" 
                 f"{struct}.csv"
             )
 
-        # fix filepaths and use cell id as dataframe index
+        # Fix filepaths and use cell id as dataframe index
         sh_df = sh_df.set_index("CellId", drop=True)
 
         # Load sh coefficients of all samples in manifest
