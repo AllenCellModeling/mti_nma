@@ -9,7 +9,8 @@ matplotlib.use('Agg')
 
 def draw_whist():
     """
-    Draws a histogram figure of the eigenvalues
+    Draws a histogram figure of the eigenvalues from both nuclear
+    and cellular NMA on the same axes
 
     Parameters
     ----------
@@ -43,6 +44,7 @@ def draw_whist():
     sb.distplot(w_cell, kde=True, bins=bins, label="Cell")
     plt.xlabel("Eigenvalues (w2*m/k)")
     plt.ylabel("Counts")
+    plt.legend()
 
     plt.savefig("local_staging/compare_fig")
 
