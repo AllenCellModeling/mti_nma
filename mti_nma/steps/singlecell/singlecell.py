@@ -145,7 +145,6 @@ class Singlecell(Step):
                         "CellId": cell_id}, name=cell_id)
 
                     self.manifest = self.manifest.append(series)
-                    log.info(f"Finished fov {fov_id}")
                 else:
                     log.info(f"Rejected FOV: {fov_id} for empty images.")
 
@@ -154,5 +153,4 @@ class Singlecell(Step):
             self.manifest.to_csv(
                 self.step_local_staging_dir / f"manifest_{struct}.csv", index=False
             )
-            log.info("Finished singlecell step")
             return self.manifest
