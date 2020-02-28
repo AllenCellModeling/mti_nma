@@ -15,6 +15,7 @@ from prefect import Flow
 from prefect.engine.executors import DaskExecutor, LocalExecutor
 
 from mti_nma import steps
+from .compare_nuc_cell import draw_whist
 
 ###############################################################################
 
@@ -57,7 +58,7 @@ class All:
             A debug flag for the developer to use to manipulate how much data runs,
             how it is processed, etc.
             Default: False (Do not debug)
-        cell_flag: cool
+        cell_flag: bool
             Flag for wether to include cell membrane in analysis. The nucleus is always
             analyzed, and this flag allow you to either additionally analyze the cell
             membrane (True) or not (False).
@@ -139,8 +140,8 @@ class All:
         flow.run(executor=exe)
         # state = flow.run(executor=exe)
 
-        # Get plot location
-        # log.info(f"Plot stored to: {plot.get_result(state, flow)}")
+        if cell_flag:
+            draw_whist()
 
     def pull(self):
         """
