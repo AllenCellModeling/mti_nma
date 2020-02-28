@@ -57,6 +57,10 @@ class All:
             A debug flag for the developer to use to manipulate how much data runs,
             how it is processed, etc.
             Default: False (Do not debug)
+        cell_flag: cool
+            Flag for wether to include cell membrane in analysis. The nucleus is always
+            analyzed, and this flag allow you to either additionally analyze the cell
+            membrane (True) or not (False).
         Notes
         -----
         Documentation on prefect:

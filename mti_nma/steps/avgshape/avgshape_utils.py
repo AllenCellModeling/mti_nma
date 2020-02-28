@@ -5,6 +5,23 @@ import numpy as np
 
 
 def run_shcoeffs_analysis(df, savedir, struct):
+    """
+    Extracts the mesh vertices and faces encoded in the VTK polydata object
+
+    Parameters
+    ----------
+    polydata: VTK polydata object
+        Mesh extracted from .vtk file 
+    Returns
+    -------
+    df: dataframe
+        dataframe containing spherical harmonic decomposition information
+    savedir: path or string
+        Path to directory where results figures should be saved.
+    struct: str
+        String giving name of structure to run analysis on.
+        Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
+    """
 
     list_of_scatter_plots = [
         ("shcoeffs_L0M0C", "shcoeffs_L2M0C"),

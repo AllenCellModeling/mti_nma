@@ -72,6 +72,10 @@ class Nma(Step):
         path_blender: str
             Path to your local download of the Blender Application.
             If on Mac, the default Blender Mac download location is used.
+
+        struct: str
+            String giving name of structure to run analysis on.
+            Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
 
         # if no dataframe is passed in, load manifest from previous step
@@ -111,6 +115,7 @@ class Nma(Step):
             "v_FilePath": v_path,
             "vmag_FilePath" : vmags_path,
             "fig_FilePath": fig_path,
+            "Structure": struct
         }, index=[0])
 
         # If no blender path passed: use default for mac and throw error otherwise

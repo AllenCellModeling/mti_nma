@@ -44,6 +44,10 @@ class Shparam(Step):
         sc_df: dataframe
             dataframe containing results from running Singlecell step
             See the construction of the manifest in singlecell.py for details
+
+        struct: str
+            String giving name of structure to run analysis on.
+            Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
 
         # if no dataframe is passed in, load manifest from previous step
@@ -117,6 +121,7 @@ class Shparam(Step):
                     "CoeffsFilePath":
                         sh_data_dir / f"{CellId}.shparam_{struct}.csv",
                     "MeanSqError": mean_sq_error,
+                    "Structure": struct,
                     "CellId": CellId,
 
                 }, name=CellId)

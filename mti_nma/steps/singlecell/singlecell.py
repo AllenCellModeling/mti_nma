@@ -61,6 +61,10 @@ class Singlecell(Step):
 
         nsamples: int
             Number of cells to sample randomly (but with set seed) from dataset
+
+        struct: str
+            String giving name of structure to run analysis on.
+            Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
 
         np.random.seed(666)
@@ -132,8 +136,8 @@ class Singlecell(Step):
                         writer.save(seg, dimension_order="ZYX")
 
                     series = pd.Series({
-                        "RawFilePath": sc_data_dir / f"{cell_id}.raw.tif",
-                        "SegFilePath": sc_data_dir / f"{cell_id}.seg.tif",
+                        "RawFilePath": sc_data_dir / f"{cell_id}.raw_{struct}.tif",
+                        "SegFilePath": sc_data_dir / f"{cell_id}.seg_{struct}.tif",
                         "OrigFOVPathRaw": df.SourceReadPath[fov_id],
                         "OrigFOVPathSeg": df[f"{full}SegmentationReadPath"][fov_id],
                         "Structure": struct,

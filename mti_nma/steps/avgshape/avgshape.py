@@ -46,6 +46,10 @@ class Avgshape(Step):
         sh_df: dataframe
             dataframe containing results from running Shparam step
             See the construction of the manifest in shparam.py for details
+
+        struct: str
+            String giving name of structure to run analysis on.
+            Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
 
         # if no dataframe is passed in, load manifest from previous step
@@ -101,7 +105,8 @@ class Avgshape(Step):
         self.manifest = pd.DataFrame({
             "Label": "Average_mesh",
             "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.vtk",
-            "AvgShapeFilePathStl": avg_data_dir / f"avgshape_{struct}.stl"
+            "AvgShapeFilePathStl": avg_data_dir / f"avgshape_{struct}.stl",
+            "Structure": struct,
         }, index=[0])
 
         # Save manifest as csv
