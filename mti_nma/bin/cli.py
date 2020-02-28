@@ -4,6 +4,7 @@ from mti_nma import steps
 from mti_nma.bin.all import All
 from mti_nma.bin.quilt_init import QuiltInit
 import logging
+from unittest import mock
 
 ###############################################################################
 
@@ -22,4 +23,6 @@ def cli():
         if inspect.isclass(step)
     }
 
-    fire.Fire({**step_map, "all": All, "quilt": QuiltInit})
+    # Interrupt fire print return
+    with mock.patch("fire.core._PrintResult"):
+        fire.Fire({**step_map, "all": All, "quilt": QuiltInit})
