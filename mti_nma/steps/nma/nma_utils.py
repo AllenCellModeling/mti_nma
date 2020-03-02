@@ -19,8 +19,11 @@ def run_nma(mesh_verts, mesh_faces):
 
     Parameters
     ----------
-    polydata: VTK polydata object
-        Mesh extracted from .vtk file 
+    mesh_verts: numpy array
+        Array of locations of all mesh vertices
+    mesh_faces: numpy array
+        Array of indices of vertices making up each mesh face
+
     Returns
     -------
     w: Numpy 1D array
@@ -28,8 +31,6 @@ def run_nma(mesh_verts, mesh_faces):
     v: Numpy 2D array
         Each array in this array gives the displacement vector for a vertex in the mesh
         The array giving the eigenvectors associated with eigenvalue w[i] are in v[:. i]
-    fig: Matplotlib Figure object
-        Figure containg a histogram of eigenvalues
     """
 
     hess = get_hessian_from_mesh(mesh_verts, mesh_faces)
