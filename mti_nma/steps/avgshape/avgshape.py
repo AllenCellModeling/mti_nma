@@ -33,16 +33,13 @@ class Avgshape(Step):
         )
 
     @log_run_params
-    def run(self, mesh_density=5, sh_df=None, struct="Nuc", **kwargs):
+    def run(self, sh_df=None, struct="Nuc", **kwargs):
         """
         This step uses the amplitudes of the spherical harmonic components
         of the nuclear shapes in the dataset to construct an average nuclear mesh.
 
         Parameters
         ----------
-        mesh_density: int (1-10)
-            Mesh density parameter used in Blender
-
         sh_df: dataframe
             dataframe containing results from running Shparam step
             See the construction of the manifest in shparam.py for details
