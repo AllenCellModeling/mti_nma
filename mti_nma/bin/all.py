@@ -8,18 +8,40 @@ and configure their IO in the `run` function.
 """
 
 import logging
-from typing import Optional
-import os
+from getpass import getuser
+from pathlib import Path
 
+from distributed import LocalCluster
 from prefect import Flow
 from prefect.engine.executors import DaskExecutor, LocalExecutor
+from scheduler_tools import Connector
+from scheduler_tools.default_dask_prefs import default_dask_prefs
 
 from mti_nma import steps
+
 from .compare_nuc_cell import draw_whist
 
 ###############################################################################
 
 log = logging.getLogger(__name__)
+
+###############################################################################
+
+REMOTE_DASK_PREFS = default_dask_prefs(getuser())
+REMOTE_DASK_PREFS["remote_conf"]["env"] = "mti_nma"
+
+LOCAL_FOLDER = Path("~/.aics_dask").expanduser()
+
+REMOTE_SSH_PREFS = {
+    "localfolder": LOCAL_FOLDER,
+    "gateway": {
+        "url": "slurm-master",
+        "user": getuser(),
+        "identifyfile": LOCAL_FOLDER / ".ssh" / "id_rsa"
+    },
+    "dask_port": 34000,
+    "dashboard_port": 8787
+}
 
 ###############################################################################
 
@@ -39,7 +61,7 @@ class All:
 
     def run(
         self,
-        distributed_executor_address: Optional[str] = None,
+        distributed: bool = False,
         clean: bool = False,
         debug: bool = False,
         cell_flag: bool = False,
@@ -49,8 +71,10 @@ class All:
         Run a flow with your steps.
         Parameters
         ----------
-        distributed_executor_address: Optional[str]
-            An optional executor address to pass to some computation engine.
+        distributed: bool
+            A boolean option to determine if the jobs should be distributed to a remote
+            cluster when possible.
+            Default: False (Do not distribute)
         clean: bool
             Should the local staging directory be cleaned prior to this run.
             Default: False (Do not clean)
@@ -79,69 +103,96 @@ class All:
         if debug:
             exe = LocalExecutor()
         else:
-            if distributed_executor_address is not None:
-                exe = DaskExecutor(distributed_executor_address)
+            if distributed:
+                # Create connection to remote cluster
+                conn = Connector(
+                    dask_prefs=REMOTE_DASK_PREFS,
+                    prefs=REMOTE_SSH_PREFS
+                )
+
+                # Start the connection
+                conn.run_command()
+                conn.stop_forward_if_running()
+                conn.forward_ports()
+
+                # Use the port from the created connector to set executor address
+                distributed_executor_address = f"tcp://localhost:{conn.local_dask_port}"
+
+                # Log dashboard URI
+                log.info(f"Dask dashboard available at: {conn.local_dashboard_port}")
             else:
-                # Stop conflicts between Dask and OpenBLAS
-                # Info here:
-                # https://stackoverflow.com/questions/45086246/too-many-memory-regions-error-with-dask
-                os.environ["OMP_NUM_THREADS"] = "1"
+                # Create local cluster
+                cluster = LocalCluster()
 
-                # Start local dask cluster
-                exe = DaskExecutor()
+                # Set distributed_executor_address
+                distributed_executor_address = cluster.scheduler_address
 
-        # Configure your flow
-        with Flow("mti_nma") as flow:
-            # If your step utilizes a secondary flow with dask pass the executor address
-            # If you want to clean the local staging directories pass clean
-            # If you want to utilize some debugging functionality pass debug
-            # If you don't utilize any of these, just pass the parameters you need.
+                # Log dashboard URI
+                log.info(f"Dask dashboard available at: {cluster.dashboard_link}")
+
+            # Use dask cluster
+            exe = DaskExecutor(distributed_executor_address)
+
+        try:
+            # Configure your flow
+            with Flow("mti_nma") as flow:
+                # If your step utilizes dask pass the executor address
+                # If you want to clean the local staging directories pass clean
+                # If you want to utilize some debugging functionality pass debug
+                # If you don't utilize any of these, just pass the parameters you need.
+
+                if cell_flag:
+                    structs = ["Nuc", "Cell"]
+                else:
+                    structs = ["Nuc"]
+
+                for struct in structs:
+                    sc_df = singlecell(
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    sh_df = shparam(
+                        sc_df=sc_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    avg_df = avgshape(
+                        sh_df=sh_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    nma(
+                        avg_df=avg_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+
+            # Run flow and get ending state
+            flow.run(executor=exe)
 
             if cell_flag:
-                structs = ["Nuc", "Cell"]
-            else:
-                structs = ["Nuc"]
+                draw_whist()
 
-            for struct in structs:
+            # Stop the cluster if distributed
+            if distributed:
+                conn.stop_dask()
 
-                sc_df = singlecell(
-                    distributed_executor_address=distributed_executor_address,
-                    clean=clean,
-                    debug=debug,
-                    struct=struct,
-                    **kwargs
-                )
-                sh_df = shparam(
-                    sc_df=sc_df,
-                    distributed_executor_address=distributed_executor_address,
-                    clean=clean,
-                    debug=debug,
-                    struct=struct,
-                    **kwargs
-                )
-                avg_df = avgshape(
-                    sh_df=sh_df,
-                    distributed_executor_address=distributed_executor_address,
-                    clean=clean,
-                    debug=debug,
-                    struct=struct,
-                    **kwargs
-                )
-                nma(
-                    avg_df=avg_df,
-                    distributed_executor_address=distributed_executor_address,
-                    clean=clean,
-                    debug=debug,
-                    struct=struct,
-                    **kwargs
-                )
-
-        # Run flow and get ending state
-        flow.run(executor=exe)
-        # state = flow.run(executor=exe)
-
-        if cell_flag:
-            draw_whist()
+        # Catch any error and kill the remote dask cluster
+        except Exception:
+            if distributed:
+                conn.stop_dask()
 
     def pull(self):
         """
