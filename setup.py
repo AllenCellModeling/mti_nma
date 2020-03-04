@@ -48,8 +48,10 @@ interactive_requirements = [
 requirements = [
     "aicsimageio",
     "aicsshparam",
+    "bokeh",
     "datastep<=0.1.5",
     "dask[bag]",
+    "dask_jobqueue",
     "docutils<0.16",  # needed for botocore (quilt dependency)
     "fire",
     "lkaccess",
@@ -59,7 +61,6 @@ requirements = [
     "pandas",
     "pyshtools",
     "python-dateutil<=2.8.0",  # need <=2.8.0 for quilt3 in step
-    "scheduler_tools>=0.1.4",
     "scikit-image",
     "seaborn",
     "vtk",
