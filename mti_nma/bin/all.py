@@ -94,8 +94,8 @@ class All:
 
                 # Create cluster
                 cluster = SLURMCluster(
-                    cores=2,
-                    memory="4GB",
+                    cores=4,
+                    memory="12GB",
                     queue="aics_cpu_general",
                     walltime="10:00:00",
                     local_directory=str(log_dir),
@@ -103,7 +103,7 @@ class All:
                 )
 
                 # Scale workers
-                cluster.adapt(minimum_jobs=1, maximum_jobs=40)
+                cluster.adapt(minimum_jobs=1, maximum_jobs=100)
 
                 # Use the port from the created connector to set executor address
                 distributed_executor_address = cluster.scheduler_address
