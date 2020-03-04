@@ -197,7 +197,7 @@ class Singlecell(Step):
                 # Block until all complete
                 results = handler.gather(futures)
 
-                # Set manifest with results as they complete
+                # Set manifest with results
                 for result in results:
                     if result.data is not None:
                         self.manifest = self.manifest.append(
