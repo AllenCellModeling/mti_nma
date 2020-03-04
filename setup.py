@@ -53,6 +53,7 @@ requirements = [
     "docutils<0.16",  # needed for botocore (quilt dependency)
     "fire",
     "lkaccess",
+    "msgpack==0.6.2",  # needed to resolve dep conflict for prefect
     "numpy",
     "numpy-stl",
     "pandas",
