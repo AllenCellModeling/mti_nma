@@ -37,7 +37,7 @@ REMOTE_SSH_PREFS = {
     "gateway": {
         "url": "slurm-master",
         "user": getuser(),
-        "identifyfile": LOCAL_FOLDER / ".ssh" / "id_rsa"
+        "identityfile": str(LOCAL_FOLDER / ".ssh" / "id_rsa")
     },
     "dask_port": 34000,
     "dashboard_port": 8787
