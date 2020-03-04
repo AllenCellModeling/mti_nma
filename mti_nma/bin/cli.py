@@ -27,3 +27,7 @@ def cli():
     # Interrupt fire print return
     with mock.patch("fire.core._PrintResult"):
         fire.Fire({**step_map, "all": All})
+
+
+if __name__ == "__main__":
+    cli()
