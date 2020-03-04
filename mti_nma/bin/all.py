@@ -8,13 +8,11 @@ and configure their IO in the `run` function.
 """
 
 import logging
-from getpass import getuser
-from pathlib import Path
 
+from dask_jobqueue import SLURMCluster
 from distributed import LocalCluster
 from prefect import Flow
 from prefect.engine.executors import DaskExecutor, LocalExecutor
-from scheduler_tools import Connector
 
 from mti_nma import steps
 
@@ -23,42 +21,6 @@ from .compare_nuc_cell import draw_whist
 ###############################################################################
 
 log = logging.getLogger(__name__)
-
-###############################################################################
-
-REMOTE_DASK_PREFS = {
-    "cluster_obj_name": {},
-    "cluster_conf": {},
-    "worker_conf": {},
-    "remote_conf": {},
-}
-
-REMOTE_DASK_PREFS["cluster_obj_name"] = {
-    "module": "dask_jobqueue",
-    "object": "SLURMCluster",
-}
-
-REMOTE_DASK_PREFS["cluster_conf"]["queue"] = "aics_cpu_general"
-REMOTE_DASK_PREFS["cluster_conf"]["cores"] = 2
-REMOTE_DASK_PREFS["cluster_conf"]["memory"] = "4GB"
-REMOTE_DASK_PREFS["cluster_conf"]["walltime"] = "240:00:00"
-REMOTE_DASK_PREFS["worker_conf"]["minimum_jobs"] = 1
-REMOTE_DASK_PREFS["worker_conf"]["maximum_jobs"] = 40
-REMOTE_DASK_PREFS["remote_conf"]["env"] = "mti_nma"
-REMOTE_DASK_PREFS["remote_conf"]["command"] = "setup_and_spawn.bash"
-REMOTE_DASK_PREFS["remote_conf"]["path"] = f"/home/{getuser()}/.slurm_dask_cpu"
-
-
-REMOTE_SSH_PREFS = {
-    "localfolder": str(Path("~/.aics_dask").expanduser()),
-    "gateway": {
-        "url": "slurm-master",
-        "user": getuser(),
-        "identityfile": str(Path("~/.ssh/id_rsa").expanduser())
-    },
-    "dask_port": 34000,
-    "dashboard_port": 8787
-}
 
 ###############################################################################
 
@@ -119,24 +81,25 @@ class All:
         # Choose executor
         if debug:
             exe = LocalExecutor()
+            distributed_executor_address = None
         else:
             if distributed:
-                # Create connection to remote cluster
-                conn = Connector(
-                    dask_prefs=REMOTE_DASK_PREFS,
-                    prefs=REMOTE_SSH_PREFS
+                # Create cluster
+                cluster = SLURMCluster(
+                    cores=2,
+                    memory="4GB",
+                    queue="aics_cpu_general",
+                    walltime="10:00:00"
                 )
 
-                # Start the connection
-                conn.run_command()
-                conn.stop_forward_if_running()
-                conn.forward_ports()
+                # Scale workers
+                cluster.adapt(minimum_jobs=1, maximum_jobs=40)
 
                 # Use the port from the created connector to set executor address
-                distributed_executor_address = f"tcp://localhost:{conn.local_dask_port}"
+                distributed_executor_address = cluster.scheduler_address
 
                 # Log dashboard URI
-                log.info(f"Dask dashboard available at: {conn.local_dashboard_port}")
+                log.info(f"Dask dashboard available at: {cluster.dashboard_link}")
             else:
                 # Create local cluster
                 cluster = LocalCluster()
@@ -202,14 +165,9 @@ class All:
             if cell_flag:
                 draw_whist()
 
-            # Stop the cluster if distributed
-            if distributed:
-                conn.stop_dask()
-
         # Catch any error and kill the remote dask cluster
-        except Exception:
-            if distributed:
-                conn.stop_dask()
+        except Exception as err:
+            log.error(f"Something went wrong during pipeline run: {err}")
 
     def pull(self):
         """
