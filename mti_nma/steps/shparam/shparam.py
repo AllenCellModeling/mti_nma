@@ -177,7 +177,9 @@ class Shparam(Step):
 
             # Set manifest with results
             for result in results:
-                self.manifest.append(pd.Series(result.data, name=result.cell_id))
+                self.manifest = self.manifest.append(
+                    pd.Series(result.data, name=result.cell_id)
+                )
 
         # Save manifest as csv
         self.manifest.to_csv(
