@@ -15,7 +15,6 @@ from distributed import LocalCluster
 from prefect import Flow
 from prefect.engine.executors import DaskExecutor, LocalExecutor
 from scheduler_tools import Connector
-from scheduler_tools.default_dask_prefs import default_dask_prefs
 
 from mti_nma import steps
 
@@ -27,17 +26,35 @@ log = logging.getLogger(__name__)
 
 ###############################################################################
 
-REMOTE_DASK_PREFS = default_dask_prefs(getuser())
-REMOTE_DASK_PREFS["remote_conf"]["env"] = "mti_nma"
+REMOTE_DASK_PREFS = {
+    "cluster_obj_name": {},
+    "cluster_conf": {},
+    "worker_conf": {},
+    "remote_conf": {},
+}
 
-LOCAL_FOLDER = Path("~/.aics_dask").expanduser()
+REMOTE_DASK_PREFS["cluster_obj_name"] = {
+    "module": "dask_jobqueue",
+    "object": "SLURMCluster",
+}
+
+REMOTE_DASK_PREFS["cluster_conf"]["queue"] = "aics_cpu_general"
+REMOTE_DASK_PREFS["cluster_conf"]["cores"] = 2
+REMOTE_DASK_PREFS["cluster_conf"]["memory"] = "4GB"
+REMOTE_DASK_PREFS["cluster_conf"]["walltime"] = "240:00:00"
+REMOTE_DASK_PREFS["worker_conf"]["minimum_jobs"] = 1
+REMOTE_DASK_PREFS["worker_conf"]["maximum_jobs"] = 40
+REMOTE_DASK_PREFS["remote_conf"]["env"] = "mti_nma"
+REMOTE_DASK_PREFS["remote_conf"]["command"] = "setup_and_spawn.bash"
+REMOTE_DASK_PREFS["remote_conf"]["path"] = f"/home/{getuser()}/.slurm_dask_cpu"
+
 
 REMOTE_SSH_PREFS = {
-    "localfolder": LOCAL_FOLDER,
+    "localfolder": str(Path("~/.aics_dask").expanduser()),
     "gateway": {
         "url": "slurm-master",
         "user": getuser(),
-        "identityfile": str(Path("~/.ssh/id_rsa"))
+        "identityfile": str(Path("~/.ssh/id_rsa").expanduser())
     },
     "dask_port": 34000,
     "dashboard_port": 8787
