@@ -2,20 +2,27 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from typing import List, Optional
-import pandas as pd
-from tqdm import tqdm
+from pathlib import Path
+from typing import Any, Dict, List, NamedTuple, Optional
 
+import pandas as pd
 from aicsimageio import AICSImage
 from aicsshparam import aicsshparam, aicsshtools
-
 from datastep import Step, log_run_params
 
+from .. import dask_utils
 from ..singlecell import Singlecell
 
 ###############################################################################
 
 log = logging.getLogger(__name__)
+
+###############################################################################
+
+
+class CellProcessResult(NamedTuple):
+    cell_id: int
+    data: Optional[Dict[str, Any]]
 
 ###############################################################################
 
@@ -32,9 +39,85 @@ class Shparam(Step):
             filepath_columns=filepath_columns
         )
 
-    @log_run_params
-    def run(self, sc_df=None, struct="Nuc", lmax=8, **kwargs):
+    @staticmethod
+    def _process_cell(
+        cell_id: str,
+        cell_details: pd.Series,
+        struct: str,
+        lmax: int,
+        save_dir: Path
+    ) -> CellProcessResult:
+        # Alert of which cell we are processing
+        log.info(f"Beginning processing of cell: {cell_id}")
 
+        # Read segmentation image
+        impath = cell_details.SegFilePath
+        seg = AICSImage(impath).get_image_data("ZYX", S=0, T=0, C=0)
+
+        # Get spherical harmonic decomposition of segmentation
+        # Here is the place where I need someone taking a look at the
+        # aicsshparam package to see what is the best way to return
+        # the outputs
+        (coeffs, grid), (_, mesh_init, _, grid_init) = aicsshparam.get_shcoeffs(
+            image=seg,
+            lmax=lmax,
+            sigma=1
+        )
+
+        # Compute reconstruction error
+        mean_sq_error = aicsshtools.get_reconstruction_error(
+            grid_input=grid_init,
+            grid_rec=grid
+        )
+
+        # Store spherical harmonic coefficients in dataframe by cell id
+        df_coeffs = pd.DataFrame(coeffs, index=[cell_id])
+        df_coeffs.index = df_coeffs.index.rename("CellId")
+
+        # Mesh reconstructed with the sh coefficients
+        mesh_shparam = aicsshtools.get_reconstruction_from_grid(grid=grid)
+
+        # Save meshes as VTK file
+        aicsshtools.save_polydata(
+            mesh=mesh_init,
+            filename=str(save_dir / f"{cell_id}.initial_{struct}.vtk")
+        )
+        aicsshtools.save_polydata(
+            mesh=mesh_shparam,
+            filename=str(save_dir / f"{cell_id}.shparam_{struct}.vtk")
+        )
+
+        # Save coeffs into a csv file in local staging
+        df_coeffs.to_csv(
+            str(save_dir / f"{cell_id}.shparam_{struct}.csv")
+        )
+
+        # Build dataframe of saved files to store in manifest
+        data = {
+            "InitialMeshFilePath":
+                save_dir / f"{cell_id}.initial_{struct}.vtk",
+            "ShparamMeshFilePath":
+                save_dir / f"{cell_id}.shparam_{struct}.vtk",
+            "CoeffsFilePath":
+                save_dir / f"{cell_id}.shparam_{struct}.csv",
+            "MeanSqError": mean_sq_error,
+            "Structure": struct,
+            "CellId": cell_id,
+        }
+
+        # Alert completed
+        log.info(f"Completed processing for cell: {cell_id}")
+        return CellProcessResult(cell_id, data)
+
+    @log_run_params
+    def run(
+        self,
+        sc_df=None,
+        struct="Nuc",
+        lmax=8,
+        distributed_executor_address: Optional[str] = None,
+        **kwargs
+    ):
         """
         This function loads the seg images we want to perform sh parametrization on
         and calculate the sh coefficients. Results are saved as csv files.
@@ -48,6 +131,13 @@ class Shparam(Step):
         struct: str
             String giving name of structure to run analysis on.
             Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
+
+        lmax: int
+            The lmax passed to spherical harmonic generation.
+
+        distributed_executor_address: Optional[str]
+            An optional distributed executor address to use for job distribution.
+            Default: None (no distributed executor, use local threads)
         """
 
         # If no dataframe is passed in, load manifest from previous step
@@ -67,65 +157,27 @@ class Shparam(Step):
         # Get spherical harmonic set for segmentation, save and record in manifest
         self.manifest = pd.DataFrame([])
 
-        for CellId in tqdm(sc_df.index):
-
-            # Read segmentation image
-            impath = sc_df[f"SegFilePath"][CellId]
-            seg = AICSImage(impath).get_image_data("ZYX", S=0, T=0, C=0)
-
-            # Get spherical harmonic decomposition of segmentation
-            # Here is the place where I need someone taking a look at the
-            # aicsshparam package to see what is the best way to return
-            # the outputs
-            (coeffs, grid), (_, mesh_init, _, grid_init) = aicsshparam.get_shcoeffs(
-                image=seg,
-                lmax=lmax,
-                sigma=1)
-
-            # Compute reconstruction error
-            mean_sq_error = aicsshtools.get_reconstruction_error(
-                grid_input=grid_init,
-                grid_rec=grid)
-
-            # Store spherical harmonic coefficients in dataframe by cell id
-            df_coeffs = pd.DataFrame(coeffs, index=[CellId])
-            df_coeffs.index = df_coeffs.index.rename("CellId")
-
-            # Mesh reconstructed with the sh coefficients
-            mesh_shparam = aicsshtools.get_reconstruction_from_grid(grid=grid)
-
-            # Save meshes as VTK file
-            aicsshtools.save_polydata(
-                mesh=mesh_init, 
-                filename=str(
-                    sh_data_dir / f"{CellId}.initial_{struct}.vtk")
-            )
-            aicsshtools.save_polydata(
-                mesh=mesh_shparam, 
-                filename=str(
-                    sh_data_dir / f"{CellId}.shparam_{struct}.vtk")
+        # Process each cell in the dataframe
+        with dask_utils.DistributedHandler(distributed_executor_address) as handler:
+            futures = handler.client.map(
+                self._process_cell,
+                # Convert dataframe iterrows into two lists of items to iterate over
+                # One list will be the index (cell ids)
+                # One list will be the pandas series of every row
+                *zip(*list(sc_df.iterrows())),
+                # Pass the other parameters as lists with the same length as the
+                # dataframe but with the same value for every item in the list
+                [struct for i in range(len(sc_df))],
+                [lmax for i in range(len(sc_df))],
+                [sh_data_dir for i in range(len(sc_df))]
             )
 
-            # Save coeffs into a csv file in local staging
-            df_coeffs.to_csv(
-                str(sh_data_dir / f"{CellId}.shparam_{struct}.csv")
-            )
+            # Block until all complete
+            results = handler.gather(futures)
 
-            # Build dataframe of saved files to store in manifest
-            pdSerie = pd.Series(
-                {
-                    "InitialMeshFilePath": 
-                        sh_data_dir / f"{CellId}.initial_{struct}.vtk",
-                    "ShparamMeshFilePath":
-                        sh_data_dir / f"{CellId}.shparam_{struct}.vtk",
-                    "CoeffsFilePath":
-                        sh_data_dir / f"{CellId}.shparam_{struct}.csv",
-                    "MeanSqError": mean_sq_error,
-                    "Structure": struct,
-                    "CellId": CellId,
-
-                }, name=CellId)
-            self.manifest = self.manifest.append(pdSerie)
+            # Set manifest with results
+            for result in results:
+                self.manifest.append(pd.Series(result.data, name=result.cell_id))
 
         # Save manifest as csv
         self.manifest.to_csv(
