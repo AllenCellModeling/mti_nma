@@ -8,6 +8,8 @@ and configure their IO in the `run` function.
 """
 
 import logging
+from datetime import datetime
+from pathlib import Path
 
 from dask_jobqueue import SLURMCluster
 from distributed import LocalCluster
@@ -84,12 +86,20 @@ class All:
             distributed_executor_address = None
         else:
             if distributed:
+                # Create or get log dir
+                log_dir_name = datetime.now().isoformat().split(".")[0]  # Do not include ms
+                log_dir = Path(".dask_logs/mti_nma/{log_dir_name}")
+                # Log dir settings
+                log_dir.mkdir(parents=True)
+
                 # Create cluster
                 cluster = SLURMCluster(
                     cores=2,
                     memory="4GB",
                     queue="aics_cpu_general",
-                    walltime="10:00:00"
+                    walltime="10:00:00",
+                    local_directory=str(log_dir),
+                    log_directory=str(log_dir)
                 )
 
                 # Scale workers
