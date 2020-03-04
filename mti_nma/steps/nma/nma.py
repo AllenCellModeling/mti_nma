@@ -2,19 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import pandas as pd
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
 from sys import platform
 from typing import List, Optional
-import vtk
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import vtk
 from datastep import Step, log_run_params
 
+from .. import dask_utils
 from ..avgshape import Avgshape
-from .nma_utils import run_nma, get_eigvec_mags, get_vtk_verts_faces
-from .nma_viz import draw_whist, color_vertices_by_magnitude
+from .nma_utils import get_eigvec_mags, get_vtk_verts_faces, run_nma
+from .nma_viz import color_vertices_by_magnitude, draw_whist
 
 # Run matplotlib in the background
 matplotlib.use('Agg')
@@ -51,12 +52,19 @@ class Nma(Step):
         )
 
     @log_run_params
-    def run(self, mode_list=list(range(6)), avg_df=None,
-            struct="Nuc", path_blender=None, **kwargs):
+    def run(
+        self,
+        mode_list=list(range(6)),
+        avg_df=None,
+        struct="Nuc",
+        path_blender=None,
+        distributed_executor_address: Optional[str] = None,
+        **kwargs
+    ):
         """
         This function will run normal mode analysis on an average mesh.
         It will then create heatmaps of the average mesh for the desired set of modes,
-        where the coloring shows the relative amplitudes of vertex oscillation in 
+        where the coloring shows the relative amplitudes of vertex oscillation in
         the mode.
 
         Parameters
@@ -76,6 +84,10 @@ class Nma(Step):
         struct: str
             String giving name of structure to run analysis on.
             Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
+
+        distributed_executor_address: Optional[str]
+            An optional distributed executor address to use for job distribution.
+            Default: None (no distributed executor, use local threads)
         """
 
         # If no dataframe is passed in, load manifest from previous step
@@ -111,9 +123,9 @@ class Nma(Step):
         # Create manifest with eigenvectors, eigenvalues, and hist of eigenvalues
         self.manifest = pd.DataFrame({
             "Label": "nma_avg_nuc_mesh",
-            "w_FilePath" : w_path,
+            "w_FilePath": w_path,
             "v_FilePath": v_path,
-            "vmag_FilePath" : vmags_path,
+            "vmag_FilePath": vmags_path,
             "fig_FilePath": fig_path,
             "Structure": struct
         }, index=[0])
@@ -134,12 +146,24 @@ class Nma(Step):
         heatmap_dir = nma_data_dir / "mode_heatmaps"
         heatmap_dir.mkdir(parents=True, exist_ok=True)
         path_input_mesh = avg_df["AvgShapeFilePathStl"].iloc[0]
-        for mode in mode_list:
-            path_output = heatmap_dir / f"mode_{mode}_{struct}.blend"
-            color_vertices_by_magnitude(
-                path_blender, path_input_mesh, vmags_path, mode, path_output
+
+        # Distribute blender mode heatmap generation
+        with dask_utils.DistributedHandler(distributed_executor_address) as handler:
+            futures = handler.client.map(
+                color_vertices_by_magnitude,
+                [path_blender for i in range(len(mode_list))],
+                [path_input_mesh for i in range(len(mode_list))],
+                [vmags_path for i in range(len(mode_list))],
+                mode_list,
+                [heatmap_dir / f"mode_{mode}_{struct}.blend" for mode in mode_list]
             )
-            self.manifest[f"mode_{mode}_FilePath"] = path_output
+
+            # Block until all complete
+            results = handler.gather(futures)
+
+            # Set manifest with results
+            for mode, output_path in results:
+                self.manifest[f"mode_{mode}_FilePath"] = output_path
 
         # Save manifest as csv
         self.manifest.to_csv(
