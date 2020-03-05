@@ -87,15 +87,16 @@ class All:
         else:
             if distributed:
                 # Create or get log dir
-                log_dir_name = datetime.now().isoformat().split(".")[0]  # Do not include ms
+                # Do not include ms
+                log_dir_name = datetime.now().isoformat().split(".")[0]
                 log_dir = Path(f".dask_logs/mti_nma/{log_dir_name}")
                 # Log dir settings
                 log_dir.mkdir(parents=True)
 
                 # Create cluster
                 cluster = SLURMCluster(
-                    cores=4,
-                    memory="12GB",
+                    cores=2,
+                    memory="24GB",
                     queue="aics_cpu_general",
                     walltime="10:00:00",
                     local_directory=str(log_dir),
@@ -103,7 +104,7 @@ class All:
                 )
 
                 # Scale workers
-                cluster.adapt(minimum_jobs=1, maximum_jobs=100)
+                cluster.adapt(minimum_jobs=1, maximum_jobs=40)
 
                 # Use the port from the created connector to set executor address
                 distributed_executor_address = cluster.scheduler_address
