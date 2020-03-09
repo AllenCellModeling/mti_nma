@@ -1,10 +1,11 @@
-import numpy as np
-import seaborn as sb
-import matplotlib.pyplot as plt
-import matplotlib
+import logging
 import subprocess
 from pathlib import Path
-import logging
+
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sb
 
 # Run matplotlib in the background
 matplotlib.use('Agg')
@@ -53,7 +54,7 @@ def color_vertices_by_magnitude(
     path_blender, path_input_mesh, path_vmags, mode, path_output
 ):
     """
-    Creates blender file with mesh vertices colored by eigenvector 
+    Creates blender file with mesh vertices colored by eigenvector
     magnitudes for a given mode and saves as .blend file
     The Python script to do this must be run in Blender, so we open Blender
     in bash and run the python script there.
@@ -88,3 +89,5 @@ def color_vertices_by_magnitude(
 
     # Closes subprocess but not until Blender has finished
     p.wait()
+
+    return mode, path_output

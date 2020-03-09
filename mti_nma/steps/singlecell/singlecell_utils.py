@@ -81,19 +81,8 @@ def fix_filepaths(df):
         the input dataframe with filepaths truncated for Mac users
     """
 
-    if platform == "linux" or platform == "linux2":
+    if platform in ["linux", "linux2", "darwin"]:
         pass
-    elif platform == "darwin":
-        # if we're in osx, we change all the read paths from
-        # /allen/programs/allencell/data/...
-        # to
-        # ./data/...
-        for column in df.columns:
-            if "Path" in column:
-                df[column] = [
-                    readpath.replace("/allen/programs/allencell/", "./")
-                    for readpath in df[column]
-                ]
     else:
         raise NotImplementedError(
             "OSes other than Linux and Mac are currently not supported."
@@ -102,7 +91,6 @@ def fix_filepaths(df):
 
 
 def crop_object(raw, seg, obj_label, isotropic=None):
-
     """
         This function returns a cropped area around an object of interest
         given the raw data and its corresponding segmentation.

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import numpy as np
 from pathlib import Path
 from typing import List, Optional
+
+import numpy as np
 import pandas as pd
 from aicsshparam import aicsshtools
-
 from datastep import Step, log_run_params
 
 from ..shparam import Shparam
@@ -52,7 +52,7 @@ class Avgshape(Step):
         # If no dataframe is passed in, load manifest from previous step
         if sh_df is None:
             sh_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "shparam" / "manifest_" 
+                self.step_local_staging_dir.parent / "shparam" / "manifest_"
                 f"{struct}.csv"
             )
 
