@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import numpy as np
 from pathlib import Path
 from typing import List, Optional
+
+import numpy as np
 import pandas as pd
 from aicsshparam import aicsshtools
-
 from datastep import Step, log_run_params
 
 from ..shparam import Shparam
@@ -33,28 +33,30 @@ class Avgshape(Step):
         )
 
     @log_run_params
-    def run(self, mesh_density=5, sh_df=None, **kwargs):
+    def run(self, sh_df=None, struct="Nuc", **kwargs):
         """
         This step uses the amplitudes of the spherical harmonic components
         of the nuclear shapes in the dataset to construct an average nuclear mesh.
 
         Parameters
         ----------
-        mesh_density: int (1-10)
-            Mesh density parameter used in Blender
-
         sh_df: dataframe
             dataframe containing results from running Shparam step
             See the construction of the manifest in shparam.py for details
+
+        struct: str
+            String giving name of structure to run analysis on.
+            Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
 
-        # if no dataframe is passed in, load manifest from previous step
+        # If no dataframe is passed in, load manifest from previous step
         if sh_df is None:
             sh_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "shparam" / "manifest.csv"
+                self.step_local_staging_dir.parent / "shparam" / "manifest_"
+                f"{struct}.csv"
             )
 
-        # fix filepaths and use cell id as dataframe index
+        # Fix filepaths and use cell id as dataframe index
         sh_df = sh_df.set_index("CellId", drop=True)
 
         # Load sh coefficients of all samples in manifest
@@ -70,7 +72,7 @@ class Avgshape(Step):
         avg_data_dir.mkdir(parents=True, exist_ok=True)
 
         # Perform some per-cell analysis
-        run_shcoeffs_analysis(df=coeffs_df, savedir=avg_data_dir)
+        run_shcoeffs_analysis(df=coeffs_df, savedir=avg_data_dir, struct=struct)
 
         # Avg the sh coefficients over all samples and create avg mesh
         coeffs_df_avg = coeffs_df.agg(['mean'])
@@ -85,26 +87,27 @@ class Avgshape(Step):
 
         aicsshtools.save_polydata(
             mesh=mesh_avg,
-            filename=str(avg_data_dir / "avgshape.vtk")
+            filename=str(avg_data_dir / f"avgshape_{struct}.vtk")
         )
 
         # Save mesh as stl file for blender import
-        save_mesh_as_stl(mesh_avg, str(avg_data_dir / "avgshape.stl"))
+        save_mesh_as_stl(mesh_avg, str(avg_data_dir / f"avgshape_{struct}.stl"))
 
         # Save avg coeffs to csv file
         coeffs_df_avg.to_csv(
-            str(avg_data_dir / "avgshape.csv")
+            str(avg_data_dir / f"avgshape_{struct}.csv")
         )
 
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
-            "Label": "Average_nuclear_mesh",
-            "AvgShapeFilePath": avg_data_dir / "avgshape.vtk",
-            "AvgShapeFilePathStl": avg_data_dir / "avgshape.stl"
+            "Label": "Average_mesh",
+            "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.vtk",
+            "AvgShapeFilePathStl": avg_data_dir / f"avgshape_{struct}.stl",
+            "Structure": struct,
         }, index=[0])
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / Path("manifest.csv"), index=False
+            self.step_local_staging_dir / Path(f"manifest_{struct}.csv"), index=False
         )
         return self.manifest

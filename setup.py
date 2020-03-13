@@ -46,23 +46,24 @@ interactive_requirements = [
 ]
 
 requirements = [
+    "aicsimageio",
+    "aicsshparam",
+    "bokeh",
     "datastep<=0.1.5",
+    "dask[bag]",
+    "dask_jobqueue",
     "docutils<0.16",  # needed for botocore (quilt dependency)
     "fire",
+    "lkaccess",
+    "msgpack==0.6.2",  # needed to resolve dep conflict for prefect
     "numpy",
+    "numpy-stl",
     "pandas",
+    "pyshtools",
+    "python-dateutil<=2.8.0",  # need <=2.8.0 for quilt3 in step
     "scikit-image",
     "seaborn",
     "vtk",
-    "python-dateutil<=2.8.0",  # need <=2.8.0 for quilt3 in step
-    "Pillow",
-    "aicsshparam",
-    "pyshtools",
-    "scikit-learn",
-    "aicsimageio",
-    "lkaccess",
-    "labkey",
-    "numpy-stl"
 ]
 
 extra_requirements = {
