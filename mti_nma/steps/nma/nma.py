@@ -101,7 +101,7 @@ class Nma(Step):
         nma_data_dir = self.step_local_staging_dir / "nma_data"
         nma_data_dir.mkdir(parents=True, exist_ok=True)
 
-        reader = vtk.vtkPolyDataReader()
+        reader = vtk.vtkPLYReader()
         reader.SetFileName(str(avg_df["AvgShapeFilePath"].iloc[0]))
         reader.Update()
         polydata = reader.GetOutput()

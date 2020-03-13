@@ -7,7 +7,7 @@ from typing import List, Optional
 
 import numpy as np
 import pandas as pd
-from aicsshparam import aicsshtools
+from aicsshparam import shtools
 from datastep import Step, log_run_params
 
 from ..shparam import Shparam
@@ -83,11 +83,11 @@ class Avgshape(Step):
 
         coeffs_avg = coeffs_avg.reshape(-2, lmax, lmax)
 
-        mesh_avg, _ = aicsshtools.get_reconstruction_from_coeffs(coeffs=coeffs_avg)
+        mesh_avg, _ = shtools.get_reconstruction_from_coeffs(coeffs=coeffs_avg)
 
-        aicsshtools.save_polydata(
+        shtools.save_polydata(
             mesh=mesh_avg,
-            filename=str(avg_data_dir / f"avgshape_{struct}.vtk")
+            filename=str(avg_data_dir / f"avgshape_{struct}.ply")
         )
 
         # Save mesh as stl file for blender import
@@ -101,7 +101,7 @@ class Avgshape(Step):
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
             "Label": "Average_mesh",
-            "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.vtk",
+            "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.ply",
             "AvgShapeFilePathStl": avg_data_dir / f"avgshape_{struct}.stl",
             "Structure": struct,
         }, index=[0])
