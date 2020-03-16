@@ -3,15 +3,14 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, NamedTuple, Optional
+from typing import Any, Dict, NamedTuple, Optional
 
 import pandas as pd
 from aicsimageio import AICSImage
 from aicsshparam import aicsshparam, aicsshtools
 from datastep import Step, log_run_params
 
-from .. import dask_utils
-from ..singlecell import Singlecell
+from . import dask_utils
 
 ###############################################################################
 
@@ -30,7 +29,7 @@ class CellProcessResult(NamedTuple):
 class Shparam(Step):
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = [Singlecell],
+        direct_upstream_tasks,
         filepath_columns=[
             "InitialMeshFilePath", "ShparamMeshFilePath", "CoeffsFilePath"]
     ):
@@ -110,7 +109,7 @@ class Shparam(Step):
         return CellProcessResult(cell_id, data)
 
     @log_run_params
-    def run(
+    def run_shparam_step(
         self,
         sc_df=None,
         struct="Nuc",

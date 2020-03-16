@@ -34,10 +34,14 @@ class All:
         This is only used for data logging operations, not running.
         """
         self.step_list = [
-            steps.Singlecell(),
-            steps.Shparam(),
-            steps.Avgshape(),
-            steps.Nma(),
+            steps.SingleNuc(),
+            steps.ShparamNuc(),
+            steps.AvgshapeNuc(),
+            steps.NmaNuc(),
+            steps.SingleCell(),
+            steps.ShparamCell(),
+            steps.AvgshapeCell(),
+            steps.NmaCell()
         ]
 
     def run(
@@ -45,7 +49,7 @@ class All:
         distributed: bool = False,
         clean: bool = False,
         debug: bool = False,
-        cell_flag: bool = False,
+        structs: list = ['Nuc'],
         **kwargs,
     ):
         """
@@ -63,10 +67,10 @@ class All:
             A debug flag for the developer to use to manipulate how much data runs,
             how it is processed, etc.
             Default: False (Do not debug)
-        cell_flag: bool
-            Flag for wether to include cell membrane in analysis. The nucleus is always
-            analyzed, and this flag allow you to either additionally analyze the cell
-            membrane (True) or not (False).
+        structs: List
+            List of structure data to run pipeline on. Currently, only
+            'Nuc' (nuclear membrane) and 'Cell' (cell membrane) are supported.
+
         Notes
         -----
         Documentation on prefect:
@@ -75,10 +79,17 @@ class All:
         https://docs.prefect.io/core/
         """
         # Initalize steps
-        singlecell = steps.Singlecell()
-        shparam = steps.Shparam()
-        avgshape = steps.Avgshape()
-        nma = steps.Nma()
+        if "Nuc" in structs:
+            single_nuc = steps.SingleNuc()
+            shparam_nuc = steps.ShparamNuc()
+            avgshape_nuc = steps.AvgshapeNuc()
+            nma_nuc = steps.NmaNuc()
+
+        if "Cell" in structs:
+            single_cell = steps.SingleCell()
+            shparam_cell = steps.ShparamCell()
+            avgshape_cell = steps.AvgshapeCell()
+            nma_cell = steps.NmaCell()
 
         # Choose executor
         if debug:
@@ -132,20 +143,17 @@ class All:
                 # If you want to utilize some debugging functionality pass debug
                 # If you don't utilize any of these, just pass the parameters you need.
 
-                if cell_flag:
-                    structs = ["Nuc", "Cell"]
-                else:
-                    structs = ["Nuc"]
+                if "Nuc" in structs:
+                    struct = "Nuc"
 
-                for struct in structs:
-                    sc_df = singlecell(
+                    sc_df = single_nuc(
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    sh_df = shparam(
+                    sh_df = shparam_nuc(
                         sc_df=sc_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
@@ -153,7 +161,7 @@ class All:
                         struct=struct,
                         **kwargs
                     )
-                    avg_df = avgshape(
+                    avg_df = avgshape_nuc(
                         sh_df=sh_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
@@ -161,7 +169,42 @@ class All:
                         struct=struct,
                         **kwargs
                     )
-                    nma(
+                    nma_nuc(
+                        avg_df=avg_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+
+                if "Cell" in structs:
+                    struct = "Cell"
+
+                    sc_df = single_cell(
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    sh_df = shparam_cell(
+                        sc_df=sc_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    avg_df = avgshape_cell(
+                        sh_df=sh_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    nma_cell(
                         avg_df=avg_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
@@ -173,7 +216,8 @@ class All:
             # Run flow and get ending state
             flow.run(executor=exe)
 
-            if cell_flag:
+            # If nucleus and cell membrane were anlyzed, draw comparison plot
+            if "Nuc" and "Cell" in structs:
                 draw_whist()
 
         # Catch any error and kill the remote dask cluster
