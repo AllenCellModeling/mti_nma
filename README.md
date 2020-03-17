@@ -74,6 +74,9 @@ default location).
 To pass this (or other parameters) you would run a line like the following"
 - Generic parameter pass
     - `mti_nma all run --<parameter_name> <parameter_value>`
+- Multiple structures pass
+    - `mti_nma all run --structs <struct1>,<struct2>`
+    - Pass them as a comma separated list, I.E. `--structs Nuc,Cell`
 - Blender path pass
     - `mti_nma all run --path_blender <your_blender_app_path>`
 - Blender path and number of samples pass
