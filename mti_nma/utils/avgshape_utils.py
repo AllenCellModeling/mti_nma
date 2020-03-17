@@ -1,12 +1,12 @@
-import matplotlib.pyplot as plt
-from pathlib import Path
-from stl import mesh
-import numpy as np
 import logging
+from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from aicsshparam import aicsshtools
+from aicsshparam import shtools
 from datastep import Step, log_run_params
+from stl import mesh
 
 ###############################################################################
 
@@ -78,9 +78,9 @@ class Avgshape(Step):
 
         coeffs_avg = coeffs_avg.reshape(-2, lmax, lmax)
 
-        mesh_avg, _ = aicsshtools.get_reconstruction_from_coeffs(coeffs=coeffs_avg)
+        mesh_avg, _ = shtools.get_reconstruction_from_coeffs(coeffs=coeffs_avg)
 
-        aicsshtools.save_polydata(
+        shtools.save_polydata(
             mesh=mesh_avg,
             filename=str(avg_data_dir / f"avgshape_{struct}.vtk")
         )
@@ -115,7 +115,7 @@ def run_shcoeffs_analysis(df, savedir, struct):
     Parameters
     ----------
     polydata: VTK polydata object
-        Mesh extracted from .vtk file 
+        Mesh extracted from .vtk file
     Returns
     -------
     df: dataframe
@@ -171,7 +171,7 @@ def get_vtk_verts_faces(polydata):
     Parameters
     ----------
     polydata: VTK polydata object
-        Mesh extracted from .vtk file 
+        Mesh extracted from .vtk file
     Returns
     -------
     mesh_verts: Numpy 2D array
@@ -192,7 +192,7 @@ def get_vtk_verts_faces(polydata):
         i : int
             Index of the face for which we want to get the vertex points
         polydata: VTK polydata object
-            Mesh extracted from .vtk file 
+            Mesh extracted from .vtk file
         Returns
         -------
         mesh_verts: Numpy 1D array
