@@ -48,7 +48,7 @@ requirements = [
     "aicsimageio",
     "aicsshparam",
     "bokeh",
-    "datastep<=0.1.5",
+    "datastep>=0.1.5",
     "dask[bag]",
     "dask_jobqueue",
     "docutils<0.16",  # needed for botocore (quilt dependency)
