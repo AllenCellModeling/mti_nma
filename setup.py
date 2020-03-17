@@ -42,7 +42,6 @@ interactive_requirements = [
     "altair",
     "jupyterlab",
     "matplotlib",
-    "mpl_toolkits"
 ]
 
 requirements = [
