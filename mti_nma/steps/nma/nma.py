@@ -112,17 +112,14 @@ class Nma(Step):
         draw_whist(w)
         vmags = get_eigvec_mags(v)
 
-        #
+
         # Working the visualization of eigenvectors on VTK
-        #
-
-        # Get eigenvector of interest as a Nx3 array
-
         n = polydata.GetNumberOfPoints()
         writer = vtk.vtkPolyDataWriter()
 
         for id_mode in range(9):
 
+            # 1st Get eigenvector of interest as a Nx3 array
             arr_eigenvec = v.T[id_mode,:].reshape(3,-1).T
 
             # Calculate eigenvector norm
