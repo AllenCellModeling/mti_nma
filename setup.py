@@ -41,7 +41,7 @@ dev_requirements = [
 interactive_requirements = [
     "altair",
     "jupyterlab",
-    "matplotlib"
+    "matplotlib",
 ]
 
 requirements = [
