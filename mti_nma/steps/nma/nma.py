@@ -142,7 +142,7 @@ class Nma(Step):
             # Assign eigenvectors as mesh points
             polydata.GetPointData().AddArray(eigenvec)
 
-            for id_theta, theta in enumerate(np.linspace(0,2*np.pi,16)):
+            for id_theta, theta in enumerate(np.linspace(0,8*np.pi,64)):
 
                 #Update mesh points according to eigenvector
                 for i in range(n):
