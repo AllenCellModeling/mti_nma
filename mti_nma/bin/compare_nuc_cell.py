@@ -25,9 +25,9 @@ def draw_whist():
     """
 
     w_nuc = np.load(
-        "/Users/juliec/mti/mti_nma/local_staging/nma/nma_data/eigvals_Nuc.npy")
+        "/Users/juliec/mti/mti_nma/local_staging/nmanuc/nma_data/eigvals_Nuc.npy")
     w_cell = np.load(
-        "/Users/juliec/mti/mti_nma/local_staging/nma/nma_data/eigvals_Cell.npy")
+        "/Users/juliec/mti/mti_nma/local_staging/nmacell/nma_data/eigvals_Cell.npy")
 
     plt.clf()
     fig = plt.figure()
