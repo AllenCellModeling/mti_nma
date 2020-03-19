@@ -3,9 +3,11 @@
 
 import logging
 from typing import List
-from ..avgshape_nuc import AvgshapeNuc
+
+from datastep import Step, log_run_params
+
 from ...utils.nma_utils import Nma
-from datastep import log_run_params
+from ..avgshape_nuc import AvgshapeNuc
 
 ###############################################################################
 
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 
-class NmaNuc(Nma):
+class NmaNuc(Step, Nma):
     def __init__(
         self,
         direct_upstream_tasks: List["Step"] = [AvgshapeNuc],
