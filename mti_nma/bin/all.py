@@ -222,8 +222,8 @@ class All:
             flow.run(executor=exe)
 
             # If nucleus and cell membrane were anlyzed, draw comparison plot
-            if "Nuc" and "Cell" in structs:
-                draw_whist()
+            # if "Nuc" and "Cell" in structs:
+            #     draw_whist()
 
         # Catch any error and kill the remote dask cluster
         except Exception as err:
