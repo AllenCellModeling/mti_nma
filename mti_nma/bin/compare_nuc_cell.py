@@ -25,14 +25,12 @@ def draw_whist():
         Figure containg a histogram of eigenvalues
     """
 
-    path = str(
-        Path(__file__).parent.parent.parent / "local_staging"
-    )
+    path = Path(__file__).parent.parent.parent / "local_staging"
     print(path)
     w_nuc = np.load(
         path / "nmanuc/nma_data/eigvals_Nuc.npy")
     w_cell = np.load(
-        path / "/nmacell/nma_data/eigvals_Cell.npy")
+        path / "nmacell/nma_data/eigvals_Cell.npy")
 
     plt.clf()
     fig = plt.figure()
