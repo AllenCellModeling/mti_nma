@@ -95,6 +95,7 @@ class All:
         if debug:
             exe = LocalExecutor()
             distributed_executor_address = None
+            log.info(f"Debug flagged. Will use threads instead of Dask.")
         else:
             if distributed:
                 # Create or get log dir
