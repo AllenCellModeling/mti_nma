@@ -3,9 +3,11 @@
 
 import logging
 from typing import List
-from ..avgshape_cell import AvgshapeCell
+
+from datastep import Step, log_run_params
+
 from ...utils.nma_utils import Nma
-from datastep import log_run_params
+from ..avgshape_cell import AvgshapeCell
 
 ###############################################################################
 
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 
-class NmaCell(Nma):
+class NmaCell(Step, Nma):
     def __init__(
         self,
         direct_upstream_tasks: List["Step"] = [AvgshapeCell],

@@ -95,16 +95,18 @@ class All:
         if debug:
             exe = LocalExecutor()
             distributed_executor_address = None
+            log.info(f"Debug flagged. Will use threads instead of Dask.")
         else:
             if distributed:
                 # Create or get log dir
                 # Do not include ms
                 log_dir_name = datetime.now().isoformat().split(".")[0]
-                log_dir = Path(f"~/.dask_logs/mti_nma/{log_dir_name}")
+                log_dir = Path(f"~/.dask_logs/mti_nma/{log_dir_name}").expanduser()
                 # Log dir settings
                 log_dir.mkdir(parents=True)
 
                 # Create cluster
+                log.info("Creating SLURMCluster")
                 cluster = SLURMCluster(
                     cores=2,
                     memory="24GB",
@@ -113,8 +115,9 @@ class All:
                     local_directory=str(log_dir),
                     log_directory=str(log_dir)
                 )
+                log.info("Created SLURMCluster")
 
-                # Scale workers
+                # Set adaptive worker settings
                 cluster.adapt(minimum_jobs=1, maximum_jobs=40)
 
                 # Use the port from the created connector to set executor address
@@ -124,7 +127,9 @@ class All:
                 log.info(f"Dask dashboard available at: {cluster.dashboard_link}")
             else:
                 # Create local cluster
+                log.info("Creating LocalCluster")
                 cluster = LocalCluster()
+                log.info("Created LocalCluster")
 
                 # Set distributed_executor_address
                 distributed_executor_address = cluster.scheduler_address
@@ -217,8 +222,8 @@ class All:
             flow.run(executor=exe)
 
             # If nucleus and cell membrane were anlyzed, draw comparison plot
-            if "Nuc" and "Cell" in structs:
-                draw_whist()
+            # if "Nuc" and "Cell" in structs:
+            #     draw_whist()
 
         # Catch any error and kill the remote dask cluster
         except Exception as err:

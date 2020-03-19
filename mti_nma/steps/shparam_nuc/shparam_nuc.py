@@ -3,9 +3,11 @@
 
 import logging
 from typing import List, Optional
-from ..single_nuc import SingleNuc
+
+from datastep import Step, log_run_params
+
 from ...utils.shparam_utils import Shparam
-from datastep import log_run_params
+from ..single_nuc import SingleNuc
 
 ###############################################################################
 
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 
-class ShparamNuc(Shparam):
+class ShparamNuc(Step, Shparam):
     def __init__(
         self,
         direct_upstream_tasks: Optional[List["Step"]] = [SingleNuc]

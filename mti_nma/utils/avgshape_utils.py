@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from aicsshparam import shtools
-from datastep import Step, log_run_params
 from stl import mesh
 
 ###############################################################################
@@ -15,7 +14,7 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 
-class Avgshape(Step):
+class Avgshape:
     def __init__(
         self,
         direct_upstream_tasks,
@@ -27,7 +26,6 @@ class Avgshape(Step):
             filepath_columns=filepath_columns
         )
 
-    @log_run_params
     def run_avgshape_step(self, sh_df=None, struct="Nuc", **kwargs):
         """
         This step uses the amplitudes of the spherical harmonic components
