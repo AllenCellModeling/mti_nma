@@ -105,6 +105,7 @@ class All:
                 log_dir.mkdir(parents=True)
 
                 # Create cluster
+                log.info("Creating SLURMCluster")
                 cluster = SLURMCluster(
                     cores=2,
                     memory="24GB",
@@ -113,6 +114,7 @@ class All:
                     local_directory=str(log_dir),
                     log_directory=str(log_dir)
                 )
+                log.info("Created SLURMCluster")
 
                 # Scale workers
                 cluster.adapt(minimum_jobs=1, maximum_jobs=40)
@@ -124,7 +126,9 @@ class All:
                 log.info(f"Dask dashboard available at: {cluster.dashboard_link}")
             else:
                 # Create local cluster
+                log.info("Creating LocalCluster")
                 cluster = LocalCluster()
+                log.info("Created LocalCluster")
 
                 # Set distributed_executor_address
                 distributed_executor_address = cluster.scheduler_address
