@@ -100,7 +100,7 @@ class All:
                 # Create or get log dir
                 # Do not include ms
                 log_dir_name = datetime.now().isoformat().split(".")[0]
-                log_dir = Path(f"~/.dask_logs/mti_nma/{log_dir_name}")
+                log_dir = Path(f"~/.dask_logs/mti_nma/{log_dir_name}").expanduser()
                 # Log dir settings
                 log_dir.mkdir(parents=True)
 
