@@ -26,7 +26,6 @@ def draw_whist():
     """
 
     path = Path(__file__).parent.parent.parent / "local_staging"
-    print(path)
     w_nuc = np.load(
         path / "nmanuc/nma_data/eigvals_Nuc.npy")
     w_cell = np.load(
@@ -51,7 +50,7 @@ def draw_whist():
     plt.ylabel("Counts")
     plt.legend()
 
-    plt.savefig("/Users/juliec/mti/mti_nma/local_staging/compare_fig_hist")
+    plt.savefig(path / "compare_fig_hist")
 
     plt.clf()
 
@@ -61,6 +60,6 @@ def draw_whist():
     plt.ylabel("Counts")
     plt.legend()
 
-    plt.savefig("/Users/juliec/mti/mti_nma/local_staging/compare_fig_kde")
+    plt.savefig(path / "compare_fig_kde")
 
     return fig
