@@ -2,6 +2,7 @@ import numpy as np
 import seaborn as sb
 import matplotlib.pyplot as plt
 import matplotlib
+from pathlib import Path
 
 # Run matplotlib in the background
 matplotlib.use('Agg')
@@ -24,10 +25,14 @@ def draw_whist():
         Figure containg a histogram of eigenvalues
     """
 
+    path = str(
+        Path(__file__).parent.parent.parent / "local_staging"
+    )
+    print(path)
     w_nuc = np.load(
-        "/Users/juliec/mti/mti_nma/local_staging/nmanuc/nma_data/eigvals_Nuc.npy")
+        path / "nmanuc/nma_data/eigvals_Nuc.npy")
     w_cell = np.load(
-        "/Users/juliec/mti/mti_nma/local_staging/nmacell/nma_data/eigvals_Cell.npy")
+        path / "/nmacell/nma_data/eigvals_Cell.npy")
 
     plt.clf()
     fig = plt.figure()
