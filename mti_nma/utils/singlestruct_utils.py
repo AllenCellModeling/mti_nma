@@ -45,6 +45,7 @@ class SingleStruct:
             filepath_columns=filepath_columns
         )
 
+    @staticmethod
     def _process_fov(
         fov_id: int,
         fov_details: pd.Series,
