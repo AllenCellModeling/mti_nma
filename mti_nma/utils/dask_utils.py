@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 from concurrent.futures import Future as ThreadFuture
 from concurrent.futures import ThreadPoolExecutor as ThreadClient
 from typing import Any, Iterable, Optional, Union
@@ -10,9 +11,15 @@ from distributed import Future as DaskFuture
 
 #######################################################################################
 
+log = logging.getLogger(__name__)
+
+###############################################################################
+
 
 class DistributedHandler:
     def __init__(self, address: Optional[str] = None):
+        log.info(f"Spawned DistributedHandler with address: {address}")
+
         # Create client based off address existance
         if address is None:
             self._client = ThreadClient()
