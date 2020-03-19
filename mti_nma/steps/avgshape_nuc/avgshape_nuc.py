@@ -3,9 +3,11 @@
 
 import logging
 from typing import List
-from ..shparam_nuc import ShparamNuc
+
+from datastep import Step, log_run_params
+
 from ...utils.avgshape_utils import Avgshape
-from datastep import log_run_params
+from ..shparam_nuc import ShparamNuc
 
 ###############################################################################
 
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 
-class AvgshapeNuc(Avgshape):
+class AvgshapeNuc(Step, Avgshape):
     def __init__(
         self,
         direct_upstream_tasks: List["Step"] = [ShparamNuc],

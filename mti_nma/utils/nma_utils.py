@@ -1,16 +1,16 @@
-import numpy as np
 import itertools
 import logging
 import subprocess
 from pathlib import Path
-import matplotlib
-import matplotlib.pyplot as plt
-import seaborn as sb
 from sys import platform
 from typing import Optional
+
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import seaborn as sb
 import vtk
-from datastep import Step, log_run_params
 
 from . import dask_utils
 
@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 
-class Nma(Step):
+class Nma:
     """
     This step is used to run normal mode analysis on a given mesh by:
     1) Extracting vertices and faces from vtk polydata mesh
@@ -48,7 +48,6 @@ class Nma(Step):
             filepath_columns=filepath_columns
         )
 
-    @log_run_params
     def run_nma_step(
         self,
         mode_list=list(range(6)),
@@ -300,12 +299,12 @@ def get_eigvec_mags(v):
     ----------
     v: Numpy 2D array
         Each array in this array gives the displacement vector for a vertex in the mesh
-        The array giving the eigenvectors associated with eigenvalue w[i] are in v[:. i] 
+        The array giving the eigenvectors associated with eigenvalue w[i] are in v[:. i]
     Returns
     -------
     vmags: 2D Numpy array
         Each array in this array gives the relative displacement magntiude for a vertex
-        in the mesh. The array giving the magnitudes associated with eigenvalue w[i] 
+        in the mesh. The array giving the magnitudes associated with eigenvalue w[i]
         are in vmags[:. i]
     """
 
@@ -330,7 +329,7 @@ def get_vtk_verts_faces(polydata):
     Parameters
     ----------
     polydata: VTK polydata object
-        Mesh extracted from .vtk file 
+        Mesh extracted from .vtk file
     Returns
     -------
     mesh_verts: Numpy 2D array
@@ -351,7 +350,7 @@ def get_vtk_verts_faces(polydata):
         i : int
             Index of the face for which we want to get the vertex points
         polydata: VTK polydata object
-            Mesh extracted from .vtk file 
+            Mesh extracted from .vtk file
         Returns
         -------
         mesh_verts: Numpy 1D array

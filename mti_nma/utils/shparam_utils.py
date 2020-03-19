@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any, Dict, NamedTuple, Optional
 
 import pandas as pd
-from aicsimageio import AICSImage
 from aicsshparam import shparam, shtools
-from datastep import Step, log_run_params
+
+from aicsimageio import AICSImage
 
 from . import dask_utils
 
@@ -26,7 +26,7 @@ class CellProcessResult(NamedTuple):
 ###############################################################################
 
 
-class Shparam(Step):
+class Shparam:
     def __init__(
         self,
         direct_upstream_tasks,
@@ -108,7 +108,6 @@ class Shparam(Step):
         log.info(f"Completed processing for cell: {cell_id}")
         return CellProcessResult(cell_id, data)
 
-    @log_run_params
     def run_shparam_step(
         self,
         sc_df=None,

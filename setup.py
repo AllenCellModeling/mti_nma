@@ -45,7 +45,7 @@ interactive_requirements = [
 ]
 
 requirements = [
-    "aicsimageio",
+    "aicsimageio>=3.1.2",
     "aicsshparam>=0.0.7",
     "bokeh",
     "datastep>=0.1.5",

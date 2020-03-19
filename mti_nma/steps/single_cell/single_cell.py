@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
+from datastep import Step, log_run_params
+
 from ...utils.singlestruct_utils import SingleStruct
-from datastep import log_run_params
 
 ###############################################################################
 
@@ -12,7 +14,7 @@ log = logging.getLogger(__name__)
 ###############################################################################
 
 
-class SingleCell(SingleStruct):
+class SingleCell(Step, SingleStruct):
 
     @log_run_params
     def run(self, **kwargs):

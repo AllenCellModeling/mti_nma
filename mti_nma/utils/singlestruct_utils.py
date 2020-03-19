@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
+import uuid
+from pathlib import Path
 from sys import platform
+from typing import Any, Dict, NamedTuple, Optional
 
 import numpy as np
 import pandas as pd
 from lkaccess import LabKey, contexts
 from skimage import transform as sktrans
 
-import logging
-import uuid
-from pathlib import Path
-from typing import Any, Dict, NamedTuple, Optional
-
 from aicsimageio import AICSImage, writers
-from datastep import Step, log_run_params
+
 from . import dask_utils
 
 ###############################################################################
@@ -32,7 +31,7 @@ class FOVProcessResult(NamedTuple):
 ###############################################################################
 
 
-class SingleStruct(Step):
+class SingleStruct:
 
     def __init__(
         self,
@@ -124,7 +123,6 @@ class SingleStruct(Step):
         log.info(f"Completed processing for FOV: {fov_id}")
         return result
 
-    @log_run_params
     def run_singlestruct_step(
         self,
         cell_line_id="AICS-13",
