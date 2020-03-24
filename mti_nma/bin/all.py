@@ -18,8 +18,6 @@ from prefect.engine.executors import DaskExecutor, LocalExecutor
 
 from mti_nma import steps
 
-from .compare_nuc_cell import draw_whist
-
 ###############################################################################
 
 log = logging.getLogger(__name__)
@@ -34,14 +32,11 @@ class All:
         This is only used for data logging operations, not running.
         """
         self.step_list = [
-            steps.SingleNuc(),
-            steps.ShparamNuc(),
-            steps.AvgshapeNuc(),
-            steps.NmaNuc(),
-            steps.SingleCell(),
-            steps.ShparamCell(),
-            steps.AvgshapeCell(),
-            steps.NmaCell()
+            steps.Singlecell(),
+            steps.Shparam(),
+            steps.Avgshape(),
+            steps.Nma(),
+            steps.CompareNucCell()
         ]
 
     def run(
@@ -49,7 +44,7 @@ class All:
         distributed: bool = False,
         clean: bool = False,
         debug: bool = False,
-        structs: list = ['Nuc'],
+        structs: list = ["Nuc"],
         **kwargs,
     ):
         """
@@ -78,18 +73,22 @@ class All:
         Basic prefect example:
         https://docs.prefect.io/core/
         """
+
         # Initalize steps
         if "Nuc" in structs:
-            single_nuc = steps.SingleNuc()
-            shparam_nuc = steps.ShparamNuc()
-            avgshape_nuc = steps.AvgshapeNuc()
-            nma_nuc = steps.NmaNuc()
+            single_nuc = steps.Singlecell(step_name="single_nuc")
+            shparam_nuc = steps.Shparam(step_name="shparam_nuc")
+            avgshape_nuc = steps.Avgshape(step_name="avgshape_nuc")
+            nma_nuc = steps.Nma(step_name="nma_nuc")
 
         if "Cell" in structs:
-            single_cell = steps.SingleCell()
-            shparam_cell = steps.ShparamCell()
-            avgshape_cell = steps.AvgshapeCell()
-            nma_cell = steps.NmaCell()
+            single_cell = steps.Singlecell(step_name="single_cell")
+            shparam_cell = steps.Shparam(step_name="shparam_cell")
+            avgshape_cell = steps.Avgshape(step_name="avgshape_cell")
+            nma_cell = steps.Nma(step_name="nma_cell")
+
+        if "Nuc" in structs and "Cell" in structs:
+            compare_nuc_cell = steps.CompareNucCell()
 
         # Choose executor
         if debug:
@@ -218,12 +217,16 @@ class All:
                         **kwargs
                     )
 
-            # Run flow and get ending state
+            # Run flow, get ending state, and visualize pipeline
             flow.run(executor=exe)
 
-            # If nucleus and cell membrane were anlyzed, draw comparison plot
-            # if "Nuc" and "Cell" in structs:
-            #     draw_whist()
+            with Flow("mti_nma") as flow2:
+                # If nucleus and cell membrane were anlyzed, draw comparison plot
+                if "Nuc" and "Cell" in structs:
+                    compare_nuc_cell()
+
+            # Run flow, get ending state, and visualize pipeline
+            flow2.run(executor=exe)
 
         # Catch any error and kill the remote dask cluster
         except Exception as err:

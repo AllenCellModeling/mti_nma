@@ -1,21 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from .single_nuc import SingleNuc
-from .single_cell import SingleCell
-from .shparam_cell import ShparamCell
-from .shparam_nuc import ShparamNuc
-from .avgshape_nuc import AvgshapeNuc
-from .avgshape_cell import AvgshapeCell
-from .nma_cell import NmaCell
-from .nma_nuc import NmaNuc
+from .singlecell import Singlecell
+from .shparam import Shparam
+from .avgshape import Avgshape
+from .nma import Nma
+from .compare_nuc_cell import CompareNucCell
 
 
 __all__ = [
-    "SingleNuc",
-    "SingleCell",
-    "ShparamCell",
-    "ShparamNuc",
-    "AvgshapeNuc",
-    "AvgshapeCell",
-    "NmaCell",
-    "NmaNuc"]
+    "Singlecell",
+    "Shparam",
+    "Avgshape",
+    "Nma",
+    "CompareNucCell"]
