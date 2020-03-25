@@ -31,15 +31,16 @@ class All:
         Set all of your available steps here.
         This is only used for data logging operations, not running.
         """
-        self.step_list = [
+        step_list = [
             [
                 steps.Singlecell(step_name=f"singlecell_{name}"),
                 steps.Shparam(step_name=f"shparam_{name}"),
                 steps.Avgshape(step_name=f"avgshape_{name}"),
-                steps.Nma(step_name=f"nma_{name}"),
+                steps.Nma(step_name=f"nma_{name}")
             ]
             for name in ["nuc", "cell"]
         ]
+        self.step_list = [step for sublist in step_list for step in sublist]
         self.step_list.append(steps.CompareNucCell())
 
     def run(
