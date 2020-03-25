@@ -33,7 +33,7 @@ class All:
         """
         step_list = [
             [
-                steps.Singlecell(step_name=f"singlecell_{name}"),
+                steps.Singlecell(step_name=f"single_{name}"),
                 steps.Shparam(step_name=f"shparam_{name}"),
                 steps.Avgshape(step_name=f"avgshape_{name}"),
                 steps.Nma(step_name=f"nma_{name}")
