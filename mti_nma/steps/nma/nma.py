@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import vtk
 
-from datastep import Step
+from datastep import Step, log_run_params
 from .. import dask_utils
 from ..avgshape import Avgshape
 from .nma_utils import get_vtk_verts_faces, run_nma, draw_whist, get_eigvec_mags
@@ -50,6 +50,7 @@ class Nma(Step):
             **kwargs
         )
 
+    @log_run_params
     def run(
         self,
         mode_list=list(range(6)),

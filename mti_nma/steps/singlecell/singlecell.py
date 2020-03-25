@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from aicsimageio import AICSImage, writers
-from datastep import Step
+from datastep import Step, log_run_params
 
 from .. import dask_utils
 from .singlecell_utils import crop_object, query_data_from_labkey
@@ -121,6 +121,7 @@ class Singlecell(Step):
         log.info(f"Completed processing for FOV: {fov_id}")
         return result
 
+    @log_run_params
     def run(
         self,
         cell_line_id="AICS-13",

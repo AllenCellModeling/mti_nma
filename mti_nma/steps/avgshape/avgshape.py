@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from aicsshparam import shtools
 
-from datastep import Step
+from datastep import Step, log_run_params
 from ..shparam import Shparam
 from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
 
@@ -31,6 +31,7 @@ class Avgshape(Step):
             **kwargs
         )
 
+    @log_run_params
     def run(self, sh_df=None, struct="Nuc", **kwargs):
         """
         This step uses the amplitudes of the spherical harmonic components

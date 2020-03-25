@@ -9,7 +9,7 @@ import pandas as pd
 from aicsshparam import shparam, shtools
 
 from aicsimageio import AICSImage
-from datastep import Step
+from datastep import Step, log_run_params
 
 from .. import dask_utils
 from ..singlecell import Singlecell
@@ -112,6 +112,7 @@ class Shparam(Step):
         log.info(f"Completed processing for cell: {cell_id}")
         return CellProcessResult(cell_id, data)
 
+    @log_run_params
     def run(
         self,
         sc_df=None,
