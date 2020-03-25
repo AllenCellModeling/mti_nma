@@ -32,19 +32,22 @@ class All:
         This is only used for data logging operations, not running.
         """
         self.step_list = [
-            steps.Singlecell(),
-            steps.Shparam(),
-            steps.Avgshape(),
-            steps.Nma(),
-            steps.CompareNucCell()
+            [
+                steps.Singlecell(step_name=f"singlecell_{name}"),
+                steps.Shparam(step_name=f"shparam_{name}"),
+                steps.Avgshape(step_name=f"avgshape_{name}"),
+                steps.Nma(step_name=f"nma_{name}"),
+            ]
+            for name in ["nuc", "cell"]
         ]
+        self.step_list.append(steps.CompareNucCell())
 
     def run(
         self,
         distributed: bool = False,
         clean: bool = False,
         debug: bool = False,
-        structs: list = ["Nuc"],
+        structs: list = ["Nuc", "Cell"],
         **kwargs,
     ):
         """
@@ -150,31 +153,31 @@ class All:
                 if "Nuc" in structs:
                     struct = "Nuc"
 
-                    sc_df = single_nuc(
+                    sc_nuc_df = single_nuc(
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    sh_df = shparam_nuc(
-                        sc_df=sc_df,
+                    sh_nuc_df = shparam_nuc(
+                        sc_df=sc_nuc_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    avg_df = avgshape_nuc(
-                        sh_df=sh_df,
+                    avg_nuc_df = avgshape_nuc(
+                        sh_df=sh_nuc_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    nma_nuc(
-                        avg_df=avg_df,
+                    nma_nuc_df = nma_nuc(
+                        avg_df=avg_nuc_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
@@ -185,48 +188,44 @@ class All:
                 if "Cell" in structs:
                     struct = "Cell"
 
-                    sc_df = single_cell(
+                    sc_cell_df = single_cell(
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    sh_df = shparam_cell(
-                        sc_df=sc_df,
+                    sh_cell_df = shparam_cell(
+                        sc_df=sc_cell_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    avg_df = avgshape_cell(
-                        sh_df=sh_df,
+                    avg_cell_df = avgshape_cell(
+                        sh_df=sh_cell_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    nma_cell(
-                        avg_df=avg_df,
+                    nma_cell_df = nma_cell(
+                        avg_df=avg_cell_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
+
+                # If nucleus and cell membrane were anlyzed, draw comparison plot
+                if "Nuc" and "Cell" in structs:
+                    compare_nuc_cell(nma_nuc_df, nma_cell_df)
 
             # Run flow, get ending state, and visualize pipeline
             flow.run(executor=exe)
-
-            with Flow("mti_nma") as flow2:
-                # If nucleus and cell membrane were anlyzed, draw comparison plot
-                if "Nuc" and "Cell" in structs:
-                    compare_nuc_cell()
-
-            # Run flow, get ending state, and visualize pipeline
-            flow2.run(executor=exe)
 
         # Catch any error and kill the remote dask cluster
         except Exception as err:

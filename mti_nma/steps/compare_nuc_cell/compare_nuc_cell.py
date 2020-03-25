@@ -32,7 +32,7 @@ class CompareNucCell(Step):
         super().__init__(direct_upstream_tasks=direct_upstream_tasks, config=config)
 
     @log_run_params
-    def run(self, **kwargs):
+    def run(self, nma_nuc_df, nma_cell_df, **kwargs):
         """
         Run a pure function.
 
@@ -50,22 +50,27 @@ class CompareNucCell(Step):
 
         Parameters
         ----------
-        w_nuc: Numpy 1D array
-            An array of eigenvalue values from NMA of nucleus
-        w_cell: Numpy 1D array
-            An array of eigenvalue values from NMA of cell
-
+        nma_nuc_df: dataframe
+            dataframe containing results from running NMA step on nucleus
+            See the construction of the manifest in nma.py for details
+        nma_cell_df: dataframe
+            dataframe containing results from running NMA step on cell
+            See the construction of the manifest in nma.py for details
         Returns
         -------
         result: Any
             A pickable object or value that is the result of any processing you do.
         """
 
-        path = Path(__file__).parent.parent.parent.parent / "local_staging"
-        w_nuc = np.load(
-            path / "nma_nuc/nma_data/eigvals_Nuc.npy")
-        w_cell = np.load(
-            path / "nma_cell/nma_data/eigvals_Cell.npy")
+        if nma_cell_df or nma_nuc_df is None:
+            path = Path(__file__).parent.parent.parent.parent / "local_staging"
+            w_nuc = np.load(
+                path / "nma_nuc/nma_data/eigvals_Nuc.npy")
+            w_cell = np.load(
+                path / "nma_cell/nma_data/eigvals_Cell.npy")
+        else:
+            w_nuc = np.load(nma_nuc_df["w_FilePath"])
+            w_cell = np.load(nma_nuc_df["w_FilePath"])
 
         plt.clf()
 
