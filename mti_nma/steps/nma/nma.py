@@ -165,5 +165,5 @@ class Nma(Step):
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / f"manifest_{struct}.csv", index=False
+            self.step_local_staging_dir / f"manifest.csv", index=False
         )
