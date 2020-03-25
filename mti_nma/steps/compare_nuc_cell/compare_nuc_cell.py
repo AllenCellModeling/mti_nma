@@ -110,8 +110,12 @@ class CompareNucCell(Step):
         plt.savefig(self.step_local_staging_dir / "compare_fig_kde")
 
         self.manifest = pd.DataFrame({
-            "compare_hist_FilePath": path / "compare_fig_hist.pdf",
-            "compare_kde_FilePath": path / "compare_fig_kde.pdf",
+            "compare_hist_FilePath": (
+                self.step_local_staging_dir / "compare_fig_hist.pdf"
+            ),
+            "compare_kde_FilePath": (
+                self.step_local_staging_dir / "compare_fig_kde.pdf"
+            ),
         }, index=[0])
 
         # Save manifest as csv
