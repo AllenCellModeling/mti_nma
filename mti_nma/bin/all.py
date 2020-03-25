@@ -246,13 +246,13 @@ class All:
         for step in self.step_list:
             step.checkout()
 
-def push(self):
-    """
-    Push all steps.
-    """
-    for step in self.step_list:
-        log.info(f"Pushing data for step: {step.step_name}")
-        step.push()
+    def push(self):
+        """
+        Push all steps.
+        """
+        for step in self.step_list:
+            log.info(f"Pushing data for step: {step.step_name}")
+            step.push()
 
     def clean(self):
         """
