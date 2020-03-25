@@ -5,13 +5,12 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from datastep import Step, log_run_params
-
-import numpy as np
-import seaborn as sb
-import pandas as pd
-import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sb
+from datastep import Step, log_run_params
 
 # Run matplotlib in the background
 matplotlib.use('Agg')
@@ -28,8 +27,16 @@ class CompareNucCell(Step):
         self,
         direct_upstream_tasks: List["Step"] = [],
         config: Optional[Union[str, Path, Dict[str, str]]] = None,
+        filepath_columns: List[str] = [
+            "compare_hist_FilePath",
+            "compare_kde_FilePath",
+        ]
     ):
-        super().__init__(direct_upstream_tasks=direct_upstream_tasks, config=config)
+        super().__init__(
+            direct_upstream_tasks=direct_upstream_tasks,
+            config=config,
+            filepath_columns=filepath_columns,
+        )
 
     @log_run_params
     def run(self, nma_nuc_df, nma_cell_df, **kwargs):
@@ -103,8 +110,12 @@ class CompareNucCell(Step):
         plt.savefig(self.step_local_staging_dir / "compare_fig_kde")
 
         self.manifest = pd.DataFrame({
-            "compare_hist_FilePath": path / "compare_fig_hist",
-            "compare_kde_FilePath": path / "compare_fig_kde",
+            "compare_hist_FilePath": (
+                self.step_local_staging_dir / "compare_fig_hist.pdf"
+            ),
+            "compare_kde_FilePath": (
+                self.step_local_staging_dir / "compare_fig_kde.pdf"
+            ),
         }, index=[0])
 
         # Save manifest as csv
