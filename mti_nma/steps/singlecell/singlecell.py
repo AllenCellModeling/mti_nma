@@ -36,9 +36,7 @@ class Singlecell(Step):
         self,
         filepath_columns=[
             "RawFilePath",
-            "SegFilePath",
-            "OrigFOVPathRaw",
-            "OrigFOVPathSeg"],
+            "SegFilePath"],
         **kwargs
     ):
         super().__init__(
