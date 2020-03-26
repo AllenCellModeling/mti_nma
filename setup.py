@@ -63,6 +63,8 @@ requirements = [
     "scikit-image",
     "seaborn",
     "vtk",
+    "graphviz",
+    "prefect[viz]"
 ]
 
 extra_requirements = {
