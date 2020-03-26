@@ -31,7 +31,7 @@ class CellProcessResult(NamedTuple):
 class Shparam(Step):
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = [Singlecell],
+        direct_upstream_tasks: Optional[List["Step"]] = [],
         filepath_columns=[
             "InitialMeshFilePath", "ShparamMeshFilePath", "CoeffsFilePath"],
         **kwargs
@@ -142,6 +142,8 @@ class Shparam(Step):
             An optional distributed executor address to use for job distribution.
             Default: None (no distributed executor, use local threads)
         """
+
+        self.direct_upstream_tasks = [Singlecell(step_name=f"singlecell_{struct}")]
 
         # If no dataframe is passed in, load manifest from previous step
         if sc_df is None:

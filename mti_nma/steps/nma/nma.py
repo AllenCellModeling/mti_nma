@@ -40,7 +40,7 @@ class Nma(Step):
 
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = [Avgshape],
+        direct_upstream_tasks: Optional[List["Step"]] = [],
         filepath_columns=["w_FilePath", "v_FilePath", "vmag_FilePath", "fig_FilePath"],
         **kwargs
     ):
@@ -88,6 +88,8 @@ class Nma(Step):
             An optional distributed executor address to use for job distribution.
             Default: None (no distributed executor, use local threads)
         """
+
+        self.direct_upstream_tasks = [Avgshape(step_name=f"avgshape_{struct}")]
 
         # If no dataframe is passed in, load manifest from previous step
         if avg_df is None:
@@ -163,6 +165,7 @@ class Nma(Step):
             # Set manifest with results
             for mode, output_path in results:
                 self.manifest[f"mode_{mode}_FilePath"] = output_path
+                self.filepath_columns.append(output_path)
 
         # Save manifest as csv
         self.manifest.to_csv(

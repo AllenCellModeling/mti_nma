@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 class Avgshape(Step):
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = [Shparam],
+        direct_upstream_tasks: Optional[List["Step"]] = [],
         filepath_columns=["AvgShapeFilePath", "AvgShapeFilePathStl"],
         **kwargs
 
@@ -47,6 +47,8 @@ class Avgshape(Step):
             String giving name of structure to run analysis on.
             Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
+
+        self.direct_upstream_tasks = [Shparam(step_name=f"shparam_{struct}")]
 
         # If no dataframe is passed in, load manifest from previous step
         if sh_df is None:
