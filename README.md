@@ -163,7 +163,7 @@ The following commands are the minimal set of commands to get setup for running 
 4. Run the pipeline
 
     ```bash
-    mti_nma all run --path_blender /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/blender --nsamples {int} --distributed
+    mti_nma all run --path_blender /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/blender --nsamples {int} --distributed True
     ```
 
 5. (Optional) Connect to the Dask UI
@@ -171,5 +171,5 @@ The following commands are the minimal set of commands to get setup for running 
     _In a new terminal_
 
     ```bash
-    ssh -A -J slurm-master -L {port_provided_by_log}:{node_you_are_on}:{port_provided_by_log} {node_you_are_on}
+    ssh -A -J <username>@slurm-master.corp.alleninstitute.org -L {port_provided_by_log}:{node_you_are_on}:{port_provided_by_log} <username>@{node_you_are_on}
     ```
