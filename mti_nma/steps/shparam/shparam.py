@@ -143,6 +143,7 @@ class Shparam(Step):
             Default: None (no distributed executor, use local threads)
         """
 
+        # Set upstream task using structure-named version of previous step
         self.direct_upstream_tasks = [Singlecell(step_name=f"singlecell_{struct}")]
 
         # If no dataframe is passed in, load manifest from previous step

@@ -227,6 +227,7 @@ class All:
 
             # Run flow, get ending state, and visualize pipeline
             flow.run(executor=exe)
+            flow.visualize()
 
         # Catch any error and kill the remote dask cluster
         except Exception as err:

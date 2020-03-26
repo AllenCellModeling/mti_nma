@@ -89,6 +89,7 @@ class Nma(Step):
             Default: None (no distributed executor, use local threads)
         """
 
+        # Set upstream task using structure-named version of previous step
         self.direct_upstream_tasks = [Avgshape(step_name=f"avgshape_{struct}")]
 
         # If no dataframe is passed in, load manifest from previous step
