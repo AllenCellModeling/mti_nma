@@ -1,0 +1,23 @@
+distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.205:35731'
+distributed.dashboard.proxy - INFO - To route to workers diagnostics web server please install jupyter-server-proxy: python -m pip install jupyter-server-proxy
+distributed.worker - INFO -       Start worker at:   tcp://172.20.5.205:42637
+distributed.worker - INFO -          Listening to:   tcp://172.20.5.205:42637
+distributed.worker - INFO -          dashboard at:         172.20.5.205:40825
+distributed.worker - INFO - Waiting to connect to:   tcp://172.20.5.206:37893
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -               Threads:                          2
+distributed.worker - INFO -                Memory:                   24.00 GB
+distributed.worker - INFO -       Local Directory: /home/juliec/.dask_logs/mti_nma/2020-03-20T13:47:56/worker-hhw9jclw
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -         Registered to:   tcp://172.20.5.206:37893
+distributed.worker - INFO - -------------------------------------------------
+distributed.core - INFO - Starting established connection
+distributed.utils_perf - INFO - full garbage collection released 57.80 MB from 2068 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 41.01 MB from 2074 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 20.62 MB from 1076 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 10.94 MB from 1757 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 22.81 MB from 1512 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 37.74 MB from 2169 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 11.74 MB from 1558 reference cycles (threshold: 10.00 MB)
+distributed.worker - INFO - Stopping worker at tcp://172.20.5.205:42637
+slurmstepd-n205: error: *** JOB 224547 ON n205 CANCELLED AT 2020-03-20T13:49:20 ***

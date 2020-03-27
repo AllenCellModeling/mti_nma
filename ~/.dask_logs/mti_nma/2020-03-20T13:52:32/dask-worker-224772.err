@@ -1,0 +1,4 @@
+distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.205:38659'
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-20T13:52:32/worker-hjueticj', purging
+distributed.dashboard.proxy - INFO - To route to workers diagnostics web server please install jupyter-server-proxy: python -m pip install jupyter-server-proxy
+slurmstepd-n205: error: *** JOB 224772 ON n205 CANCELLED AT 2020-03-20T13:58:31 ***

@@ -10,7 +10,6 @@ import vtk
 
 from datastep import Step, log_run_params
 from .. import dask_utils
-from ..avgshape import Avgshape
 from .nma_utils import get_vtk_verts_faces, run_nma, draw_whist, get_eigvec_mags
 from .nma_utils import color_vertices_by_magnitude
 
@@ -88,9 +87,6 @@ class Nma(Step):
             An optional distributed executor address to use for job distribution.
             Default: None (no distributed executor, use local threads)
         """
-
-        # Set upstream task using structure-named version of previous step
-        self.direct_upstream_tasks = [Avgshape(step_name=f"avgshape_{struct}")]
 
         # If no dataframe is passed in, load manifest from previous step
         if avg_df is None:

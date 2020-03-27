@@ -1,0 +1,37 @@
+distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.183:37367'
+distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.183:38743'
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-wxr3qbk2', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-w4pqy4r5', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-s31a6oha', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-ppc78ygz', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-lkfys18b', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-5f2g8mrb', purging
+distributed.dashboard.proxy - INFO - To route to workers diagnostics web server please install jupyter-server-proxy: python -m pip install jupyter-server-proxy
+distributed.dashboard.proxy - INFO - To route to workers diagnostics web server please install jupyter-server-proxy: python -m pip install jupyter-server-proxy
+distributed.worker - INFO -       Start worker at:   tcp://172.20.5.183:36715
+distributed.worker - INFO -          Listening to:   tcp://172.20.5.183:36715
+distributed.worker - INFO -          dashboard at:         172.20.5.183:36481
+distributed.worker - INFO - Waiting to connect to:   tcp://172.20.5.205:36813
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -               Threads:                          1
+distributed.worker - INFO -                Memory:                   12.00 GB
+distributed.worker - INFO -       Local Directory: /home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-0e_n6_b5
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -       Start worker at:   tcp://172.20.5.183:41121
+distributed.worker - INFO -          Listening to:   tcp://172.20.5.183:41121
+distributed.worker - INFO -          dashboard at:         172.20.5.183:35371
+distributed.worker - INFO - Waiting to connect to:   tcp://172.20.5.205:36813
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -               Threads:                          1
+distributed.worker - INFO -                Memory:                   12.00 GB
+distributed.worker - INFO -       Local Directory: /home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-pkqfqfrb
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -         Registered to:   tcp://172.20.5.205:36813
+distributed.worker - INFO - -------------------------------------------------
+distributed.core - INFO - Starting established connection
+distributed.worker - INFO -         Registered to:   tcp://172.20.5.205:36813
+distributed.worker - INFO - -------------------------------------------------
+distributed.core - INFO - Starting established connection
+distributed.core - INFO - Event loop was unresponsive in Worker for 16.56s.  This is often caused by long-running GIL-holding functions or moving large chunks of data. This can cause timeouts and instability.
+distributed.core - INFO - Event loop was unresponsive in Worker for 16.76s.  This is often caused by long-running GIL-holding functions or moving large chunks of data. This can cause timeouts and instability.
+slurmstepd-n183: error: *** JOB 230235 ON n183 CANCELLED AT 2020-03-26T14:24:10 ***

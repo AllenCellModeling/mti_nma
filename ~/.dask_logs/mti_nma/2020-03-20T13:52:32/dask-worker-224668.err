@@ -1,0 +1,37 @@
+distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.183:40825'
+distributed.dashboard.proxy - INFO - To route to workers diagnostics web server please install jupyter-server-proxy: python -m pip install jupyter-server-proxy
+distributed.worker - INFO -       Start worker at:   tcp://172.20.5.183:38601
+distributed.worker - INFO -          Listening to:   tcp://172.20.5.183:38601
+distributed.worker - INFO -          dashboard at:         172.20.5.183:35349
+distributed.worker - INFO - Waiting to connect to:   tcp://172.20.5.206:33663
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -               Threads:                          2
+distributed.worker - INFO -                Memory:                   24.00 GB
+distributed.worker - INFO -       Local Directory: /home/juliec/.dask_logs/mti_nma/2020-03-20T13:52:32/worker-gty_sle1
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -         Registered to:   tcp://172.20.5.206:33663
+distributed.worker - INFO - -------------------------------------------------
+distributed.core - INFO - Starting established connection
+distributed.core - INFO - Event loop was unresponsive in Worker for 3.39s.  This is often caused by long-running GIL-holding functions or moving large chunks of data. This can cause timeouts and instability.
+distributed.utils_perf - INFO - full garbage collection released 39.18 MB from 1395 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 61.78 MB from 2308 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 22.54 MB from 1196 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 52.43 MB from 2078 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 15.71 MB from 1229 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 28.05 MB from 1810 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 32.51 MB from 2085 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 17.06 MB from 1324 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 10.52 MB from 1632 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 10.02 MB from 1652 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 20.82 MB from 1558 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 14.19 MB from 2208 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - WARNING - full garbage collections took 12% CPU time recently (threshold: 10%)
+distributed.utils_perf - WARNING - full garbage collections took 12% CPU time recently (threshold: 10%)
+distributed.utils_perf - WARNING - full garbage collections took 11% CPU time recently (threshold: 10%)
+distributed.utils_perf - WARNING - full garbage collections took 11% CPU time recently (threshold: 10%)
+distributed.utils_perf - INFO - full garbage collection released 24.51 MB from 2216 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - WARNING - full garbage collections took 11% CPU time recently (threshold: 10%)
+distributed.utils_perf - WARNING - full garbage collections took 11% CPU time recently (threshold: 10%)
+distributed.utils_perf - WARNING - full garbage collections took 11% CPU time recently (threshold: 10%)
+distributed.worker - INFO - Stopping worker at tcp://172.20.5.183:38601
+slurmstepd-n183: error: *** JOB 224668 ON n183 CANCELLED AT 2020-03-20T13:55:06 ***

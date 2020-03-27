@@ -12,7 +12,6 @@ from aicsimageio import AICSImage
 from datastep import Step, log_run_params
 
 from .. import dask_utils
-from ..singlecell import Singlecell
 
 ###############################################################################
 
@@ -142,9 +141,6 @@ class Shparam(Step):
             An optional distributed executor address to use for job distribution.
             Default: None (no distributed executor, use local threads)
         """
-
-        # Set upstream task using structure-named version of previous step
-        self.direct_upstream_tasks = [Singlecell(step_name=f"singlecell_{struct}")]
 
         # If no dataframe is passed in, load manifest from previous step
         if sc_df is None:

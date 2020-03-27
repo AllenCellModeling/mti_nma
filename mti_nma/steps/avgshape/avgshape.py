@@ -7,7 +7,6 @@ import pandas as pd
 from aicsshparam import shtools
 
 from datastep import Step, log_run_params
-from ..shparam import Shparam
 from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
 
 ###############################################################################
@@ -47,8 +46,6 @@ class Avgshape(Step):
             String giving name of structure to run analysis on.
             Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
         """
-
-        self.direct_upstream_tasks = [Shparam(step_name=f"shparam_{struct}")]
 
         # If no dataframe is passed in, load manifest from previous step
         if sh_df is None:

@@ -1,0 +1,29 @@
+distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.183:37791'
+distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.183:33651'
+distributed.dashboard.proxy - INFO - To route to workers diagnostics web server please install jupyter-server-proxy: python -m pip install jupyter-server-proxy
+distributed.dashboard.proxy - INFO - To route to workers diagnostics web server please install jupyter-server-proxy: python -m pip install jupyter-server-proxy
+distributed.worker - INFO -       Start worker at:   tcp://172.20.5.183:39615
+distributed.worker - INFO -       Start worker at:   tcp://172.20.5.183:35975
+distributed.worker - INFO -          Listening to:   tcp://172.20.5.183:39615
+distributed.worker - INFO -          dashboard at:         172.20.5.183:35051
+distributed.worker - INFO - Waiting to connect to:   tcp://172.20.5.205:36813
+distributed.worker - INFO -          Listening to:   tcp://172.20.5.183:35975
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -          dashboard at:         172.20.5.183:38719
+distributed.worker - INFO - Waiting to connect to:   tcp://172.20.5.205:36813
+distributed.worker - INFO -               Threads:                          1
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -                Memory:                   12.00 GB
+distributed.worker - INFO -       Local Directory: /home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-ifny29qh
+distributed.worker - INFO -               Threads:                          1
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -                Memory:                   12.00 GB
+distributed.worker - INFO -       Local Directory: /home/juliec/.dask_logs/mti_nma/2020-03-26T14:22:27/worker-m8vle_71
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -         Registered to:   tcp://172.20.5.205:36813
+distributed.worker - INFO - -------------------------------------------------
+distributed.core - INFO - Starting established connection
+distributed.worker - INFO -         Registered to:   tcp://172.20.5.205:36813
+distributed.worker - INFO - -------------------------------------------------
+distributed.core - INFO - Starting established connection
+slurmstepd-n183: error: *** JOB 230258 ON n183 CANCELLED AT 2020-03-26T14:24:11 ***

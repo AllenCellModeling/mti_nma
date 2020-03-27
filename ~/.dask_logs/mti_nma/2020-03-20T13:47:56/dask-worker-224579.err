@@ -1,0 +1,8 @@
+distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.185:45653'
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-20T13:47:56/worker-vd57j0nh', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-20T13:47:56/worker-k_v_uqqh', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-20T13:47:56/worker-zznq0e09', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-20T13:47:56/worker-fgb0cwse', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-20T13:47:56/worker-u1_cdvuh', purging
+distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-20T13:47:56/worker-t4s82wj4', purging
+slurmstepd-n185: error: *** JOB 224579 ON n185 CANCELLED AT 2020-03-20T13:49:30 ***

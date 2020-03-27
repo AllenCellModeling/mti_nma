@@ -1,0 +1,31 @@
+distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.205:34085'
+/home/juliec/miniconda3/envs/mti_nma_viz/lib/python3.7/contextlib.py:119: UserWarning: Creating scratch directories is taking a surprisingly long time. This is often due to running workers on a network file system. Consider specifying a local-directory to point workers to write scratch data to a local disk.
+  next(self.gen)
+distributed.dashboard.proxy - INFO - To route to workers diagnostics web server please install jupyter-server-proxy: python -m pip install jupyter-server-proxy
+distributed.worker - INFO -       Start worker at:   tcp://172.20.5.205:44977
+distributed.worker - INFO -          Listening to:   tcp://172.20.5.205:44977
+distributed.worker - INFO -          dashboard at:         172.20.5.205:36157
+distributed.worker - INFO - Waiting to connect to:   tcp://172.20.5.206:37893
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -               Threads:                          2
+distributed.worker - INFO -                Memory:                   24.00 GB
+distributed.worker - INFO -       Local Directory: /home/juliec/.dask_logs/mti_nma/2020-03-20T13:47:56/worker-vte48kna
+distributed.worker - INFO - -------------------------------------------------
+distributed.worker - INFO -         Registered to:   tcp://172.20.5.206:37893
+distributed.worker - INFO - -------------------------------------------------
+distributed.core - INFO - Starting established connection
+distributed.utils_perf - INFO - full garbage collection released 16.49 MB from 1219 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 24.57 MB from 1720 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 13.71 MB from 1082 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 28.36 MB from 1383 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 18.05 MB from 1745 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 44.08 MB from 2263 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 13.10 MB from 1729 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 22.20 MB from 1944 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 17.88 MB from 1628 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - INFO - full garbage collection released 14.68 MB from 1558 reference cycles (threshold: 10.00 MB)
+distributed.utils_perf - WARNING - full garbage collections took 18% CPU time recently (threshold: 10%)
+distributed.utils_perf - WARNING - full garbage collections took 18% CPU time recently (threshold: 10%)
+distributed.utils_perf - INFO - full garbage collection released 22.58 MB from 3757 reference cycles (threshold: 10.00 MB)
+distributed.worker - INFO - Stopping worker at tcp://172.20.5.205:44977
+slurmstepd-n205: error: *** JOB 224534 ON n205 CANCELLED AT 2020-03-20T13:49:31 ***

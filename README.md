@@ -163,7 +163,7 @@ The following commands are the minimal set of commands to get setup for running 
 4. Run the pipeline
 
     ```bash
-    mti_nma all run --path_blender /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/blender --nsamples {int} --distributed True
+    mti_nma all run --path_blender /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/blender --nsamples {int} --distributed
     ```
 
 5. (Optional) Connect to the Dask UI

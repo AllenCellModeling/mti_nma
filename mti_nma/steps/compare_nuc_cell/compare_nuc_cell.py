@@ -43,7 +43,7 @@ class CompareNucCell(Step):
         """
         Run a pure function.
 
-        Protected Parameters
+        Parameters
         --------------------
         distributed_executor_address: Optional[str]
             An optional executor address to pass to some computation engine.
@@ -54,9 +54,6 @@ class CompareNucCell(Step):
             A debug flag for the developer to use to manipulate how much data runs,
             how it is processed, etc.
             Default: False (Do not debug)
-
-        Parameters
-        ----------
         nma_nuc_df: dataframe
             dataframe containing results from running NMA step on nucleus
             See the construction of the manifest in nma.py for details

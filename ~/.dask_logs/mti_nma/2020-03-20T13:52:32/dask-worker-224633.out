@@ -1,0 +1,68 @@
+[2020-03-20 20:52:54,469] INFO - prefect.TaskRunner | Task 'singlecell': Starting task run...
+[2020-03-20 20:55:20,231] INFO - prefect.TaskRunner | Task 'singlecell': finished task run for task with final state: 'Success'
+[2020-03-20 20:55:20,247] INFO - prefect.TaskRunner | Task 'shparam': Starting task run...
+[2020-03-20 20:57:08,250] INFO - prefect.TaskRunner | Task 'shparam': finished task run for task with final state: 'Success'
+[2020-03-20 20:57:08,277] INFO - prefect.TaskRunner | Task 'avgshape': Starting task run...
+[2020-03-20 20:57:11,250] INFO - prefect.TaskRunner | Task 'avgshape': finished task run for task with final state: 'Success'
+[2020-03-20 20:57:11,265] INFO - prefect.TaskRunner | Task 'nma': Starting task run...
+Blender 2.82 (sub 7) (hash 77d23b0bd76f built 2020-02-12 17:14:50)
+found bundled python: /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/2.82/python
+Info: Deleted 1 object(s)
+Info: Total files 0 | Changed 0 | Failed 0
+Ignoring '._keyingsets_builtins', can't import files containing multiple periods
+Ignoring '._nodeitems_builtins', can't import files containing multiple periods
+Info: Deleted 1 object(s)
+Import finished in 0.0149 sec.
+
+Blender quit
+Blender 2.82 (sub 7) (hash 77d23b0bd76f built 2020-02-12 17:14:50)
+found bundled python: /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/2.82/python
+Info: Deleted 1 object(s)
+Info: Total files 0 | Changed 0 | Failed 0
+Ignoring '._keyingsets_builtins', can't import files containing multiple periods
+Ignoring '._nodeitems_builtins', can't import files containing multiple periods
+Info: Deleted 1 object(s)
+Import finished in 0.0129 sec.
+
+Blender quit
+Blender 2.82 (sub 7) (hash 77d23b0bd76f built 2020-02-12 17:14:50)
+found bundled python: /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/2.82/python
+Info: Deleted 1 object(s)
+Info: Total files 0 | Changed 0 | Failed 0
+Ignoring '._keyingsets_builtins', can't import files containing multiple periods
+Ignoring '._nodeitems_builtins', can't import files containing multiple periods
+Info: Deleted 1 object(s)
+Import finished in 0.0101 sec.
+
+Blender quit
+Blender 2.82 (sub 7) (hash 77d23b0bd76f built 2020-02-12 17:14:50)
+found bundled python: /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/2.82/python
+Info: Deleted 1 object(s)
+Info: Total files 0 | Changed 0 | Failed 0
+Ignoring '._keyingsets_builtins', can't import files containing multiple periods
+Ignoring '._nodeitems_builtins', can't import files containing multiple periods
+Info: Deleted 1 object(s)
+Import finished in 0.0118 sec.
+
+Blender quit
+Blender 2.82 (sub 7) (hash 77d23b0bd76f built 2020-02-12 17:14:50)
+found bundled python: /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/2.82/python
+Info: Deleted 1 object(s)
+Info: Total files 0 | Changed 0 | Failed 0
+Ignoring '._keyingsets_builtins', can't import files containing multiple periods
+Ignoring '._nodeitems_builtins', can't import files containing multiple periods
+Info: Deleted 1 object(s)
+Import finished in 0.0096 sec.
+
+Blender quit
+Blender 2.82 (sub 7) (hash 77d23b0bd76f built 2020-02-12 17:14:50)
+found bundled python: /allen/aics/modeling/jacksonb/applications/blender-2.82-linux64/2.82/python
+Info: Deleted 1 object(s)
+Info: Total files 0 | Changed 0 | Failed 0
+Ignoring '._keyingsets_builtins', can't import files containing multiple periods
+Ignoring '._nodeitems_builtins', can't import files containing multiple periods
+Info: Deleted 1 object(s)
+Import finished in 0.0111 sec.
+
+Blender quit
+[2020-03-20 20:58:32,361] INFO - prefect.TaskRunner | Task 'nma': finished task run for task with final state: 'Success'

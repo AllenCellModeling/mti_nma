@@ -49,6 +49,7 @@ class All:
         clean: bool = False,
         debug: bool = False,
         structs: list = ["Nuc", "Cell"],
+        flow_viz: bool = False,
         **kwargs,
     ):
         """
@@ -69,6 +70,8 @@ class All:
         structs: List
             List of structure data to run pipeline on. Currently, only
             'Nuc' (nuclear membrane) and 'Cell' (cell membrane) are supported.
+        flow_viz: bool
+            Make flow chart to visualize pipeline - requires conda install of graphviz.
 
         Notes
         -----
@@ -227,7 +230,9 @@ class All:
 
             # Run flow, get ending state, and visualize pipeline
             flow.run(executor=exe)
-            flow.visualize()
+
+            if flow_viz:
+                flow.visualize()
 
         # Catch any error and kill the remote dask cluster
         except Exception as err:
