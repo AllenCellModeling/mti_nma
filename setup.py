@@ -42,14 +42,13 @@ interactive_requirements = [
     "altair",
     "jupyterlab",
     "matplotlib",
-    "mpl_toolkits"
 ]
 
 requirements = [
-    "aicsimageio",
-    "aicsshparam",
+    "aicsimageio>=3.1.2",
+    "aicsshparam>=0.0.7",
     "bokeh",
-    "datastep<=0.1.5",
+    "datastep>=0.1.5",
     "dask[bag]",
     "dask_jobqueue",
     "docutils<0.16",  # needed for botocore (quilt dependency)
@@ -64,6 +63,7 @@ requirements = [
     "scikit-image",
     "seaborn",
     "vtk",
+    "prefect[viz]"
 ]
 
 extra_requirements = {

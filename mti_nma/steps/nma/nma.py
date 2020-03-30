@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import logging
 from sys import platform
-from typing import List, Optional
+from typing import Optional, List
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -11,12 +8,11 @@ import numpy as np
 import pandas as pd
 import vtk
 from vtk.util import numpy_support
-from datastep import Step, log_run_params
 
+from datastep import Step, log_run_params
 from .. import dask_utils
-from ..avgshape import Avgshape
-from .nma_utils import get_eigvec_mags, get_vtk_verts_faces, run_nma
-from .nma_viz import color_vertices_by_magnitude, draw_whist
+from .nma_utils import get_vtk_verts_faces, run_nma, draw_whist, get_eigvec_mags
+from .nma_utils import color_vertices_by_magnitude
 
 # Run matplotlib in the background
 matplotlib.use('Agg')
@@ -44,12 +40,14 @@ class Nma(Step):
 
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = [Avgshape],
-        filepath_columns=["w_FilePath", "v_FilePath", "vmag_FilePath", "fig_FilePath"]
+        direct_upstream_tasks: Optional[List["Step"]] = [],
+        filepath_columns=["w_FilePath", "v_FilePath", "vmag_FilePath", "fig_FilePath"],
+        **kwargs
     ):
         super().__init__(
             direct_upstream_tasks=direct_upstream_tasks,
-            filepath_columns=filepath_columns
+            filepath_columns=filepath_columns,
+            **kwargs
         )
 
     @log_run_params
@@ -94,8 +92,8 @@ class Nma(Step):
         # If no dataframe is passed in, load manifest from previous step
         if avg_df is None:
             avg_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "avgshape" / "manifest_"
-                f"{struct}.csv"
+                self.step_local_staging_dir.parent / "avgshape_"
+                f"{struct}" / "manifest.csv"
             )
 
         # Create directory to hold NMA results
@@ -165,7 +163,7 @@ class Nma(Step):
 
         # Create manifest with eigenvectors, eigenvalues, and hist of eigenvalues
         self.manifest = pd.DataFrame({
-            "Label": "nma_avg_nuc_mesh",
+            "Label": "nma_avg_mesh",
             "w_FilePath": w_path,
             "v_FilePath": v_path,
             "vmag_FilePath": vmags_path,
@@ -207,8 +205,9 @@ class Nma(Step):
             # Set manifest with results
             for mode, output_path in results:
                 self.manifest[f"mode_{mode}_FilePath"] = output_path
+                self.filepath_columns.append(output_path)
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / f"manifest_{struct}.csv", index=False
+            self.step_local_staging_dir / f"manifest.csv", index=False
         )

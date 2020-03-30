@@ -18,8 +18,6 @@ from prefect.engine.executors import DaskExecutor, LocalExecutor
 
 from mti_nma import steps
 
-from .compare_nuc_cell import draw_whist
-
 ###############################################################################
 
 log = logging.getLogger(__name__)
@@ -33,19 +31,25 @@ class All:
         Set all of your available steps here.
         This is only used for data logging operations, not running.
         """
-        self.step_list = [
-            steps.Singlecell(),
-            steps.Shparam(),
-            steps.Avgshape(),
-            steps.Nma(),
+        step_list = [
+            [
+                steps.Singlecell(step_name=f"single_{name}"),
+                steps.Shparam(step_name=f"shparam_{name}"),
+                steps.Avgshape(step_name=f"avgshape_{name}"),
+                steps.Nma(step_name=f"nma_{name}")
+            ]
+            for name in ["nuc", "cell"]
         ]
+        self.step_list = [step for sublist in step_list for step in sublist]
+        self.step_list.append(steps.CompareNucCell())
 
     def run(
         self,
         distributed: bool = False,
         clean: bool = False,
         debug: bool = False,
-        cell_flag: bool = False,
+        structs: list = ["Nuc", "Cell"],
+        flow_viz: bool = False,
         **kwargs,
     ):
         """
@@ -63,10 +67,12 @@ class All:
             A debug flag for the developer to use to manipulate how much data runs,
             how it is processed, etc.
             Default: False (Do not debug)
-        cell_flag: bool
-            Flag for wether to include cell membrane in analysis. The nucleus is always
-            analyzed, and this flag allow you to either additionally analyze the cell
-            membrane (True) or not (False).
+        structs: List
+            List of structure data to run pipeline on. Currently, only
+            'Nuc' (nuclear membrane) and 'Cell' (cell membrane) are supported.
+        flow_viz: bool
+            Make flow chart to visualize pipeline - requires conda install of graphviz.
+
         Notes
         -----
         Documentation on prefect:
@@ -74,26 +80,39 @@ class All:
         Basic prefect example:
         https://docs.prefect.io/core/
         """
+
         # Initalize steps
-        singlecell = steps.Singlecell()
-        shparam = steps.Shparam()
-        avgshape = steps.Avgshape()
-        nma = steps.Nma()
+        if "Nuc" in structs:
+            single_nuc = steps.Singlecell(step_name="single_nuc")
+            shparam_nuc = steps.Shparam(step_name="shparam_nuc")
+            avgshape_nuc = steps.Avgshape(step_name="avgshape_nuc")
+            nma_nuc = steps.Nma(step_name="nma_nuc")
+
+        if "Cell" in structs:
+            single_cell = steps.Singlecell(step_name="single_cell")
+            shparam_cell = steps.Shparam(step_name="shparam_cell")
+            avgshape_cell = steps.Avgshape(step_name="avgshape_cell")
+            nma_cell = steps.Nma(step_name="nma_cell")
+
+        if "Nuc" in structs and "Cell" in structs:
+            compare_nuc_cell = steps.CompareNucCell()
 
         # Choose executor
         if debug:
             exe = LocalExecutor()
             distributed_executor_address = None
+            log.info(f"Debug flagged. Will use threads instead of Dask.")
         else:
             if distributed:
                 # Create or get log dir
                 # Do not include ms
                 log_dir_name = datetime.now().isoformat().split(".")[0]
-                log_dir = Path(f"~/.dask_logs/mti_nma/{log_dir_name}")
+                log_dir = Path(f"~/.dask_logs/mti_nma/{log_dir_name}").expanduser()
                 # Log dir settings
                 log_dir.mkdir(parents=True)
 
                 # Create cluster
+                log.info("Creating SLURMCluster")
                 cluster = SLURMCluster(
                     cores=2,
                     memory="24GB",
@@ -102,9 +121,10 @@ class All:
                     local_directory=str(log_dir),
                     log_directory=str(log_dir)
                 )
+                log.info("Created SLURMCluster")
 
-                # Scale workers
-                cluster.adapt(minimum_jobs=1, maximum_jobs=40)
+                # Set adaptive worker settings
+                cluster.adapt(minimum_jobs=30, maximum_jobs=60)
 
                 # Use the port from the created connector to set executor address
                 distributed_executor_address = cluster.scheduler_address
@@ -113,7 +133,9 @@ class All:
                 log.info(f"Dask dashboard available at: {cluster.dashboard_link}")
             else:
                 # Create local cluster
+                log.info("Creating LocalCluster")
                 cluster = LocalCluster()
+                log.info("Created LocalCluster")
 
                 # Set distributed_executor_address
                 distributed_executor_address = cluster.scheduler_address
@@ -132,37 +154,34 @@ class All:
                 # If you want to utilize some debugging functionality pass debug
                 # If you don't utilize any of these, just pass the parameters you need.
 
-                if cell_flag:
-                    structs = ["Nuc", "Cell"]
-                else:
-                    structs = ["Nuc"]
+                if "Nuc" in structs:
+                    struct = "Nuc"
 
-                for struct in structs:
-                    sc_df = singlecell(
+                    sc_nuc_df = single_nuc(
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    sh_df = shparam(
-                        sc_df=sc_df,
+                    sh_nuc_df = shparam_nuc(
+                        sc_df=sc_nuc_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    avg_df = avgshape(
-                        sh_df=sh_df,
+                    avg_nuc_df = avgshape_nuc(
+                        sh_df=sh_nuc_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
                         struct=struct,
                         **kwargs
                     )
-                    nma(
-                        avg_df=avg_df,
+                    nma_nuc_df = nma_nuc(
+                        avg_df=avg_nuc_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
@@ -170,11 +189,50 @@ class All:
                         **kwargs
                     )
 
-            # Run flow and get ending state
+                if "Cell" in structs:
+                    struct = "Cell"
+
+                    sc_cell_df = single_cell(
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    sh_cell_df = shparam_cell(
+                        sc_df=sc_cell_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    avg_cell_df = avgshape_cell(
+                        sh_df=sh_cell_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    nma_cell_df = nma_cell(
+                        avg_df=avg_cell_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+
+                # If nucleus and cell membrane were anlyzed, draw comparison plot
+                if "Nuc" in structs and "Cell" in structs:
+                    compare_nuc_cell(nma_nuc_df, nma_cell_df)
+
+            # Run flow, get ending state, and visualize pipeline
             flow.run(executor=exe)
 
-            if cell_flag:
-                draw_whist()
+            if flow_viz:
+                flow.visualize()
 
         # Catch any error and kill the remote dask cluster
         except Exception as err:
@@ -199,6 +257,7 @@ class All:
         Push all steps.
         """
         for step in self.step_list:
+            log.info(f"Pushing data for step: {step.step_name}")
             step.push()
 
     def clean(self):
