@@ -57,6 +57,8 @@ class Nma(Step):
         avg_df=None,
         struct="Nuc",
         norm_vecs=False,
+        n_revs=4,
+        n_frames=64,
         path_blender=None,
         distributed_executor_address: Optional[str] = None,
         **kwargs
@@ -87,6 +89,12 @@ class Nma(Step):
 
         norm_vecs: bool
             Choose whether to set all eigenvectors to the same length or not.
+            
+        n_revs: int
+            Number of revolutions for results visualization to make.
+            
+        n_frames: int
+            Number of frames to split visualization into
 
         distributed_executor_address: Optional[str]
             An optional distributed executor address to use for job distribution.
@@ -143,7 +151,7 @@ class Nma(Step):
             # Assign eigenvectors as mesh points
             polydata.GetPointData().AddArray(eigenvec)
 
-            for id_theta, theta in enumerate(np.linspace(0,8*np.pi,64)):
+            for id_theta, theta in enumerate(np.linspace(0,n_revs*2*np.pi,n_frames)):
 
                 #Update mesh points according to eigenvector
                 for i in range(n):
