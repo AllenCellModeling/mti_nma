@@ -225,7 +225,7 @@ class All:
                     )
 
                 # If nucleus and cell membrane were anlyzed, draw comparison plot
-                if "Nuc" and "Cell" in structs:
+                if "Nuc" in structs and "Cell" in structs:
                     compare_nuc_cell(nma_nuc_df, nma_cell_df)
 
             # Run flow, get ending state, and visualize pipeline
