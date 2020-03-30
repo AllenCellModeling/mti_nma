@@ -81,11 +81,12 @@ class Avgshape(Step):
 
         coeffs_avg = coeffs_avg.reshape(-2, lmax, lmax)
 
-        mesh_avg, _ = shtools.get_reconstruction_from_coeffs(coeffs=coeffs_avg)
+        # Here we use the new meshing implementation for a more evenly distributed mesh
+        mesh_avg, _ = shtools.get_even_reconstruction_from_coeffs(coeffs=coeffs_avg, npoints=1024)
 
         shtools.save_polydata(
             mesh=mesh_avg,
-            filename=str(avg_data_dir / f"avgshape_{struct}.vtk")
+            filename=str(avg_data_dir / f"avgshape_{struct}.ply")
         )
 
         # Save mesh as stl file for blender import
@@ -99,7 +100,7 @@ class Avgshape(Step):
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
             "Label": "Average_mesh",
-            "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.vtk",
+            "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.ply",
             "AvgShapeFilePathStl": avg_data_dir / f"avgshape_{struct}.stl",
             "Structure": struct,
         }, index=[0])

@@ -9,6 +9,8 @@ import pandas as pd
 from aicsshparam import shparam, shtools
 
 from aicsimageio import AICSImage
+from aicsshparam import shparam, shtools
+
 from datastep import Step, log_run_params
 
 from .. import dask_utils
@@ -57,9 +59,6 @@ class Shparam(Step):
         seg = AICSImage(impath).get_image_data("ZYX", S=0, T=0, C=0)
 
         # Get spherical harmonic decomposition of segmentation
-        # Here is the place where I need someone taking a look at the
-        # aicsshparam package to see what is the best way to return
-        # the outputs
         (coeffs, grid), (_, mesh_init, _, grid_init) = shparam.get_shcoeffs(
             image=seg,
             lmax=lmax,
@@ -79,14 +78,14 @@ class Shparam(Step):
         # Mesh reconstructed with the sh coefficients
         mesh_shparam = shtools.get_reconstruction_from_grid(grid=grid)
 
-        # Save meshes as VTK file
+        # Save meshes as PLY files compatible with both Blender and Paraview
         shtools.save_polydata(
             mesh=mesh_init,
-            filename=str(save_dir / f"{cell_id}.initial_{struct}.vtk")
+            filename=str(save_dir / f"{cell_id}.initial_{struct}.ply")
         )
         shtools.save_polydata(
             mesh=mesh_shparam,
-            filename=str(save_dir / f"{cell_id}.shparam_{struct}.vtk")
+            filename=str(save_dir / f"{cell_id}.shparam_{struct}.ply")
         )
 
         # Save coeffs into a csv file in local staging
@@ -97,9 +96,9 @@ class Shparam(Step):
         # Build dataframe of saved files to store in manifest
         data = {
             "InitialMeshFilePath":
-                save_dir / f"{cell_id}.initial_{struct}.vtk",
+                save_dir / f"{cell_id}.initial_{struct}.ply",
             "ShparamMeshFilePath":
-                save_dir / f"{cell_id}.shparam_{struct}.vtk",
+                save_dir / f"{cell_id}.shparam_{struct}.ply",
             "CoeffsFilePath":
                 save_dir / f"{cell_id}.shparam_{struct}.csv",
             "MeanSqError": mean_sq_error,
