@@ -1,16 +1,12 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional, List
 
 import numpy as np
 import pandas as pd
-from aicsshparam import aicsshtools
-from datastep import Step, log_run_params
+from aicsshparam import shtools
 
-from ..shparam import Shparam
+from datastep import Step, log_run_params
 from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
 
 ###############################################################################
@@ -23,13 +19,15 @@ log = logging.getLogger(__name__)
 class Avgshape(Step):
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = [Shparam],
-        filepath_columns=["AvgShapeFilePath", "AvgShapeFilePathStl"]
+        direct_upstream_tasks: Optional[List["Step"]] = [],
+        filepath_columns=["AvgShapeFilePath", "AvgShapeFilePathStl"],
+        **kwargs
 
     ):
         super().__init__(
             direct_upstream_tasks=direct_upstream_tasks,
-            filepath_columns=filepath_columns
+            filepath_columns=filepath_columns,
+            **kwargs
         )
 
     @log_run_params
@@ -52,8 +50,8 @@ class Avgshape(Step):
         # If no dataframe is passed in, load manifest from previous step
         if sh_df is None:
             sh_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "shparam" / "manifest_"
-                f"{struct}.csv"
+                self.step_local_staging_dir.parent / "shparam_"
+                f"{struct}" / "manifest.csv"
             )
 
         # Fix filepaths and use cell id as dataframe index
@@ -83,9 +81,9 @@ class Avgshape(Step):
 
         coeffs_avg = coeffs_avg.reshape(-2, lmax, lmax)
 
-        mesh_avg, _ = aicsshtools.get_reconstruction_from_coeffs(coeffs=coeffs_avg)
+        mesh_avg, _ = shtools.get_reconstruction_from_coeffs(coeffs=coeffs_avg)
 
-        aicsshtools.save_polydata(
+        shtools.save_polydata(
             mesh=mesh_avg,
             filename=str(avg_data_dir / f"avgshape_{struct}.vtk")
         )
@@ -108,6 +106,6 @@ class Avgshape(Step):
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / Path(f"manifest_{struct}.csv"), index=False
+            self.step_local_staging_dir / Path(f"manifest.csv"), index=False
         )
         return self.manifest

@@ -1,7 +1,15 @@
-import matplotlib.pyplot as plt
+import logging
 from pathlib import Path
-from stl import mesh
+
+import matplotlib.pyplot as plt
 import numpy as np
+from stl import mesh
+
+###############################################################################
+
+log = logging.getLogger(__name__)
+
+###############################################################################
 
 
 def run_shcoeffs_analysis(df, savedir, struct):
@@ -11,7 +19,7 @@ def run_shcoeffs_analysis(df, savedir, struct):
     Parameters
     ----------
     polydata: VTK polydata object
-        Mesh extracted from .vtk file 
+        Mesh extracted from .vtk file
     Returns
     -------
     df: dataframe
@@ -67,7 +75,7 @@ def get_vtk_verts_faces(polydata):
     Parameters
     ----------
     polydata: VTK polydata object
-        Mesh extracted from .vtk file 
+        Mesh extracted from .vtk file
     Returns
     -------
     mesh_verts: Numpy 2D array
@@ -88,7 +96,7 @@ def get_vtk_verts_faces(polydata):
         i : int
             Index of the face for which we want to get the vertex points
         polydata: VTK polydata object
-            Mesh extracted from .vtk file 
+            Mesh extracted from .vtk file
         Returns
         -------
         mesh_verts: Numpy 1D array

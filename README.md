@@ -74,6 +74,9 @@ default location).
 To pass this (or other parameters) you would run a line like the following"
 - Generic parameter pass
     - `mti_nma all run --<parameter_name> <parameter_value>`
+- Multiple structures pass
+    - `mti_nma all run --structs <struct1>,<struct2>`
+    - Pass them as a comma separated list, I.E. `--structs Nuc,Cell`
 - Blender path pass
     - `mti_nma all run --path_blender <your_blender_app_path>`
 - Blender path and number of samples pass
@@ -168,5 +171,5 @@ The following commands are the minimal set of commands to get setup for running 
     _In a new terminal_
 
     ```bash
-    ssh -A -J slurm-master -L {port_provided_by_log}:{node_you_are_on}:{port_provided_by_log} {node_you_are_on}
+    ssh -A -J <username>@slurm-master.corp.alleninstitute.org -L {port_provided_by_log}:{node_you_are_on}:{port_provided_by_log} <username>@{node_you_are_on}
     ```

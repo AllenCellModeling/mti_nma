@@ -3,15 +3,15 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, NamedTuple, Optional
+from typing import Any, Dict, NamedTuple, Optional, List
 
 import pandas as pd
+from aicsshparam import shparam, shtools
+
 from aicsimageio import AICSImage
-from aicsshparam import aicsshparam, aicsshtools
 from datastep import Step, log_run_params
 
 from .. import dask_utils
-from ..singlecell import Singlecell
 
 ###############################################################################
 
@@ -30,13 +30,15 @@ class CellProcessResult(NamedTuple):
 class Shparam(Step):
     def __init__(
         self,
-        direct_upstream_tasks: Optional[List["Step"]] = [Singlecell],
+        direct_upstream_tasks: Optional[List["Step"]] = [],
         filepath_columns=[
-            "InitialMeshFilePath", "ShparamMeshFilePath", "CoeffsFilePath"]
+            "InitialMeshFilePath", "ShparamMeshFilePath", "CoeffsFilePath"],
+        **kwargs
     ):
         super().__init__(
             direct_upstream_tasks=direct_upstream_tasks,
-            filepath_columns=filepath_columns
+            filepath_columns=filepath_columns,
+            **kwargs
         )
 
     @staticmethod
@@ -58,14 +60,14 @@ class Shparam(Step):
         # Here is the place where I need someone taking a look at the
         # aicsshparam package to see what is the best way to return
         # the outputs
-        (coeffs, grid), (_, mesh_init, _, grid_init) = aicsshparam.get_shcoeffs(
+        (coeffs, grid), (_, mesh_init, _, grid_init) = shparam.get_shcoeffs(
             image=seg,
             lmax=lmax,
             sigma=1
         )
 
         # Compute reconstruction error
-        mean_sq_error = aicsshtools.get_reconstruction_error(
+        mean_sq_error = shtools.get_reconstruction_error(
             grid_input=grid_init,
             grid_rec=grid
         )
@@ -75,14 +77,14 @@ class Shparam(Step):
         df_coeffs.index = df_coeffs.index.rename("CellId")
 
         # Mesh reconstructed with the sh coefficients
-        mesh_shparam = aicsshtools.get_reconstruction_from_grid(grid=grid)
+        mesh_shparam = shtools.get_reconstruction_from_grid(grid=grid)
 
         # Save meshes as VTK file
-        aicsshtools.save_polydata(
+        shtools.save_polydata(
             mesh=mesh_init,
             filename=str(save_dir / f"{cell_id}.initial_{struct}.vtk")
         )
-        aicsshtools.save_polydata(
+        shtools.save_polydata(
             mesh=mesh_shparam,
             filename=str(save_dir / f"{cell_id}.shparam_{struct}.vtk")
         )
@@ -143,8 +145,8 @@ class Shparam(Step):
         # If no dataframe is passed in, load manifest from previous step
         if sc_df is None:
             sc_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "singlecell" / f"manifest_"
-                f"{struct}.csv"
+                self.step_local_staging_dir.parent / "single_" 
+                f"{struct}" / "manifest.csv"
             )
 
         # Use cell ID as dataframe index
@@ -183,6 +185,6 @@ class Shparam(Step):
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / f"manifest_{struct}.csv", index=False
+            self.step_local_staging_dir / f"manifest.csv", index=False
         )
         return self.manifest

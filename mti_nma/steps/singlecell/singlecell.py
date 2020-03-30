@@ -8,6 +8,7 @@ from typing import Any, Dict, NamedTuple, Optional
 
 import numpy as np
 import pandas as pd
+
 from aicsimageio import AICSImage, writers
 from datastep import Step, log_run_params
 
@@ -35,12 +36,11 @@ class Singlecell(Step):
         self,
         filepath_columns=[
             "RawFilePath",
-            "SegFilePath",
-            "OrigFOVPathRaw",
-            "OrigFOVPathSeg"]
+            "SegFilePath"],
+        **kwargs
     ):
         super().__init__(
-            filepath_columns=filepath_columns
+            filepath_columns=filepath_columns, **kwargs
         )
 
     @staticmethod
@@ -209,6 +209,6 @@ class Singlecell(Step):
             # Save manifest as csv
             self.manifest = self.manifest.astype({"FOVId": "int64"})
             self.manifest.to_csv(
-                self.step_local_staging_dir / f"manifest_{struct}.csv", index=False
+                self.step_local_staging_dir / f"manifest.csv", index=False
             )
             return self.manifest
