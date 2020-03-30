@@ -56,6 +56,7 @@ class Nma(Step):
         mode_list=list(range(6)),
         avg_df=None,
         struct="Nuc",
+        norm_vecs=False,
         path_blender=None,
         distributed_executor_address: Optional[str] = None,
         **kwargs
@@ -83,6 +84,9 @@ class Nma(Step):
         struct: str
             String giving name of structure to run analysis on.
             Currently, this must be "Nuc" (nucleus) or "Cell" (cell membrane).
+
+        norm_vecs: bool
+            Choose whether to set all eigenvectors to the same length or not.
 
         distributed_executor_address: Optional[str]
             An optional distributed executor address to use for job distribution.
@@ -120,12 +124,14 @@ class Nma(Step):
             # 1st Get eigenvector of interest as a Nx3 array
             arr_eigenvec = v.T[id_mode,:].reshape(3,-1).T
 
-            # Calculate eigenvector norm
-            arr_eigenvec_norm = np.repeat(np.sqrt(
-                np.power(arr_eigenvec,2).sum(axis=1, keepdims=True)), 3, axis=1)
+            if norm_vecs:
+                
+                # Calculate eigenvector norm
+                arr_eigenvec_norm = np.repeat(np.sqrt(
+                    np.power(arr_eigenvec,2).sum(axis=1, keepdims=True)), 3, axis=1)
 
-            # Normalize eigenvectory to unit
-            arr_eigenvec /= arr_eigenvec_norm
+                # Normalize eigenvectory to unit
+                arr_eigenvec /= arr_eigenvec_norm
 
             # Convert numpy array to vtk
             eigenvec = numpy_support.numpy_to_vtk(
