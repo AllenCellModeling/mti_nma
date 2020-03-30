@@ -1,3 +1,0 @@
-distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.205:36999'
-distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.205:46571'
-slurmstepd-n205: error: *** JOB 230219 ON n205 CANCELLED AT 2020-03-26T14:23:23 ***

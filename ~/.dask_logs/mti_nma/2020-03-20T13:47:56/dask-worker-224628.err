@@ -1,3 +1,0 @@
-distributed.nanny - INFO -         Start Nanny at: 'tcp://172.20.5.205:40413'
-distributed.diskutils - INFO - Found stale lock file and directory '/home/juliec/.dask_logs/mti_nma/2020-03-20T13:47:56/worker-ksrxeed_', purging
-slurmstepd-n205: error: *** JOB 224628 ON n205 CANCELLED AT 2020-03-20T13:51:31 ***
