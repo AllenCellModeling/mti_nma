@@ -145,8 +145,8 @@ class Shparam(Step):
         # If no dataframe is passed in, load manifest from previous step
         if sc_df is None:
             sc_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "singlecell" / f"manifest_"
-                f"{struct}.csv"
+                self.step_local_staging_dir.parent / "single_" 
+                f"{struct}" / "manifest.csv"
             )
 
         # Use cell ID as dataframe index

@@ -91,8 +91,8 @@ class Nma(Step):
         # If no dataframe is passed in, load manifest from previous step
         if avg_df is None:
             avg_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "avgshape" / "manifest_"
-                f"{struct}.csv"
+                self.step_local_staging_dir.parent / "avgshape_"
+                f"{struct}" / "manifest.csv"
             )
 
         # Create directory to hold NMA results
@@ -120,7 +120,7 @@ class Nma(Step):
 
         # Create manifest with eigenvectors, eigenvalues, and hist of eigenvalues
         self.manifest = pd.DataFrame({
-            "Label": "nma_avg_nuc_mesh",
+            "Label": "nma_avg_mesh",
             "w_FilePath": w_path,
             "v_FilePath": v_path,
             "vmag_FilePath": vmags_path,

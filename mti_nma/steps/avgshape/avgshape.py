@@ -50,8 +50,8 @@ class Avgshape(Step):
         # If no dataframe is passed in, load manifest from previous step
         if sh_df is None:
             sh_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "shparam" / "manifest_"
-                f"{struct}.csv"
+                self.step_local_staging_dir.parent / "shparam_"
+                f"{struct}" / "manifest.csv"
             )
 
         # Fix filepaths and use cell id as dataframe index
