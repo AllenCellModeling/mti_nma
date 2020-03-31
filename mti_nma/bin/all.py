@@ -124,7 +124,7 @@ class All:
                 log.info("Created SLURMCluster")
 
                 # Scale workers
-                cluster.scale_up(40)
+                cluster.scale_up(30)
 
                 # Use the port from the created connector to set executor address
                 distributed_executor_address = cluster.scheduler_address
