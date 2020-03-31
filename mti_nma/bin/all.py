@@ -45,7 +45,7 @@ class All:
 
     def run(
         self,
-        distributed: bool = False,
+        distributed: bool = True,
         clean: bool = False,
         debug: bool = False,
         structs: list = ["Nuc", "Cell"],
@@ -123,8 +123,8 @@ class All:
                 )
                 log.info("Created SLURMCluster")
 
-                # Set adaptive worker settings
-                cluster.adapt(minimum_jobs=30, maximum_jobs=60)
+                # Scale workers
+                cluster.scale_up(40)
 
                 # Use the port from the created connector to set executor address
                 distributed_executor_address = cluster.scheduler_address
