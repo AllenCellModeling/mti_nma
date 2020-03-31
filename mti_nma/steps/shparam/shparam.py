@@ -7,9 +7,7 @@ from typing import Any, Dict, NamedTuple, Optional, List
 
 import pandas as pd
 from aicsshparam import shparam, shtools
-
 from aicsimageio import AICSImage
-from aicsshparam import shparam, shtools
 
 from datastep import Step, log_run_params
 

@@ -82,7 +82,10 @@ class Avgshape(Step):
         coeffs_avg = coeffs_avg.reshape(-2, lmax, lmax)
 
         # Here we use the new meshing implementation for a more evenly distributed mesh
-        mesh_avg, _ = shtools.get_even_reconstruction_from_coeffs(coeffs=coeffs_avg, npoints=1024)
+        mesh_avg, _ = shtools.get_even_reconstruction_from_coeffs(
+            coeffs=coeffs_avg,
+            npoints=1024
+        )
 
         shtools.save_polydata(
             mesh=mesh_avg,

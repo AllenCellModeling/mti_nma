@@ -89,10 +89,10 @@ class Nma(Step):
 
         norm_vecs: bool
             Choose whether to set all eigenvectors to the same length or not.
-            
+
         n_revs: int
             Number of revolutions for results visualization to make.
-            
+
         n_frames: int
             Number of frames to split visualization into
 
@@ -122,7 +122,6 @@ class Nma(Step):
         draw_whist(w)
         vmags = get_eigvec_mags(v)
 
-
         # Working the visualization of eigenvectors on VTK
         n = polydata.GetNumberOfPoints()
         writer = vtk.vtkPolyDataWriter()
@@ -130,13 +129,13 @@ class Nma(Step):
         for id_mode in range(9):
 
             # 1st Get eigenvector of interest as a Nx3 array
-            arr_eigenvec = v.T[id_mode,:].reshape(3,-1).T
+            arr_eigenvec = v.T[id_mode, :].reshape(3, -1).T
 
             if norm_vecs:
-                
+
                 # Calculate eigenvector norm
                 arr_eigenvec_norm = np.repeat(np.sqrt(
-                    np.power(arr_eigenvec,2).sum(axis=1, keepdims=True)), 3, axis=1)
+                    np.power(arr_eigenvec, 2).sum(axis=1, keepdims=True)), 3, axis=1)
 
                 # Normalize eigenvectory to unit
                 arr_eigenvec /= arr_eigenvec_norm
@@ -147,23 +146,26 @@ class Nma(Step):
                 deep=True,
                 array_type=vtk.VTK_DOUBLE)
             eigenvec.SetName('Eigenvector')
-            
+
             # Assign eigenvectors as mesh points
             polydata.GetPointData().AddArray(eigenvec)
 
-            for id_theta, theta in enumerate(np.linspace(0,n_revs*2*np.pi,n_frames)):
+            for id_theta, theta in enumerate(
+                np.linspace(0, n_revs * 2 * np.pi, n_frames)
+            ):
 
-                #Update mesh points according to eigenvector
+                # Update mesh points according to eigenvector
                 for i in range(n):
                     xo, yo, zo = polydata.GetPoints().GetPoint(i)
-                    x = xo + arr_eigenvec[i,0] * np.sin(theta)
-                    y = yo + arr_eigenvec[i,1] * np.sin(theta)
-                    z = zo + arr_eigenvec[i,2] * np.sin(theta)
-                    polydata.GetPoints().SetPoint(i,x,y,z)
+                    x = xo + arr_eigenvec[i, 0] * np.sin(theta)
+                    y = yo + arr_eigenvec[i, 1] * np.sin(theta)
+                    z = zo + arr_eigenvec[i, 2] * np.sin(theta)
+                    polydata.GetPoints().SetPoint(i, x, y, z)
 
                 # Write mesh with new coordinates
                 writer.SetInputData(polydata)
-                writer.SetFileName(str(nma_data_dir / f"avgshape_{struct}_M{id_mode}_T{id_theta:03d}.vtk"))
+                writer.SetFileName(str(
+                    nma_data_dir / f"avgshape_{struct}_M{id_mode}_T{id_theta:03d}.vtk"))
                 writer.Write()
 
         fig_path = nma_data_dir / f"w_fig_{struct}.pdf"
