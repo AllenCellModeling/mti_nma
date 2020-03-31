@@ -115,7 +115,7 @@ class Shparam(Step):
         self,
         sc_df=None,
         struct="Nuc",
-        lmax=8,
+        lmax=10,
         distributed_executor_address: Optional[str] = None,
         **kwargs
     ):
