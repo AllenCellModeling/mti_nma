@@ -56,7 +56,7 @@ class Nma(Step):
         mode_list=list(range(6)),
         avg_df=None,
         struct="Nuc",
-        norm_vecs=False,
+        norm_vecs=True,
         n_revs=4,
         n_frames=64,
         path_blender=None,
