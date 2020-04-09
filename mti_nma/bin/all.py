@@ -124,7 +124,7 @@ class All:
                 log.info("Created SLURMCluster")
 
                 # Scale workers
-                cluster.scale(80)
+                cluster.scale(60)
 
                 # Use the port from the created connector to set executor address
                 distributed_executor_address = cluster.scheduler_address
@@ -231,6 +231,10 @@ class All:
             # Run flow, get ending state, and visualize pipeline
             flow.run(executor=exe)
 
+            # Create pipeline visualization if flag is True
+            # Note:
+            # Flag False by default as a required package is not pip-installable
+            # To use this feature, first `conda install graphviz`
             if flow_viz:
                 flow.visualize()
 
