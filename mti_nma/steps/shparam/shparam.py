@@ -11,7 +11,7 @@ from aicsimageio import AICSImage
 
 from datastep import Step, log_run_params
 
-from .. import dask_utils
+import aics_dask_utils
 
 ###############################################################################
 
@@ -157,7 +157,7 @@ class Shparam(Step):
         self.manifest = pd.DataFrame([])
 
         # Process each cell in the dataframe
-        with dask_utils.DistributedHandler(distributed_executor_address) as handler:
+        with aics_dask_utils.DistributedHandler(distributed_executor_address) as handler:
             futures = handler.client.map(
                 self._process_cell,
                 # Convert dataframe iterrows into two lists of items to iterate over

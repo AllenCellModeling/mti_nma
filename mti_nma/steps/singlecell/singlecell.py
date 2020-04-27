@@ -12,7 +12,7 @@ import pandas as pd
 from aicsimageio import AICSImage, writers
 from datastep import Step, log_run_params
 
-from .. import dask_utils
+import aics_dask_utils
 from .singlecell_utils import crop_object, query_data_from_labkey
 
 ###############################################################################
@@ -181,7 +181,7 @@ class Singlecell(Step):
             df = df.sample(n=nsamples)
 
             # Process each FOV in dataframe
-            with dask_utils.DistributedHandler(distributed_executor_address) as handler:
+            with aics_dask_utils.DistributedHandler(distributed_executor_address) as handler:
                 futures = handler.client.map(
                     self._process_fov,
                     # Convert dataframe iterrows into two lists of items to iterate over
