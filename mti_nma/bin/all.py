@@ -107,23 +107,31 @@ class All:
                 # Create or get log dir
                 # Do not include ms
                 log_dir_name = datetime.now().isoformat().split(".")[0]
-                log_dir = Path(f"~/.dask_logs/mti_nma/{log_dir_name}").expanduser()
+                log_dir = Path(f".dask_logs/{log_dir_name}").expanduser()
                 # Log dir settings
-                log_dir.mkdir(parents=True)
+                log_dir.mkdir(parents=True, exist_ok=True)
+
+                # Configure dask config
+                dask.config.set(
+                    {
+                        "scheduler.work-stealing": False,
+                        "logging.distributed.worker": "info",
+                    }
+                )
 
                 # Create cluster
                 log.info("Creating SLURMCluster")
                 cluster = SLURMCluster(
-                    cores=1,
-                    memory="8GB",
+                    cores=4,
+                    memory="20GB",
                     queue="aics_cpu_general",
                     walltime="10:00:00",
                     local_directory=str(log_dir),
-                    log_directory=str(log_dir)
+                    log_directory=str(log_dir),
                 )
                 log.info("Created SLURMCluster")
 
-                # Scale workers
+                # Scale cluster
                 cluster.scale(60)
 
                 # Use the port from the created connector to set executor address

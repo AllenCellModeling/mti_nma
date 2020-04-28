@@ -45,6 +45,7 @@ interactive_requirements = [
 ]
 
 requirements = [
+    "aics_dask_utils==0.1.0",
     "aicsimageio>=3.1.2",
     "aicsshparam>=0.0.7",
     "bokeh",

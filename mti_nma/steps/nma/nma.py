@@ -10,7 +10,7 @@ import vtk
 from vtk.util import numpy_support
 
 from datastep import Step, log_run_params
-from .. import dask_utils
+import aics_dask_utils
 from .nma_utils import get_vtk_verts_faces, run_nma, draw_whist, get_eigvec_mags
 from .nma_utils import color_vertices_by_magnitude
 
@@ -205,7 +205,7 @@ class Nma(Step):
         path_input_mesh = avg_df["AvgShapeFilePathStl"].iloc[0]
 
         # Distribute blender mode heatmap generation
-        with dask_utils.DistributedHandler(distributed_executor_address) as handler:
+        with aics_dask_utils.DistributedHandler(distributed_executor_address) as handler:
             futures = handler.client.map(
                 color_vertices_by_magnitude,
                 [path_blender for i in range(len(mode_list))],
