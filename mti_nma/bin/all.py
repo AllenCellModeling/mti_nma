@@ -11,6 +11,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+import dask.config
 from dask_jobqueue import SLURMCluster
 from distributed import LocalCluster
 from prefect import Flow
@@ -34,6 +35,7 @@ class All:
         step_list = [
             [
                 steps.Singlecell(step_name=f"single_{name}"),
+                steps.Stratify(step_name=f"stratify_{name}"),
                 steps.Shparam(step_name=f"shparam_{name}"),
                 steps.Avgshape(step_name=f"avgshape_{name}"),
                 steps.Nma(step_name=f"nma_{name}")
@@ -84,12 +86,14 @@ class All:
         # Initalize steps
         if "Nuc" in structs:
             single_nuc = steps.Singlecell(step_name="single_nuc")
+            strat_nuc = steps.Stratify(step_name="stratify_nuc")
             shparam_nuc = steps.Shparam(step_name="shparam_nuc")
             avgshape_nuc = steps.Avgshape(step_name="avgshape_nuc")
             nma_nuc = steps.Nma(step_name="nma_nuc")
 
         if "Cell" in structs:
             single_cell = steps.Singlecell(step_name="single_cell")
+            strat_cell = steps.Stratify(step_name="stratify_cell")
             shparam_cell = steps.Shparam(step_name="shparam_cell")
             avgshape_cell = steps.Avgshape(step_name="avgshape_cell")
             nma_cell = steps.Nma(step_name="nma_cell")
@@ -172,8 +176,16 @@ class All:
                         struct=struct,
                         **kwargs
                     )
-                    sh_nuc_df = shparam_nuc(
+                    st_nuc_df = strat_nuc(
                         sc_df=sc_nuc_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    sh_nuc_df = shparam_nuc(
+                        st_df=st_nuc_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
@@ -207,8 +219,16 @@ class All:
                         struct=struct,
                         **kwargs
                     )
-                    sh_cell_df = shparam_cell(
+                    st_cell_df = strat_cell(
                         sc_df=sc_cell_df,
+                        distributed_executor_address=distributed_executor_address,
+                        clean=clean,
+                        debug=debug,
+                        struct=struct,
+                        **kwargs
+                    )
+                    sh_cell_df = shparam_cell(
+                        st_df=st_cell_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
