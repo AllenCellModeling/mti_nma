@@ -4,6 +4,13 @@ import numpy as np
 import argparse
 import sys
 
+"""
+This file is located in the bin/ directory because the color_vertices
+funcitonality is run with blender via terminal within this automated
+framework. It must be located here for the terminal to properly find
+and run functions with proper handling of pythob/blender arguments.
+"""
+
 
 class ArgumentParserForBlender(argparse.ArgumentParser):
     """
