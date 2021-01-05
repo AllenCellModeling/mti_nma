@@ -6,6 +6,10 @@
 # notebooks bcz eww (force add them if you must?)
 *.ipynb
 
+# output files
+*.stl
+*.blend
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
