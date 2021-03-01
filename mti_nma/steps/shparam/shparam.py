@@ -57,7 +57,7 @@ class Shparam(Step):
         seg = AICSImage(impath).get_image_data("ZYX", S=0, T=0, C=0)
 
         # Get spherical harmonic decomposition of segmentation
-        (coeffs, grid), (_, mesh_init, _, grid_init) = shparam.get_shcoeffs(
+        (coeffs, grid_rec), (_, mesh_init, grid_init, transform) = shparam.get_shcoeffs(
             image=seg,
             lmax=lmax,
             sigma=1
@@ -66,7 +66,7 @@ class Shparam(Step):
         # Compute reconstruction error
         mean_sq_error = shtools.get_reconstruction_error(
             grid_input=grid_init,
-            grid_rec=grid
+            grid_rec=grid_rec
         )
 
         # Store spherical harmonic coefficients in dataframe by cell id
@@ -74,7 +74,7 @@ class Shparam(Step):
         df_coeffs.index = df_coeffs.index.rename("CellId")
 
         # Mesh reconstructed with the sh coefficients
-        mesh_shparam = shtools.get_reconstruction_from_grid(grid=grid)
+        mesh_shparam = shtools.get_reconstruction_from_grid(grid=grid_rec)
 
         # Save meshes as PLY files compatible with both Blender and Paraview
         shtools.save_polydata(
@@ -113,7 +113,7 @@ class Shparam(Step):
         self,
         sc_df=None,
         struct="Nuc",
-        lmax=10,
+        lmax=16,
         distributed_executor_address: Optional[str] = None,
         **kwargs
     ):
@@ -143,11 +143,8 @@ class Shparam(Step):
         if sc_df is None:
             sc_df = pd.read_csv(
                 self.step_local_staging_dir.parent / "single_" 
-                f"{struct}" / "manifest.csv"
+                f"{struct}" / "manifest.csv", index_col='CellId'
             )
-
-        # Use cell ID as dataframe index
-        sc_df = sc_df.set_index("CellId")
 
         # Create directory to save data for this step in local staging
         sh_data_dir = self.step_local_staging_dir / "shparam_data"
@@ -177,11 +174,14 @@ class Shparam(Step):
             # Set manifest with results
             for result in results:
                 self.manifest = self.manifest.append(
-                    pd.Series(result.data, name=result.cell_id)
+                    pd.Series(result.data), ignore_index=True
                 )
 
+        self.manifest = self.manifest.set_index('CellId')
+        self.manifest.index = self.manifest.index.astype(int)
+                
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / f"manifest.csv", index=False
+            self.step_local_staging_dir / f"manifest.csv"
         )
         return self.manifest
