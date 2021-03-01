@@ -5,6 +5,7 @@ from .shparam import Shparam
 from .avgshape import Avgshape
 from .nma import Nma
 from .compare_nuc_cell import CompareNucCell
+from .load_data import LoadData
 
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "Shparam",
     "Avgshape",
     "Nma",
-    "CompareNucCell"]
+    "CompareNucCell",
+    "LoadData"]
