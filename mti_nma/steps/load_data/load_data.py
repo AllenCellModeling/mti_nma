@@ -33,15 +33,18 @@ class LoadData(Step):
         distributed_executor_address: Optional[str]=None,
         **kwargs
     ):
-                
+
+        nuc_dir = self.project_local_staging_dir / "single_Nuc"
+        nuc_dir.mkdir(parents=True, exist_ok=True)
+        
         df = download_data(
-            save_dir=self.step_local_staging_dir / "singlecell_data",
+            save_dir=nuc_dir / "singlecell_data",
             nsamples=nsamples,
             distributed_executor_address=distributed_executor_address
         )
         
         self.manifest = df
-        manifest_save_path = self.step_local_staging_dir / "manifest.csv"
+        manifest_save_path = nuc_dir / "manifest.csv"
         self.manifest.to_csv(manifest_save_path)
             
         return manifest_save_path
