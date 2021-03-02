@@ -7,7 +7,7 @@ import pandas as pd
 from aicsshparam import shtools
 
 from datastep import Step, log_run_params
-from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
+from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, save_mesh_as_obj, save_voxelization, save_displacement_map
 
 ###############################################################################
 
@@ -82,9 +82,15 @@ class Avgshape(Step):
         coeffs_avg = coeffs_avg.reshape(-2, lmax, lmax)
 
         # Here we use the new meshing implementation for a more evenly distributed mesh
+        '''
         mesh_avg, _ = shtools.get_even_reconstruction_from_coeffs(
             coeffs=coeffs_avg,
             npoints=1024
+        )
+        '''
+
+        mesh_avg, grid_avg = shtools.get_reconstruction_from_coeffs(
+            coeffs=coeffs_avg,
         )
 
         shtools.save_polydata(
@@ -92,8 +98,17 @@ class Avgshape(Step):
             filename=str(avg_data_dir / f"avgshape_{struct}.ply")
         )
 
+        # Save mesh as obj
+        save_mesh_as_obj(mesh_avg, avg_data_dir / f"avgshape_{struct}.obj")
+
+        # Save displacement map
+        save_displacement_map(grid_avg, avg_data_dir / f"avgshape_dmap_{struct}.tif")
+        
+        # Save mesh as image
+        save_voxelization(mesh_avg, avg_data_dir / f"avgshape_{struct}.tif")
+
         # Save mesh as stl file for blender import
-        save_mesh_as_stl(mesh_avg, str(avg_data_dir / f"avgshape_{struct}.stl"))
+        save_mesh_as_stl(mesh_avg, avg_data_dir / f"avgshape_{struct}.stl")
 
         # Save avg coeffs to csv file
         coeffs_df_avg.to_csv(
@@ -105,6 +120,9 @@ class Avgshape(Step):
             "Label": "Average_mesh",
             "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.ply",
             "AvgShapeFilePathStl": avg_data_dir / f"avgshape_{struct}.stl",
+            "AvgShapeFilePathObj": avg_data_dir / f"avgshape_{struct}.obj",
+            "AvgShapeFilePathTif": avg_data_dir / f"avgshape_{struct}.tif",
+            "AvgShapeDMapFilePathTif": avg_data_dir / f"avgshape_dmap_{struct}.tif",
             "Structure": struct,
         }, index=[0])
 

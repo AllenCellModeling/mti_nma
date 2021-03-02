@@ -1,9 +1,12 @@
 import logging
 from pathlib import Path
 
+import vtk
 import matplotlib.pyplot as plt
 import numpy as np
 from stl import mesh
+from aicscytoparam import cytoparam
+from aicsimageio import writers
 
 ###############################################################################
 
@@ -131,3 +134,32 @@ def save_mesh_as_stl(polydata, fname):
 
     # Write the mesh to file"
     nuc_mesh.save(fname)
+    
+def save_mesh_as_obj(polydata, fname):
+    
+    writer = vtk.vtkOBJWriter()
+    writer.SetInputData(polydata)
+    writer.SetFileName(str(fname))
+    writer.Write()
+
+def save_voxelization(polydata, fname):
+    
+    domain, _ = cytoparam.voxelize_meshes([polydata])
+    
+    with writers.ome_tiff_writer.OmeTiffWriter(fname, overwrite_file=True) as writer:
+        writer.save(
+            255*domain,
+            dimension_order='ZYX',
+            image_name=fname.stem
+        )
+
+def save_displacement_map(grid, fname):
+    
+    grid = grid.reshape(1, *grid.shape).astype(np.float32)
+    
+    with writers.ome_tiff_writer.OmeTiffWriter(fname, overwrite_file=True) as writer:
+            writer.save(
+                grid,
+                dimension_order='ZYX',
+                image_name=fname.stem
+            )
