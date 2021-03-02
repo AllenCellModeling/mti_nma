@@ -147,7 +147,9 @@ class Shparam(Step):
             )
 
         # Create directory to save data for this step in local staging
-        sh_data_dir = self.step_local_staging_dir / "shparam_data"
+        struct_dir = self.project_local_staging_dir / f"shparam_{struct}"
+        struct_dir.mkdir(parents=True, exist_ok=True)
+        sh_data_dir = struct_dir / "shparam_data"
         sh_data_dir.mkdir(parents=True, exist_ok=True)
 
         # Get spherical harmonic set for segmentation, save and record in manifest
@@ -182,6 +184,6 @@ class Shparam(Step):
                 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / f"manifest.csv"
+            struct_dir / "manifest.csv"
         )
         return self.manifest
