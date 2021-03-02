@@ -28,23 +28,25 @@ class LoadData(Step):
     @log_run_params
     def run(
         self,
+        struct="Nuc",
         nsamples=0,
-        debug=False,
         distributed_executor_address: Optional[str]=None,
+        debug=False,
         **kwargs
     ):
 
-        nuc_dir = self.project_local_staging_dir / "single_Nuc"
-        nuc_dir.mkdir(parents=True, exist_ok=True)
+        struct_dir = self.project_local_staging_dir / f"single_{struct}"
+        struct_dir.mkdir(parents=True, exist_ok=True)
         
         df = download_data(
-            save_dir=nuc_dir / "singlecell_data",
+            save_dir=struct_dir / "singlecell_data",
             nsamples=nsamples,
+            struct=struct,
             distributed_executor_address=distributed_executor_address
         )
         
         self.manifest = df
-        manifest_save_path = nuc_dir / "manifest.csv"
+        manifest_save_path = struct_dir / "manifest.csv"
         self.manifest.to_csv(manifest_save_path)
             
         return manifest_save_path

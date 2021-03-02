@@ -24,9 +24,12 @@ def _fetch_data(index, row, pkg, save_dir):
 
 def download_data(
     save_dir: Path,
+    struct: str,
     nsamples: int=0,
     distributed_executor_address: Optional[str] = None
 ):
+   
+    # >> struct==cell not yet implemented
     
     package_name="aics/hipsc_single_cell_image_dataset"
     registry="s3://allencell"
