@@ -223,7 +223,7 @@ def get_vtk_verts_faces(polydata):
     return mesh_verts, mesh_faces
 
 
-def draw_whist(w):
+def draw_whist(w, npts, nma_data_dir, struct, logscale=False):
     """
     Draws a histogram figure of the eigenvalues
 
@@ -231,29 +231,70 @@ def draw_whist(w):
     ----------
     w: Numpy 1D array
         An array of eigenvalue values
+    npts: int
+        Number of points in mesh
     Returns
     -------
     fig: Matplotlib Figure object
         Figure containg a histogram of eigenvalues
     """
+    xlabels = ["Eigenvalues (w2*m/k)", "Frequencies (Hz)", "Timescales (s)"]
+    fpaths = [nma_data_dir / f"eigval_hist_{struct}.pdf",
+              nma_data_dir / f"freq_hist_{struct}.pdf",
+              nma_data_dir / f"time_hist_{struct}.pdf"]
 
-    plt.clf()
-    fig = plt.figure()
+    # Fix rounding errors to 0
+    idx = [i for i, n in enumerate(w) if n < 10**-10]
+    w[idx] = 0
+    print(w[0:7])
 
-    # set binning
-    minval = min(w) - 0.5
-    maxval = max(w) + 0.5
-    if len(w) < 20:
-        N = int(max(w) + 2)
-    else:
-        N = 30
-    bins = np.linspace(minval, maxval, N)
+    # set values to eigenvalues, frequencies, or timescales (1/f)
+    for i in range(3):
+        if i == 0:
+            vals = w
+        else:
+            m_total = 10**-13  # kg
+            m_vert = m_total / npts
+            k = 0.0001  # N/m
+            vals = np.sqrt(w * k / m_vert) / (2 * np.pi)
+            if i == 1:
+                tmp = [i for i in vals if i != 0]
+            if i == 2:
+                tmp = [1 / i for i in vals if i != 0]
+            vals = tmp
 
-    sb.distplot(w, kde=False, bins=bins)
-    plt.xlabel("Eigenvalues (w2*m/k)")
-    plt.ylabel("Counts")
+        plt.clf()
+        fig = plt.figure()
 
-    return fig
+        # set binning
+        minval = min(vals)
+        maxval = max(vals)
+        if len(vals) < 20:
+            N = int(max(vals) + 2)
+        else:
+            N = 40
+        bins = np.linspace(minval, maxval, N)
+
+        if i == 0:
+            sb.distplot(vals, kde=False, bins=bins)
+        if i == 1:
+            if logscale:
+                logbins = np.logspace(np.log10(bins[0]), np.log10(bins[-1]), len(bins))
+                sb.distplot(vals, kde=False, bins=logbins)
+                plt.xscale("log")
+            else:
+                sb.distplot([i / 1000 for i in vals], kde=False, bins=bins / 1000)
+                xlabels[i] = "Frequencies (kHz)"
+        if i == 2:
+            plt.yscale("log")
+            sb.distplot(vals, kde=False, bins=bins)
+        plt.xlabel(xlabels[i])
+        plt.ylabel("Counts")
+
+        fig.savefig(fpaths[i], format="pdf")
+        plt.close(fig)
+
+    return fpaths
 
 
 def color_vertices_by_magnitude(

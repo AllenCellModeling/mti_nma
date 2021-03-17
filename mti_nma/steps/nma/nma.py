@@ -3,7 +3,6 @@ from sys import platform
 from typing import Optional, List
 
 import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import vtk
@@ -53,7 +52,7 @@ class Nma(Step):
     @log_run_params
     def run(
         self,
-        mode_list=list(range(6)),
+        mode_list=list(range(10)),
         avg_df=None,
         struct="Nuc",
         norm_vecs=True,
@@ -119,12 +118,16 @@ class Nma(Step):
 
         verts, faces = get_vtk_verts_faces(polydata)
         w, v = run_nma(verts, faces)
-        draw_whist(w)
+        fpaths = draw_whist(w, int(verts.shape[0]), nma_data_dir, struct)
         vmags = get_eigvec_mags(v)
 
         # Working the visualization of eigenvectors on VTK
         n = polydata.GetNumberOfPoints()
         writer = vtk.vtkPolyDataWriter()
+
+        # Create directory to hold vtk files
+        vtk_dir = nma_data_dir / "vtk_timestep_files"
+        vtk_dir.mkdir(parents=True, exist_ok=True)
 
         for id_mode in range(9):
 
@@ -145,7 +148,7 @@ class Nma(Step):
                 num_array=arr_eigenvec,
                 deep=True,
                 array_type=vtk.VTK_DOUBLE)
-            eigenvec.SetName('Eigenvector')
+            eigenvec.SetName("Eigenvector")
 
             # Assign eigenvectors as mesh points
             polydata.GetPointData().AddArray(eigenvec)
@@ -165,11 +168,9 @@ class Nma(Step):
                 # Write mesh with new coordinates
                 writer.SetInputData(polydata)
                 writer.SetFileName(str(
-                    nma_data_dir / f"avgshape_{struct}_M{id_mode}_T{id_theta:03d}.vtk"))
+                    vtk_dir / f"avgshape_{struct}_M{id_mode}_T{id_theta:03d}.vtk"))
                 writer.Write()
 
-        fig_path = nma_data_dir / f"w_fig_{struct}.pdf"
-        plt.savefig(fig_path, format="pdf")
         w_path = nma_data_dir / f"eigvals_{struct}.npy"
         np.save(w_path, w)
         v_path = nma_data_dir / f"eigvecs_{struct}.npy"
@@ -183,7 +184,9 @@ class Nma(Step):
             "w_FilePath": w_path,
             "v_FilePath": v_path,
             "vmag_FilePath": vmags_path,
-            "fig_FilePath": fig_path,
+            "eigval_hist_FilePath": fpaths[0],
+            "freq_hist_FilePath": fpaths[1],
+            "time_hist_FilePath": fpaths[2],
             "Structure": struct
         }, index=[0])
 
