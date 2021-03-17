@@ -62,7 +62,7 @@ requirements = [
     "python-dateutil<=2.8.0",  # need <=2.8.0 for quilt3 in step
     "scikit-image",
     "seaborn",
-    "vtk",
+    "vtk>=9.0",
     "prefect[viz]"
 ]
 
