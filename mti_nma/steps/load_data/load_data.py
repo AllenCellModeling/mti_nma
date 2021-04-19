@@ -49,4 +49,4 @@ class LoadData(Step):
         manifest_save_path = struct_dir / "manifest.csv"
         self.manifest.to_csv(manifest_save_path)
             
-        return manifest_save_path
+        return self.manifest

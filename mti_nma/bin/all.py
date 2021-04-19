@@ -11,6 +11,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
+import dask
 from dask_jobqueue import SLURMCluster
 from distributed import LocalCluster
 from prefect import Flow
@@ -33,22 +34,22 @@ class All:
         """
         step_list = [
             [
-                steps.Singlecell(step_name=f"single_{name}"),
+                steps.LoadData(),
                 steps.Shparam(step_name=f"shparam_{name}"),
                 steps.Avgshape(step_name=f"avgshape_{name}"),
                 steps.Nma(step_name=f"nma_{name}")
             ]
-            for name in ["nuc", "cell"]
+            for name in ["nuc"]
         ]
         self.step_list = [step for sublist in step_list for step in sublist]
         self.step_list.append(steps.CompareNucCell())
 
     def run(
         self,
-        distributed: bool = True,
+        distributed: bool = False,
         clean: bool = False,
         debug: bool = False,
-        structs: list = ["Nuc", "Cell"],
+        structs: list = ["Nuc"],
         flow_viz: bool = False,
         **kwargs,
     ):
@@ -83,7 +84,7 @@ class All:
 
         # Initalize steps
         if "Nuc" in structs:
-            single_nuc = steps.Singlecell(step_name="single_nuc")
+            loaddata_nuc = steps.LoadData()
             shparam_nuc = steps.Shparam(step_name="shparam_nuc")
             avgshape_nuc = steps.Avgshape(step_name="avgshape_nuc")
             nma_nuc = steps.Nma(step_name="nma_nuc")
@@ -165,7 +166,7 @@ class All:
                 if "Nuc" in structs:
                     struct = "Nuc"
 
-                    sc_nuc_df = single_nuc(
+                    ld_nuc_df = loaddata_nuc(
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
@@ -173,7 +174,7 @@ class All:
                         **kwargs
                     )
                     sh_nuc_df = shparam_nuc(
-                        sc_df=sc_nuc_df,
+                        sc_df=ld_nuc_df,
                         distributed_executor_address=distributed_executor_address,
                         clean=clean,
                         debug=debug,
