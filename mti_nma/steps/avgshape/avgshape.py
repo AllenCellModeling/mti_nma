@@ -51,11 +51,8 @@ class Avgshape(Step):
         if sh_df is None:
             sh_df = pd.read_csv(
                 self.step_local_staging_dir.parent / "shparam_"
-                f"{struct}" / "manifest.csv"
+                f"{struct}" / "manifest.csv", index_col="CellId"
             )
-
-        # Fix filepaths and use cell id as dataframe index
-        sh_df = sh_df.set_index("CellId", drop=True)
 
         # Load sh coefficients of all samples in manifest
         coeffs_df = pd.DataFrame([])
@@ -66,7 +63,7 @@ class Avgshape(Step):
             )
 
         # Create directory to hold results from this step
-        avg_data_dir = self.step_local_staging_dir / "avgshape_data"
+        avg_data_dir = self.step_local_staging_dir / f"avgshape_{struct}"
         avg_data_dir.mkdir(parents=True, exist_ok=True)
 
         # Perform some per-cell analysis
