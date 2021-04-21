@@ -7,7 +7,8 @@ import pandas as pd
 from aicsshparam import shtools
 
 from datastep import Step, log_run_params
-from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, save_mesh_as_obj, save_voxelization, save_displacement_map
+from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
+from .avgshape_utils import save_mesh_as_obj, save_voxelization, save_displacement_map
 
 ###############################################################################
 
@@ -50,8 +51,8 @@ class Avgshape(Step):
         # If no dataframe is passed in, load manifest from previous step
         if sh_df is None:
             sh_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "shparam_"
-                f"{struct}" / "manifest.csv", index_col="CellId"
+                self.step_local_staging_dir.parent / "shparam" /
+                f"shparam_{struct}" / "manifest.csv", index_col="CellId"
             )
 
         # Load sh coefficients of all samples in manifest
@@ -63,7 +64,10 @@ class Avgshape(Step):
             )
 
         # Create directory to hold results from this step
-        avg_data_dir = self.step_local_staging_dir / f"avgshape_{struct}"
+        struct_dir = self.step_local_staging_dir / f"avgshape_{struct}"
+        struct_dir.mkdir(parents=True, exist_ok=True)
+
+        avg_data_dir = struct_dir / f"avgshape_data"
         avg_data_dir.mkdir(parents=True, exist_ok=True)
 
         # Perform some per-cell analysis
@@ -100,7 +104,7 @@ class Avgshape(Step):
 
         # Save displacement map
         save_displacement_map(grid_avg, avg_data_dir / f"avgshape_dmap_{struct}.tif")
-        
+
         # Save mesh as image
         save_voxelization(mesh_avg, avg_data_dir / f"avgshape_{struct}.tif")
 
@@ -125,6 +129,6 @@ class Avgshape(Step):
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / Path(f"manifest.csv"), index=False
+            struct_dir / Path(f"manifest.csv"), index=False
         )
         return self.manifest
