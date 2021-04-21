@@ -102,10 +102,19 @@ class Avgshape(Step):
         save_displacement_map(grid_avg, avg_data_dir / f"avgshape_dmap_{struct}.tif")
         
         # Save mesh as image
-        save_voxelization(mesh_avg, avg_data_dir / f"avgshape_{struct}.tif")
+        domain = save_voxelization(mesh_avg, avg_data_dir / f"avgshape_{struct}.tif")
 
         # Save mesh as stl file for blender import
         save_mesh_as_stl(mesh_avg, avg_data_dir / f"avgshape_{struct}.stl")
+
+        # Remesh voxelization
+        remesh_avg, _, _ = shtools.get_mesh_from_image((domain>0).astype(np.uint8))
+
+        # Save remesh as PLY
+        shtools.save_polydata(
+            mesh=remesh_avg,
+            filename=str(avg_data_dir / f"avgshape_remesh_{struct}.ply")
+        )
 
         # Save avg coeffs to csv file
         coeffs_df_avg.to_csv(
