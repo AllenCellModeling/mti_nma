@@ -7,6 +7,10 @@ import numpy as np
 from stl import mesh
 from aicscytoparam import cytoparam
 from aicsimageio import writers
+from skimage import filters as skfilters
+from vtk.util import numpy_support as vtknp
+import pyvista as pv
+import pyacvd
 
 ###############################################################################
 
@@ -134,32 +138,89 @@ def save_mesh_as_stl(polydata, fname):
 
     # Write the mesh to file"
     nuc_mesh.save(fname)
-    
+
+
 def save_mesh_as_obj(polydata, fname):
-    
+
     writer = vtk.vtkOBJWriter()
     writer.SetInputData(polydata)
     writer.SetFileName(str(fname))
     writer.Write()
 
+
 def save_voxelization(polydata, fname):
-    
+
     domain, _ = cytoparam.voxelize_meshes([polydata])
     with writers.ome_tiff_writer.OmeTiffWriter(fname, overwrite_file=True) as writer:
         writer.save(
-            255*domain,
+            255 * domain,
             dimension_order='ZYX',
             image_name=fname.stem
         )
     return domain
 
+
 def save_displacement_map(grid, fname):
-    
+
     grid = grid.reshape(1, *grid.shape).astype(np.float32)
-    
+
     with writers.ome_tiff_writer.OmeTiffWriter(fname, overwrite_file=True) as writer:
-            writer.save(
-                grid,
-                dimension_order='ZYX',
-                image_name=fname.stem
-            )
+        writer.save(
+            grid,
+            dimension_order='ZYX',
+            image_name=fname.stem
+        )
+
+
+def get_smooth_and_coarse_mesh_from_voxelization(img, sigma, npoints):
+    """
+    Converts an image into a triangle mesh with even distributed points.
+    First we use a Gaussian kernel with size (sigma**3) to smooth the
+    input image. Next we apply marching cubes (vtkContourFilter) to obtain
+    a first mesh, which is used as input to a Voronoi-based clustering
+    that is responsible for remeshing. Details can be found here:
+    https://github.com/pyvista/pyacvd
+
+    Parameters
+    ----------
+    img: np.array
+        Input image corresponding to the voxelized version of the original
+        average mesh.
+    sigma: float
+        Gaussian kernel size.
+    npoints: int
+        Number of points used to create the Voronoi clustering. The larger
+        this value the more points the final mesh will have.
+    Returns
+    -------
+    remesh_vtk: vtkPolyData
+        Triangle with even distirbuted points.
+    """
+
+
+    rad = 5
+    img = np.pad(img, ((rad, rad), (rad, rad), (rad, rad)))
+    d, h, w = img.shape
+    img = skfilters.gaussian(img > 0, sigma=sigma, preserve_range=True)
+    imagedata = vtk.vtkImageData()
+    imagedata.SetDimensions([w, h, d])
+    imagedata.SetExtent(0, w - 1, 0, h - 1, 0, d - 1)
+    imagedata.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 1)
+    values = (255 * img).ravel().astype(np.uint8)
+    values = vtknp.numpy_to_vtk(values, deep=True, array_type=vtk.VTK_UNSIGNED_CHAR)
+    imagedata.GetPointData().SetScalars(values)
+    cf = vtk.vtkContourFilter()
+    cf.SetInputData(imagedata)
+    cf.SetValue(0, 255.0 / np.exp(1.0))
+    cf.Update()
+    mesh = cf.GetOutput()
+
+    pv_temp = pv.PolyData(mesh)
+    cluster = pyacvd.Clustering(pv_temp)
+    cluster.cluster(npoints)
+    remesh = cluster.create_mesh()
+    remesh_vtk = vtk.vtkPolyData()
+    remesh_vtk.SetPoints(remesh.GetPoints())
+    remesh_vtk.SetVerts(remesh.GetVerts())
+    remesh_vtk.SetPolys(remesh.GetPolys())
+    return remesh_vtk

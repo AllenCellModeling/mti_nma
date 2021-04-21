@@ -9,6 +9,7 @@ from aicsshparam import shtools
 
 from datastep import Step, log_run_params
 from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
+from .avgshape_utils import get_smooth_and_coarse_mesh_from_voxelization
 from .avgshape_utils import save_mesh_as_obj, save_voxelization, save_displacement_map
 
 ###############################################################################
@@ -121,7 +122,7 @@ class Avgshape(Step):
         save_mesh_as_stl(mesh_avg, avg_data_dir / f"avgshape_{struct}.stl")
 
         # Remesh voxelization
-        remesh_avg, _, _ = shtools.get_mesh_from_image((domain > 0).astype(np.uint8))
+        remesh_avg = get_smooth_and_coarse_mesh_from_voxelization(domain, sigma=3, npoints=2000)
 
         # Save remesh as PLY
         shtools.save_polydata(
