@@ -4,6 +4,7 @@ from typing import Optional, List
 
 import numpy as np
 import pandas as pd
+import os
 from aicsshparam import shtools
 
 from datastep import Step, log_run_params
@@ -70,6 +71,14 @@ class Avgshape(Step):
         avg_data_dir = struct_dir / f"avgshape_data"
         avg_data_dir.mkdir(parents=True, exist_ok=True)
 
+        # Move init and run parameters to structure dir to avoid overwriting
+        for filetype in ["init", "run"]:
+            filename = f"{filetype}_parameters.json"
+            os.rename(
+                self.step_local_staging_dir / filename,
+                struct_dir / filename
+            )
+
         # Perform some per-cell analysis
         run_shcoeffs_analysis(df=coeffs_df, savedir=avg_data_dir, struct=struct)
 
@@ -112,7 +121,7 @@ class Avgshape(Step):
         save_mesh_as_stl(mesh_avg, avg_data_dir / f"avgshape_{struct}.stl")
 
         # Remesh voxelization
-        remesh_avg, _, _ = shtools.get_mesh_from_image((domain>0).astype(np.uint8))
+        remesh_avg, _, _ = shtools.get_mesh_from_image((domain > 0).astype(np.uint8))
 
         # Save remesh as PLY
         shtools.save_polydata(
@@ -129,6 +138,7 @@ class Avgshape(Step):
         self.manifest = pd.DataFrame({
             "Label": "Average_mesh",
             "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.ply",
+            "AvgShapeRemeshFilePath": avg_data_dir / f"avgshape_remesh_{struct}.ply",
             "AvgShapeFilePathStl": avg_data_dir / f"avgshape_{struct}.stl",
             "AvgShapeFilePathObj": avg_data_dir / f"avgshape_{struct}.obj",
             "AvgShapeFilePathTif": avg_data_dir / f"avgshape_{struct}.tif",
