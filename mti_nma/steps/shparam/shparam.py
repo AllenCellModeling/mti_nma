@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, NamedTuple, Optional, List
 
 import pandas as pd
+import os
 from aicsshparam import shparam, shtools
 from aicsimageio import AICSImage
 
@@ -142,15 +143,23 @@ class Shparam(Step):
         # If no dataframe is passed in, load manifest from previous step
         if sc_df is None:
             sc_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "single_" 
-                f"{struct}" / "manifest.csv", index_col='CellId'
+                self.step_local_staging_dir.parent / "loaddata" /
+                f"loaddata_{struct}" / "manifest.csv", index_col='CellId'
             )
 
         # Create directory to save data for this step in local staging
-        struct_dir = self.project_local_staging_dir / f"shparam_{struct}"
+        struct_dir = self.step_local_staging_dir / f"shparam_{struct}"
         struct_dir.mkdir(parents=True, exist_ok=True)
         sh_data_dir = struct_dir / "shparam_data"
         sh_data_dir.mkdir(parents=True, exist_ok=True)
+
+        # Move init and run parameters to structure dir to avoid overwriting
+        for filetype in ["init", "run"]:
+            filename = f"{filetype}_parameters.json"
+            os.rename(
+                self.step_local_staging_dir / filename,
+                struct_dir / filename
+            )
 
         # Get spherical harmonic set for segmentation, save and record in manifest
         self.manifest = pd.DataFrame([])
@@ -181,7 +190,7 @@ class Shparam(Step):
 
         self.manifest = self.manifest.set_index('CellId')
         self.manifest.index = self.manifest.index.astype(int)
-                
+
         # Save manifest as csv
         self.manifest.to_csv(
             struct_dir / "manifest.csv"

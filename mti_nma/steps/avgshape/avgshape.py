@@ -4,10 +4,12 @@ from typing import Optional, List
 
 import numpy as np
 import pandas as pd
+import os
 from aicsshparam import shtools
 
 from datastep import Step, log_run_params
-from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl, save_mesh_as_obj, save_voxelization, save_displacement_map
+from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
+from .avgshape_utils import save_mesh_as_obj, save_voxelization, save_displacement_map
 
 ###############################################################################
 
@@ -50,8 +52,8 @@ class Avgshape(Step):
         # If no dataframe is passed in, load manifest from previous step
         if sh_df is None:
             sh_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "shparam_"
-                f"{struct}" / "manifest.csv", index_col="CellId"
+                self.step_local_staging_dir.parent / "shparam" /
+                f"shparam_{struct}" / "manifest.csv", index_col="CellId"
             )
 
         # Load sh coefficients of all samples in manifest
@@ -63,8 +65,19 @@ class Avgshape(Step):
             )
 
         # Create directory to hold results from this step
-        avg_data_dir = self.step_local_staging_dir / f"avgshape_{struct}"
+        struct_dir = self.step_local_staging_dir / f"avgshape_{struct}"
+        struct_dir.mkdir(parents=True, exist_ok=True)
+
+        avg_data_dir = struct_dir / f"avgshape_data"
         avg_data_dir.mkdir(parents=True, exist_ok=True)
+
+        # Move init and run parameters to structure dir to avoid overwriting
+        for filetype in ["init", "run"]:
+            filename = f"{filetype}_parameters.json"
+            os.rename(
+                self.step_local_staging_dir / filename,
+                struct_dir / filename
+            )
 
         # Perform some per-cell analysis
         run_shcoeffs_analysis(df=coeffs_df, savedir=avg_data_dir, struct=struct)
@@ -100,7 +113,7 @@ class Avgshape(Step):
 
         # Save displacement map
         save_displacement_map(grid_avg, avg_data_dir / f"avgshape_dmap_{struct}.tif")
-        
+
         # Save mesh as image
         domain = save_voxelization(mesh_avg, avg_data_dir / f"avgshape_{struct}.tif")
 
@@ -108,7 +121,7 @@ class Avgshape(Step):
         save_mesh_as_stl(mesh_avg, avg_data_dir / f"avgshape_{struct}.stl")
 
         # Remesh voxelization
-        remesh_avg, _, _ = shtools.get_mesh_from_image((domain>0).astype(np.uint8))
+        remesh_avg, _, _ = shtools.get_mesh_from_image((domain > 0).astype(np.uint8))
 
         # Save remesh as PLY
         shtools.save_polydata(
@@ -125,6 +138,7 @@ class Avgshape(Step):
         self.manifest = pd.DataFrame({
             "Label": "Average_mesh",
             "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.ply",
+            "AvgShapeRemeshFilePath": avg_data_dir / f"avgshape_remesh_{struct}.ply",
             "AvgShapeFilePathStl": avg_data_dir / f"avgshape_{struct}.stl",
             "AvgShapeFilePathObj": avg_data_dir / f"avgshape_{struct}.obj",
             "AvgShapeFilePathTif": avg_data_dir / f"avgshape_{struct}.tif",
@@ -134,6 +148,6 @@ class Avgshape(Step):
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / Path(f"manifest.csv"), index=False
+            struct_dir / Path(f"manifest.csv"), index=False
         )
         return self.manifest

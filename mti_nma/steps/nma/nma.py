@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import vtk
+import os
 from vtk.util import numpy_support
 
 from datastep import Step, log_run_params
@@ -42,12 +43,10 @@ class Nma(Step):
         self,
         direct_upstream_tasks: Optional[List["Step"]] = [],
         filepath_columns=["w_FilePath", "v_FilePath", "vmag_FilePath", "fig_FilePath"],
-        **kwargs
     ):
         super().__init__(
             direct_upstream_tasks=direct_upstream_tasks,
             filepath_columns=filepath_columns,
-            **kwargs
         )
 
     @log_run_params
@@ -104,16 +103,27 @@ class Nma(Step):
         # If no dataframe is passed in, load manifest from previous step
         if avg_df is None:
             avg_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "avgshape_"
-                f"{struct}" / "manifest.csv"
+                self.step_local_staging_dir.parent / "avgshape" /
+                f"avgshape_{struct}" / "manifest.csv"
             )
 
+        struct_dir = self.step_local_staging_dir / f"nma_{struct}"
+        struct_dir.mkdir(parents=True, exist_ok=True)
+
         # Create directory to hold NMA results
-        nma_data_dir = self.step_local_staging_dir / "nma_data"
+        nma_data_dir = struct_dir / "nma_data"
         nma_data_dir.mkdir(parents=True, exist_ok=True)
 
+        # Move init and run parameters to structure dir to avoid overwriting
+        for filetype in ["init", "run"]:
+            filename = f"{filetype}_parameters.json"
+            os.rename(
+                self.step_local_staging_dir / filename,
+                struct_dir / filename
+            )
+
         reader = vtk.vtkPLYReader()
-        reader.SetFileName(str(avg_df["AvgShapeFilePath"].iloc[0]))
+        reader.SetFileName(str(avg_df["AvgShapeRemeshFilePath"].iloc[0]))
         reader.Update()
         polydata = reader.GetOutput()
 
@@ -225,5 +235,5 @@ class Nma(Step):
 
         # Save manifest as csv
         self.manifest.to_csv(
-            self.step_local_staging_dir / f"manifest.csv", index=False
+            struct_dir / f"manifest.csv", index=False
         )
