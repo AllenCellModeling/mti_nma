@@ -30,23 +30,27 @@ class LoadData(Step):
         self,
         struct="Nuc",
         nsamples=0,
-        distributed_executor_address: Optional[str]=None,
+        distributed_executor_address: Optional[str] = None,
         debug=False,
         **kwargs
     ):
 
-        struct_dir = self.project_local_staging_dir / f"single_{struct}"
+        struct_dir = self.step_local_staging_dir / f"single_{struct}"
         struct_dir.mkdir(parents=True, exist_ok=True)
-        
+
         df = download_data(
             save_dir=struct_dir / "singlecell_data",
             nsamples=nsamples,
             struct=struct,
             distributed_executor_address=distributed_executor_address
         )
-        
+
+        print("Data downloaded")
+
         self.manifest = df
         manifest_save_path = struct_dir / "manifest.csv"
         self.manifest.to_csv(manifest_save_path)
-            
+
+        print(f"Manifest saved at {manifest_save_path}")
+
         return self.manifest

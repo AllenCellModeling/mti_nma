@@ -145,13 +145,13 @@ def save_mesh_as_obj(polydata, fname):
 def save_voxelization(polydata, fname):
     
     domain, _ = cytoparam.voxelize_meshes([polydata])
-    
     with writers.ome_tiff_writer.OmeTiffWriter(fname, overwrite_file=True) as writer:
         writer.save(
             255*domain,
             dimension_order='ZYX',
             image_name=fname.stem
         )
+    return domain
 
 def save_displacement_map(grid, fname):
     

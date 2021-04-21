@@ -142,12 +142,12 @@ class Shparam(Step):
         # If no dataframe is passed in, load manifest from previous step
         if sc_df is None:
             sc_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "single_" 
-                f"{struct}" / "manifest.csv", index_col='CellId'
+                self.step_local_staging_dir.parent / "loaddata" /
+                f"single_{struct}" / "manifest.csv", index_col='CellId'
             )
 
         # Create directory to save data for this step in local staging
-        struct_dir = self.project_local_staging_dir / f"shparam_{struct}"
+        struct_dir = self.step_local_staging_dir / f"shparam_{struct}"
         struct_dir.mkdir(parents=True, exist_ok=True)
         sh_data_dir = struct_dir / "shparam_data"
         sh_data_dir.mkdir(parents=True, exist_ok=True)

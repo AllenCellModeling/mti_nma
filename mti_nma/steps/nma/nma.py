@@ -41,13 +41,11 @@ class Nma(Step):
     def __init__(
         self,
         direct_upstream_tasks: Optional[List["Step"]] = [],
-        filepath_columns=["w_FilePath", "v_FilePath", "vmag_FilePath", "fig_FilePath"],
-        **kwargs
+        filepath_columns=["w_FilePath", "v_FilePath", "vmag_FilePath", "fig_FilePath"]
     ):
         super().__init__(
             direct_upstream_tasks=direct_upstream_tasks,
-            filepath_columns=filepath_columns,
-            **kwargs
+            filepath_columns=filepath_columns
         )
 
     @log_run_params
@@ -104,8 +102,8 @@ class Nma(Step):
         # If no dataframe is passed in, load manifest from previous step
         if avg_df is None:
             avg_df = pd.read_csv(
-                self.step_local_staging_dir.parent / "avgshape_"
-                f"{struct}" / "manifest.csv"
+                self.step_local_staging_dir.parent / "avgshape" /
+                f"avgshape_{struct}" / "manifest.csv"
             )
 
         # Create directory to hold NMA results
@@ -113,9 +111,14 @@ class Nma(Step):
         nma_data_dir.mkdir(parents=True, exist_ok=True)
 
         reader = vtk.vtkPLYReader()
-        reader.SetFileName(str(avg_df["AvgShapeFilePath"].iloc[0]))
+        # filename = str(avg_df["AvgShapeFilePath"].iloc[0])
+        filename = str(self.step_local_staging_dir / "quadmesh.ply")
+        reader.SetFileName(filename)
         reader.Update()
         polydata = reader.GetOutput()
+
+        print("Loaded data")
+        print(polydata.GetNumberOfCells())
 
         verts, faces = get_vtk_verts_faces(polydata)
         w, v = run_nma(verts, faces)
@@ -126,7 +129,10 @@ class Nma(Step):
         n = polydata.GetNumberOfPoints()
         writer = vtk.vtkPolyDataWriter()
 
+        print("about to generate mode visualizations")
+
         for id_mode in range(9):
+            print(id_mode)
 
             # 1st Get eigenvector of interest as a Nx3 array
             arr_eigenvec = v.T[id_mode, :].reshape(3, -1).T
@@ -168,6 +174,8 @@ class Nma(Step):
                     nma_data_dir / f"avgshape_{struct}_M{id_mode}_T{id_theta:03d}.vtk"))
                 writer.Write()
 
+        print("Saving figures")
+
         fig_path = nma_data_dir / f"w_fig_{struct}.pdf"
         plt.savefig(fig_path, format="pdf")
         w_path = nma_data_dir / f"eigvals_{struct}.npy"
@@ -186,6 +194,8 @@ class Nma(Step):
             "fig_FilePath": fig_path,
             "Structure": struct
         }, index=[0])
+
+        print("Starting blender")
 
         # If no blender path passed: use default for mac and throw error otherwise
         if path_blender is None:
@@ -223,7 +233,9 @@ class Nma(Step):
                 self.manifest[f"mode_{mode}_FilePath"] = output_path
                 self.filepath_columns.append(output_path)
 
+        print("Done - saving manifest")
         # Save manifest as csv
         self.manifest.to_csv(
             self.step_local_staging_dir / f"manifest.csv", index=False
         )
+        print("Manifest saved")
