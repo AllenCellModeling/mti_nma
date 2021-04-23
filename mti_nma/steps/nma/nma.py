@@ -114,6 +114,9 @@ class Nma(Step):
         nma_data_dir = struct_dir / "nma_data"
         nma_data_dir.mkdir(parents=True, exist_ok=True)
 
+        vtk_dir = nma_data_dir / "vtk_timestep_files"
+        vtk_dir.mkdir(parents=True, exist_ok=True)
+
         # Move init and run parameters to structure dir to avoid overwriting
         for filetype in ["init", "run"]:
             filename = f"{filetype}_parameters.json"
@@ -175,7 +178,7 @@ class Nma(Step):
                 # Write mesh with new coordinates
                 writer.SetInputData(polydata)
                 writer.SetFileName(str(
-                    nma_data_dir / f"avgshape_{struct}_M{id_mode}_T{id_theta:03d}.vtk"))
+                    vtk_dir / f"avgshape_{struct}_M{id_mode}_T{id_theta:03d}.vtk"))
                 writer.Write()
 
         fig_path = nma_data_dir / f"w_fig_{struct}.pdf"
