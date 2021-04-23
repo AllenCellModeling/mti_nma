@@ -14,8 +14,8 @@ import os
 
 
 def create_gif_from_png_dir(
-        pngdir="local_staging/nma_nuc/post_processing_vtk/9grid_frames/",
-        save_file_path="local_staging/nma_nuc/post_processing_vtk/9grid.gif"):
+        pngdir="../../local_staging/nma/nma_Nuc/nma_data/9grid_frames/",
+        save_file_path="../../local_staging/nma/nma_Nuc/nma_data/9grid.gif"):
 
     # Create empty array 
     images = []
