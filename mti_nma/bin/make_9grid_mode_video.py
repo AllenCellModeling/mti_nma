@@ -14,14 +14,16 @@ import os
 
 
 def create_gif_from_png_dir(
-        pngdir="../../local_staging/nma/nma_Nuc/nma_data/9grid_frames/",
-        save_file_path="../../local_staging/nma/nma_Nuc/nma_data/9grid.gif"):
+        basedir="../../local_staging/nma/nma_Nuc/nma_data/9grid_frames/",
+        save_file_path="../../local_staging/nma/nma_Nuc/nma_data/9grid_videos/"):
 
-    # Create empty array 
-    images = []
-    for filename in os.listdir(pngdir):
-        images.append(imageio.imread(pngdir + filename))
-    imageio.mimsave(save_file_path, images)
+    # Create empty array
+    for dirname in os.listdir(basedir):
+        images = []
+        pngdir = basedir + dirname
+        for filename in os.listdir(pngdir):
+            images.append(imageio.imread(pngdir + "/" + filename))
+        imageio.mimsave(save_file_path + f"9grid_{dirname}_video.gif" , images)
 
 
 create_gif_from_png_dir()
