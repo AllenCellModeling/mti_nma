@@ -8,6 +8,7 @@ import os
 from aicsshparam import shtools
 
 from datastep import Step, log_run_params
+from .avgshape_utils import get_spherical_mesh
 from .avgshape_utils import run_shcoeffs_analysis, save_mesh_as_stl
 from .avgshape_utils import get_smooth_and_coarse_mesh_from_voxelization
 from .avgshape_utils import save_mesh_as_obj, save_voxelization, save_displacement_map
@@ -130,6 +131,14 @@ class Avgshape(Step):
             filename=str(avg_data_dir / f"avgshape_remesh_{struct}.ply")
         )
 
+        sphere = get_spherical_mesh(npoints=2000)
+
+        # Save sphere as PLY
+        shtools.save_polydata(
+            mesh=sphere,
+            filename=str(avg_data_dir / f"sphere_{struct}.ply")
+        )
+
         # Save avg coeffs to csv file
         coeffs_df_avg.to_csv(
             str(avg_data_dir / f"avgshape_{struct}.csv")
@@ -138,6 +147,7 @@ class Avgshape(Step):
         # Save path to avg shape in the manifest
         self.manifest = pd.DataFrame({
             "Label": "Average_mesh",
+            "SphereFilePath": avg_data_dir / f"sphere_{struct}.ply",
             "AvgShapeFilePath": avg_data_dir / f"avgshape_{struct}.ply",
             "AvgShapeRemeshFilePath": avg_data_dir / f"avgshape_remesh_{struct}.ply",
             "AvgShapeFilePathStl": avg_data_dir / f"avgshape_{struct}.stl",
