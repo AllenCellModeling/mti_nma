@@ -224,3 +224,23 @@ def get_smooth_and_coarse_mesh_from_voxelization(img, sigma, npoints):
     remesh_vtk.SetVerts(remesh.GetVerts())
     remesh_vtk.SetPolys(remesh.GetPolys())
     return remesh_vtk
+
+def get_spherical_mesh(npoints):
+
+    indices = np.arange(0, npoints, dtype=float) + 0.5
+    phi = np.arccos(1 - 2*indices/npoints)
+    theta = np.pi * (1 + 5**0.5) * indices
+    x, y, z = np.cos(theta) * np.sin(phi), np.sin(theta) * np.sin(phi), np.cos(phi)
+
+    points = vtk.vtkPoints()
+    points.SetData(vtknp.numpy_to_vtk(np.c_[x, y, z]))
+    poly = vtk.vtkPolyData()
+    poly.SetPoints(points)
+    d3D = vtk.vtkDelaunay3D()
+    d3D.SetInputData(poly)
+    d3D.Update()
+    dss = vtk.vtkDataSetSurfaceFilter()
+    dss.SetInputData(d3D.GetOutput())
+    dss.Update()
+
+    return dss.GetOutput()
